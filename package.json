@@ -1,0 +1,9 @@
+{
+  "name": "web-quest-app",
+  "scripts": {
+    "all": "concurrently \"bun --cwd backend dev\" \"cd frontend && bun run dev\""
+  },
+  "dependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
