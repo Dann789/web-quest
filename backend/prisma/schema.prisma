@@ -13,13 +13,322 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// USER MANAGEMENT
+// ============================================
+
 model User {
   id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(255) @unique
-  email     String   @db.VarChar(255) @unique
-  password  String   @db.VarChar(255)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  username  String   @unique @db.VarChar(50)
+  email     String   @unique @db.VarChar(100)
+  password  String   @db.VarChar(255) // bcrypt hashed
+  role      UserRole @default(USER)
+  totalXp   Int      @default(0) @map("total_xp")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  // Relations
+  userProgress          UserProgress[]
+  userMaterialProgress  UserMaterialProgress[]
+  userChallengeAttempts UserChallengeAttempt[]
+  userBadges            UserBadge[]
+  leaderboardEntries    LeaderboardEntry[]
+  activityLogs          ActivityLog[]
 
   @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+
+  @@map("user_role")
+}
+
+// ============================================
+// LEARNING CONTENT
+// ============================================
+
+model Level {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(50) // HTML, CSS, JavaScript, PHP, Database
+  order       Int      @unique @db.SmallInt // 1, 2, 3, 4, 5
+  xpRequired  Int      @map("xp_required") // 0, 250, 500, 1000, 2000
+  description String?  @db.Text
+  iconUrl     String?  @map("icon_url") @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  // Relations
+  materials    Material[]
+  challenges   Challenge[]
+  userProgress UserProgress[]
+  leaderboards Leaderboard[]
+
+  @@map("levels")
+}
+
+model Material {
+  id            Int      @id @default(autoincrement())
+  levelId       Int      @map("level_id")
+  title         String   @db.VarChar(200)
+  content       String   @db.Text // HTML/Markdown content
+  xpReward      Int      @map("xp_reward") @db.SmallInt
+  order         Int      @db.SmallInt
+  estimatedTime Int?     @map("estimated_time") @db.SmallInt // in minutes
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  // Relations
+  level                Level                  @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  userMaterialProgress UserMaterialProgress[]
+
+  @@index([levelId, order], name: "idx_materials_level_order")
+  @@map("materials")
+}
+
+// ============================================
+// CHALLENGES
+// ============================================
+
+model Challenge {
+  id              Int             @id @default(autoincrement())
+  levelId         Int             @map("level_id")
+  title           String          @db.VarChar(200)
+  description     String          @db.Text
+  difficulty      Difficulty
+  method          ChallengeMethod
+  idealTime       Int             @map("ideal_time") // in seconds
+  xpBase          Int             @map("xp_base") @db.SmallInt // 10, 20, 30
+  validationRules Json            @map("validation_rules") // JSONB for validation rules
+  isActive        Boolean         @default(true) @map("is_active")
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  // Relations
+  level                 Level                  @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  challengeVariants     ChallengeVariant[]
+  userChallengeAttempts UserChallengeAttempt[]
+  activityLogs          ActivityLog[]
+
+  @@index([levelId, difficulty], name: "idx_challenges_level_difficulty")
+  @@index([isActive], name: "idx_challenges_active")
+  @@map("challenges")
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+
+  @@map("difficulty")
+}
+
+enum ChallengeMethod {
+  DRAG_AND_DROP         @map("drag_and_drop")
+  CODING_MANUAL         @map("coding_manual")
+  FIX_THE_BUG           @map("fix_the_bug")
+  SCENARIO_BASED        @map("scenario_based")
+  MICRO_CHALLENGE_CHAIN @map("micro_challenge_chain")
+
+  @@map("challenge_method")
+}
+
+model ChallengeVariant {
+  id               Int      @id @default(autoincrement())
+  challengeId      Int      @map("challenge_id")
+  questionContent  String   @map("question_content") @db.Text
+  starterCode      String?  @map("starter_code") @db.Text // For Fix The Bug method
+  correctAnswer    String?  @map("correct_answer") @db.Text
+  testCases        Json?    @map("test_cases") // JSONB array of test cases
+  difficultyWeight Decimal  @default(1.0) @map("difficulty_weight") @db.Decimal(3, 2) // 0.8 - 1.2
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  // Relations
+  challenge             Challenge              @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  userChallengeAttempts UserChallengeAttempt[]
+
+  @@index([challengeId], name: "idx_variants_challenge")
+  @@map("challenge_variants")
+}
+
+// ============================================
+// USER PROGRESS TRACKING
+// ============================================
+
+model UserProgress {
+  id                  Int       @id @default(autoincrement())
+  userId              Int       @map("user_id")
+  levelId             Int       @map("level_id")
+  isUnlocked          Boolean   @default(false) @map("is_unlocked")
+  materialsCompleted  Int       @default(0) @map("materials_completed") @db.SmallInt
+  challengesCompleted Int       @default(0) @map("challenges_completed") @db.SmallInt
+  totalXpEarned       Int       @default(0) @map("total_xp_earned")
+  progressPercentage  Decimal   @default(0.0) @map("progress_percentage") @db.Decimal(5, 2) // 0.00 - 100.00
+  unlockedAt          DateTime? @map("unlocked_at") @db.Timestamptz(3)
+  completedAt         DateTime? @map("completed_at") @db.Timestamptz(3)
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level Level @relation(fields: [levelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, levelId], name: "idx_user_progress_unique")
+  @@index([userId], name: "idx_user_progress_user")
+  @@map("user_progress")
+}
+
+model UserMaterialProgress {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @map("user_id")
+  materialId  Int       @map("material_id")
+  isCompleted Boolean   @default(false) @map("is_completed")
+  xpEarned    Int       @default(0) @map("xp_earned") @db.SmallInt
+  startedAt   DateTime? @map("started_at") @db.Timestamptz(3)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, materialId], name: "idx_user_material_unique")
+  @@index([userId], name: "idx_user_material_user")
+  @@map("user_material_progress")
+}
+
+model UserChallengeAttempt {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @map("user_id")
+  challengeId    Int      @map("challenge_id")
+  variantId      Int      @map("variant_id")
+  answerCode     String   @map("answer_code") @db.Text
+  isCorrect      Boolean  @map("is_correct")
+  isFirstAttempt Boolean  @map("is_first_attempt")
+  timeSpent      Int      @map("time_spent") // in seconds
+  xpEarned       Int      @map("xp_earned") @db.SmallInt
+  submittedAt    DateTime @default(now()) @map("submitted_at") @db.Timestamptz(3)
+
+  // Relations
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge        @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  variant   ChallengeVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([userId, challengeId, isFirstAttempt], name: "idx_attempts_first")
+  @@index([userId, submittedAt], name: "idx_attempts_history")
+  @@index([challengeId], name: "idx_attempts_challenge")
+  @@map("user_challenge_attempts")
+}
+
+// ============================================
+// GAMIFICATION - BADGES
+// ============================================
+
+model Badge {
+  id             Int      @id @default(autoincrement())
+  name           String   @unique @db.VarChar(100)
+  description    String   @db.Text
+  conditionType  String   @map("condition_type") @db.VarChar(50)
+  conditionValue Json     @map("condition_value") // JSONB for flexible conditions
+  iconUrl        String   @map("icon_url") @db.VarChar(255)
+  rarity         Rarity   @default(COMMON)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  // Relations
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+enum Rarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+
+  @@map("rarity")
+}
+
+model UserBadge {
+  id       Int      @id @default(autoincrement())
+  userId   Int      @map("user_id")
+  badgeId  Int      @map("badge_id")
+  earnedAt DateTime @default(now()) @map("earned_at") @db.Timestamptz(3)
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId], name: "idx_user_badge_unique")
+  @@index([userId], name: "idx_user_badges_user")
+  @@map("user_badges")
+}
+
+// ============================================
+// GAMIFICATION - LEADERBOARD
+// ============================================
+
+model Leaderboard {
+  id                 Int       @id @default(autoincrement())
+  levelId            Int?      @map("level_id") // NULL = global leaderboard
+  periodStart        DateTime  @map("period_start") @db.Timestamptz(3)
+  periodEnd          DateTime  @map("period_end") @db.Timestamptz(3)
+  isLocked           Boolean   @default(false) @map("is_locked")
+  lockStart          DateTime? @map("lock_start") @db.Timestamptz(3)
+  lockEnd            DateTime? @map("lock_end") @db.Timestamptz(3)
+  rewardsDistributed Boolean   @default(false) @map("rewards_distributed")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  // Relations
+  level              Level?             @relation(fields: [levelId], references: [id], onDelete: SetNull)
+  leaderboardEntries LeaderboardEntry[]
+
+  @@index([levelId, periodEnd, isLocked], name: "idx_leaderboards_active")
+  @@map("leaderboards")
+}
+
+model LeaderboardEntry {
+  id            Int      @id @default(autoincrement())
+  leaderboardId Int      @map("leaderboard_id")
+  userId        Int      @map("user_id")
+  totalXp       Int      @map("total_xp")
+  totalTime     Int      @map("total_time") // in seconds
+  rank          Int      @db.SmallInt
+  rewardXp      Int      @default(0) @map("reward_xp") @db.SmallInt
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  // Relations
+  leaderboard Leaderboard @relation(fields: [leaderboardId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([leaderboardId, userId], name: "idx_leaderboard_entry_unique")
+  @@index([leaderboardId, rank], name: "idx_leaderboard_rank")
+  @@index([leaderboardId, totalXp, totalTime], name: "idx_leaderboard_sorting")
+  @@map("leaderboard_entries")
+}
+
+// ============================================
+// ADMIN MONITORING
+// ============================================
+
+model ActivityLog {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  challengeId     Int?     @map("challenge_id")
+  actionType      String   @map("action_type") @db.VarChar(50)
+  level           String?  @db.VarChar(50)
+  difficulty      String?  @db.VarChar(20)
+  method          String?  @db.VarChar(50)
+  timeSpent       Int?     @map("time_spent") // in seconds
+  variantQuestion String?  @map("variant_question") @db.Text
+  userAnswer      String?  @map("user_answer") @db.Text
+  details         Json? // JSONB for additional details
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  // Relations
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge? @relation(fields: [challengeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt], name: "idx_logs_user_time")
+  @@index([challengeId, createdAt], name: "idx_logs_challenge_time")
+  @@index([createdAt], name: "idx_logs_time")
+  @@map("activity_logs")
 }
