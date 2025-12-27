@@ -23,7 +23,7 @@ export const authMiddleware = new Elysia()
         }
 
         return {
-            user: payload as JWTPayload,
+            user: payload as unknown as JWTPayload,
         };
     });
 

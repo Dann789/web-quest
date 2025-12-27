@@ -45,3 +45,16 @@ export interface ApiResponse<T = any> {
 export interface AuthContext {
     user: JWTPayload;
 }
+
+export interface CreateUserRequest {
+    username: string;
+    email: string;
+    password: string;
+    role?: UserRole;
+}
+
+export interface UpdateUserRequest {
+    username?: string;
+    email?: string;
+    role?: UserRole;
+}

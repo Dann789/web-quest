@@ -58,18 +58,6 @@ export class AuthController {
             // Sign JWT token
             const token = await jwtSign(payload);
 
-            // Log login activity
-            await prisma.activityLog.create({
-                data: {
-                    userId: user.id,
-                    actionType: "LOGIN",
-                    details: {
-                        description: `User ${user.username} logged in`,
-                        ipAddress: null, // TODO: Get from request if needed
-                    },
-                },
-            });
-
             return {
                 success: true,
                 message: "Login successful",
@@ -137,18 +125,6 @@ export class AuthController {
      */
     static async logout(userId: number, username: string) {
         try {
-            // Log logout activity
-            await prisma.activityLog.create({
-                data: {
-                    userId,
-                    actionType: "LOGOUT",
-                    details: {
-                        description: `User ${username} logged out`,
-                        ipAddress: null, // TODO: Get from request if needed
-                    },
-                },
-            });
-
             return {
                 success: true,
                 message: "Logout successful",
