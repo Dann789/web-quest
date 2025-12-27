@@ -74,7 +74,6 @@ model Material {
   content       String   @db.Text // HTML/Markdown content
   xpReward      Int      @map("xp_reward") @db.SmallInt
   order         Int      @db.SmallInt
-  estimatedTime Int?     @map("estimated_time") @db.SmallInt // in minutes
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -182,7 +181,6 @@ model UserMaterialProgress {
   userId      Int       @map("user_id")
   materialId  Int       @map("material_id")
   isCompleted Boolean   @default(false) @map("is_completed")
-  xpEarned    Int       @default(0) @map("xp_earned") @db.SmallInt
   startedAt   DateTime? @map("started_at") @db.Timestamptz(3)
   completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
 
@@ -314,9 +312,6 @@ model ActivityLog {
   userId          Int      @map("user_id")
   challengeId     Int?     @map("challenge_id")
   actionType      String   @map("action_type") @db.VarChar(50)
-  level           String?  @db.VarChar(50)
-  difficulty      String?  @db.VarChar(20)
-  method          String?  @db.VarChar(50)
   timeSpent       Int?     @map("time_spent") // in seconds
   variantQuestion String?  @map("variant_question") @db.Text
   userAnswer      String?  @map("user_answer") @db.Text

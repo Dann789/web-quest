@@ -2,11 +2,13 @@ import { Elysia } from "elysia";
 import { corsPlugin } from "./plugins/cors.plugin";
 import { authRoutes } from "./routes/auth.routes";
 import { userRoutes } from "./routes/admin/user.routes";
+import { materialRoutes } from "./routes/admin/material.routes";
 
 const app = new Elysia()
   .use(corsPlugin)
   .use(authRoutes)
   .use(userRoutes)
+  .use(materialRoutes)
   .get("/", () => ({
     message: "🚀 Web Quest API - Gamification Learning Platform",
     version: "1.0.0",

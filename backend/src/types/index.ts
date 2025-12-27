@@ -58,3 +58,20 @@ export interface UpdateUserRequest {
     email?: string;
     role?: UserRole;
 }
+
+// MATERIAL TYPES
+export interface CreateMaterialRequest {
+    levelId: number;
+    title: string;
+    content: string;
+    xpReward: number;
+    order: number;
+}
+
+export interface UpdateMaterialRequest {
+    levelId?: number;
+    title?: string;
+    content?: string;
+    xpReward?: number;
+    order?: number;
+}
