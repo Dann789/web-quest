@@ -75,3 +75,11 @@ export interface UpdateMaterialRequest {
     xpReward?: number;
     order?: number;
 }
+
+// LEVEL TYPES
+export interface UpdateLevelRequest {
+    name?: string;
+    xpRequired?: number;
+    description?: string;
+    iconUrl?: string;
+}
