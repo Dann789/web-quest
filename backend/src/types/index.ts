@@ -83,3 +83,46 @@ export interface UpdateLevelRequest {
     description?: string;
     iconUrl?: string;
 }
+
+// CHALLENGE TYPES
+export interface CreateChallengeRequest {
+    levelId: number;
+    title: string;
+    description: string;
+    difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+    method: 'DRAG_AND_DROP' | 'CODING_MANUAL' | 'FIX_THE_BUG' | 'SCENARIO_BASED' | 'MICRO_CHALLENGE_CHAIN';
+    idealTime: number;
+    xpBase: number;
+    validationRules: object;
+    isActive?: boolean;
+}
+
+export interface UpdateChallengeRequest {
+    levelId?: number;
+    title?: string;
+    description?: string;
+    difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
+    method?: 'DRAG_AND_DROP' | 'CODING_MANUAL' | 'FIX_THE_BUG' | 'SCENARIO_BASED' | 'MICRO_CHALLENGE_CHAIN';
+    idealTime?: number;
+    xpBase?: number;
+    validationRules?: object;
+    isActive?: boolean;
+}
+
+// CHALLENGE VARIANT TYPES
+export interface CreateVariantRequest {
+    challengeId: number;
+    questionContent: string;
+    starterCode?: string;
+    correctAnswer?: string;
+    testCases?: object;
+    difficultyWeight?: number;
+}
+
+export interface UpdateVariantRequest {
+    questionContent?: string;
+    starterCode?: string;
+    correctAnswer?: string;
+    testCases?: object;
+    difficultyWeight?: number;
+}
