@@ -9,7 +9,7 @@ export const userRoutes = new Elysia({ prefix: "/api/users" })
     .post('/', ({ body }) => UserController.createUser(body as CreateUserRequest), {
         body: t.Object({
             username: t.String({
-                minLength: 6,
+                minLength: 5,
                 maxLength: 10
             }),
             email: t.String({
@@ -36,7 +36,7 @@ export const userRoutes = new Elysia({ prefix: "/api/users" })
         }),
         body: t.Object({
             username: t.Optional(t.String({
-                minLength: 6,
+                minLength: 5,
                 maxLength: 20
             })),
             email: t.Optional(t.String({

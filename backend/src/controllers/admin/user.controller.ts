@@ -6,14 +6,19 @@ export class UserController {
   static async getAllUsers() {
     try {
       const users = await prisma.user.findMany({
+        where: {
+          role: UserRole.USER,
+        },
         select: {
           id: true,
           username: true,
           email: true,
-          role: true,
           totalXp: true,
           createdAt: true,
         },
+        orderBy: {
+          createdAt: "asc"
+        }
       });
       return {
         success: true,
