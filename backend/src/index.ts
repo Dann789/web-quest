@@ -5,6 +5,7 @@ import { userRoutes } from "./routes/admin/user.routes";
 import { materialRoutes } from "./routes/admin/material.routes";
 import { levelRoutes } from "./routes/admin/level.routes";
 import { challengeRoutes } from "./routes/admin/challenge.routes";
+import { progressRoutes } from "./routes/user/progress.routes";
 
 const app = new Elysia()
   .use(corsPlugin)
@@ -13,6 +14,7 @@ const app = new Elysia()
   .use(materialRoutes)
   .use(levelRoutes)
   .use(challengeRoutes)
+  .use(progressRoutes)
   .get("/", () => ({
     message: "🚀 Web Quest API - Gamification Learning Platform",
     version: "1.0.0",
