@@ -126,3 +126,11 @@ export interface UpdateVariantRequest {
     testCases?: object;
     difficultyWeight?: number;
 }
+
+// CHALLENGE ATTEMPT TYPES
+export interface SubmitAnswerRequest {
+    challengeId: number;
+    variantId: number;
+    answerCode: string;
+    timeSpent: number;
+}
