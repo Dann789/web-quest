@@ -11,6 +11,7 @@ import LoginPage from '@/pages/public/LoginPage';
 
 // User Pages
 import DashboardPage from '@/pages/user/DashboardPage';
+import LevelPage from '@/pages/user/LevelPage';
 import LeaderboardPage from '@/pages/user/LeaderboardPage';
 import ProfilePage from '@/pages/user/ProfilePage';
 
@@ -68,6 +69,10 @@ const router = createBrowserRouter([
       {
         path: '/dashboard',
         element: <DashboardPage />,
+      },
+      {
+        path: '/level',
+        element: <LevelPage />,
       },
       {
         path: '/leaderboard',

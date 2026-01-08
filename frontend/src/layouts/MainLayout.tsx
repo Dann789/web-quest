@@ -1,7 +1,8 @@
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  Home, 
+  Home,
+  Gamepad2, 
   Trophy, 
   User, 
   LogOut, 
@@ -59,8 +60,8 @@ export default function MainLayout() {
   // Navigation items
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
+    { path: '/level', label: 'Level', icon: Gamepad2 },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { path: '/profile', label: 'Profile', icon: User },
   ];
 
   const isActive = (path: string) => location.pathname === path;
