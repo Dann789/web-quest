@@ -12,7 +12,7 @@ export interface User {
   updatedAt: string;
 }
 
-export type UserRole = 'ADMIN' | 'USER';
+export type UserRole = 'ADMIN' | 'DOSEN' | 'USER';
 
 // ============================================
 // AUTH TYPES

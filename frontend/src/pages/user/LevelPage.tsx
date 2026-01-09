@@ -1,123 +1,127 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Lock, 
-  CheckCircle2, 
-  ChevronRight,
-  Target
-} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Lock, ArrowRight,  User, Database, Code, Server, FileCode } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LevelPage() {
-  // Mock Data (Nantinya dari API)
+  const { user } = useAuth();
+  
+  // Mock User XP jika belum ada (fallback)
+  const currentXP = user?.totalXp || 350; 
+
   const levels = [
-    { id: 1, name: 'HTML Foundation', description: 'Struktur dasar web', totalXp: 500, isUnlocked: true, isCompleted: true, progress: 100 },
-    { id: 2, name: 'CSS Styling', description: 'Mempercantik tampilan', totalXp: 750, isUnlocked: true, isCompleted: false, progress: 45 },
-    { id: 3, name: 'JavaScript Logic', description: 'Membuat web interaktif', totalXp: 1000, isUnlocked: false, isCompleted: false, progress: 0 },
-    { id: 4, name: 'PHP Backend', description: 'Server-side programming', totalXp: 1200, isUnlocked: false, isCompleted: false, progress: 0 },
-    { id: 5, name: 'Database MySQL', description: 'Manajemen data', totalXp: 1500, isUnlocked: false, isCompleted: false, progress: 0 },
+    {
+      id: 1,
+      title: 'Level 1: HTML Foundation',
+      description: 'Pelajari struktur dasar web dengan HTML5.',
+      requiredXp: 0,
+      image: 'bg-orange-500/10 text-orange-600',
+      icon: <FileCode className="h-6 w-6" />
+    },
+    {
+      id: 2,
+      title: 'Level 2: CSS Styling',
+      description: 'Percantik tampilan web menggunakan CSS3.',
+      requiredXp: 250,
+      image: 'bg-blue-500/10 text-blue-600',
+      icon: <Code className="h-6 w-6" />
+    },
+    {
+      id: 3,
+      title: 'Level 3: JavaScript Logic',
+      description: 'Buat web interaktif dengan logika pemrograman.',
+      requiredXp: 500,
+      image: 'bg-yellow-500/10 text-yellow-600',
+      icon: <User className="h-6 w-6" /> // Icon User as JS often handles user interaction/logic
+    },
+    {
+      id: 4,
+      title: 'Level 4: PHP Backend',
+      description: 'Pelajari server-side scripting dengan PHP.',
+      requiredXp: 1000,
+      image: 'bg-indigo-500/10 text-indigo-600',
+      icon: <Server className="h-6 w-6" />
+    },
+    {
+      id: 5,
+      title: 'Level 5: Database',
+      description: 'Kelola penyimpanan data dengan SQL & Database.',
+      requiredXp: 2000,
+      image: 'bg-slate-500/10 text-slate-600',
+      icon: <Database className="h-6 w-6" />
+    }
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Target className="h-8 w-8 text-primary" />
-            Peta Perjalanan
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Selesaikan setiap level untuk membuka tantangan berikutnya
-          </p>
-        </div>
-        <span className="text-sm font-medium bg-secondary px-4 py-2 rounded-full">
-          Total Progress: 25%
-        </span>
+    <div className="space-y-8 pb-10">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Pilih Level Belajar</h1>
+        <p className="text-muted-foreground mt-2">
+          Total XP Anda saat ini: <span className="font-bold text-primary">{currentXP} XP</span>
+        </p>
       </div>
 
-      <div className="space-y-4">
-        {levels.map((level) => (
-          <div 
-            key={level.id} 
-            className={`relative group transition-all duration-300 ${
-              level.isUnlocked ? 'opacity-100' : 'opacity-60 grayscale'
-            }`}
-          >
-            {/* Connector Line (Decorative) */}
-            {level.id !== levels.length && (
-              <div className="absolute left-8 top-16 bottom-[-24px] w-0.5 bg-border -z-10 group-last:hidden" />
-            )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {levels.map((level) => {
+          const isLocked = currentXP < level.requiredXp;
+          // Kalkulasi progress sederhana (mock)
+          const progress = isLocked ? 0 : currentXP > level.requiredXp + 250 ? 100 : 45; 
 
-            <Card className={`border-2 transition-all hover:shadow-lg ${
-              level.isUnlocked 
-                ? 'border-primary/20 hover:border-primary/50 cursor-pointer' 
-                : 'border-dashed bg-muted/50'
-            }`}>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-6">
-                  {/* Icon Status */}
-                  <div className={`
-                    shrink-0 h-16 w-16 rounded-2xl flex items-center justify-center shadow-sm
-                    ${level.isCompleted 
-                      ? 'bg-emerald-500/20 text-emerald-500' 
-                      : level.isUnlocked 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted text-muted-foreground'}
-                  `}>
-                    {level.isCompleted ? (
-                      <CheckCircle2 className="h-8 w-8" />
-                    ) : level.isUnlocked ? (
-                      <span className="text-2xl font-bold">{level.id}</span>
-                    ) : (
-                      <Lock className="h-8 w-8" />
-                    )}
+          return (
+            <Card key={level.id} className={`flex flex-col h-full transition-all duration-300 ${isLocked ? 'opacity-75 bg-muted/30' : 'hover:border-primary/50 hover:shadow-lg'}`}>
+              <CardHeader className="pb-4">
+                <div className="flex justify-between items-start">
+                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${level.image}`}>
+                    {level.icon}
                   </div>
-
-                  {/* Content */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-bold">{level.name}</h3>
-                      {level.isUnlocked && (
-                        <Badge variant={level.isCompleted ? "secondary" : "default"}>
-                          {level.isCompleted ? "Selesai" : "Sedang Berjalan"}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-muted-foreground">{level.description}</p>
-                    
-                    {/* Progress Bar inside card */}
-                    {level.isUnlocked && (
-                      <div className="space-y-1 mt-2">
-                        <div className="flex justify-between text-xs font-medium">
-                          <span>Progress</span>
-                          <span>{level.progress}%</span>
-                        </div>
-                        <Progress value={level.progress} className="h-2" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action Button */}
-                  <div className="self-center">
-                    {level.isUnlocked ? (
-                      <Link to={`/levels/${level.id}`}>
-                        <Button variant={level.isCompleted ? "outline" : "default"} className="h-10 w-10 p-0 rounded-full">
-                          <ChevronRight className="h-5 w-5" />
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Button variant="ghost" disabled size="icon">
-                        <Lock className="h-5 w-5" />
-                      </Button>
-                    )}
-                  </div>
+                  {isLocked ? (
+                     <Badge variant="outline" className="gap-1 bg-background text-muted-foreground border-dashed">
+                       <Lock className="h-3 w-3" /> {level.requiredXp} XP Needed
+                     </Badge>
+                  ) : (
+                     <Badge className="bg-emerald-500 hover:bg-emerald-600">Unlocked</Badge>
+                  )}
                 </div>
+                <CardTitle className="mt-4 text-xl">{level.title}</CardTitle>
+                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                  {level.description}
+                </p>
+              </CardHeader>
+              <CardContent className="pb-4 flex-1">
+                 {!isLocked ? (
+                   <div className="space-y-2 mt-2">
+                     <div className="flex justify-between text-xs font-medium">
+                       <span>Progress</span>
+                       <span>{progress}%</span>
+                     </div>
+                     <Progress value={progress} className="h-2" />
+                   </div>
+                 ) : (
+                   <div className="h-full flex items-center justify-center text-sm text-muted-foreground bg-muted/20 rounded-lg p-4 border border-dashed text-center">
+                     Kumpulkan {level.requiredXp - currentXP} XP lagi untuk membuka
+                   </div>
+                 )}
               </CardContent>
+              <CardFooter className="pt-0">
+                {isLocked ? (
+                  <Button variant="ghost" className="w-full gap-2 cursor-not-allowed" disabled>
+                    <Lock className="h-4 w-4" /> Terkunci
+                  </Button>
+                ) : (
+                  <Button className="w-full gap-2 group" asChild>
+                    <Link to={`/level/${level.id}`}>
+                      {progress === 100 ? 'Review Level' : 'Mulai Belajar'} 
+                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </Button>
+                )}
+              </CardFooter>
             </Card>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

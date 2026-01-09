@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Zap, 
-  Trophy, 
   PlayCircle, 
   ChevronRight,
   Flame,
@@ -12,6 +11,8 @@ import {
   BookOpen
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -123,13 +124,12 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* Row 2: Badges & Leaderboard (Moved from Sidebar) */}
+          {/* Row 2: Badges & TotalXP (Moved from Sidebar) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Badges Widget */}
-            <Card className="bg-gradient-to-br from-indigo-500/5 to-purple-500/5 h-full">
+            <Card className="h-full">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-indigo-400" />
                   Badges Owned
                 </CardTitle>
                 <Link to="/profile" className="text-xs text-primary hover:underline">View All</Link>
@@ -159,35 +159,8 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Leaderboard Widget */}
-            <Card className="h-full">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">Top Learners</CardTitle>
-                <Link to="/leaderboard" className="text-xs text-primary hover:underline">View All</Link>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                  {[
-                    { name: 'AlexCode', xp: 2500, rank: 1 },
-                    { name: 'SarahDev', xp: 2350, rank: 2 },
-                    { name: 'You', xp: user?.totalXp || 0, rank: 5, active: true },
-                    { name: 'JohnDoe', xp: 1200, rank: 6 },
-                  ].map((p, i) => (
-                    <div key={i} className={`flex items-center justify-between p-2 rounded-lg ${p.active ? 'bg-primary/10 border border-primary/20' : ''}`}>
-                      <div className="flex items-center gap-3">
-                        <span className={`font-bold w-6 text-center ${p.rank <= 3 ? 'text-amber-500' : 'text-muted-foreground'}`}>#{p.rank}</span>
-                        <span className="text-sm font-medium">{p.name}</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">{p.xp} XP</span>
-                    </div>
-                  ))}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* 4. SIDEBAR WIDGETS */}
-        <div className="grid grid-cols-1 lg:col-span-4 space-y-6">
-          <Card className="top-6">
+            {/* TotalXP Widget */}
+            <Card className="top-6">
             <CardHeader>
               <CardTitle className="text-lg">Level & XP</CardTitle>
             </CardHeader>
@@ -211,6 +184,59 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+          </div>
+        </div>
+
+        {/* 4. SIDEBAR WIDGETS */}
+        <div className="grid grid-cols-1 lg:col-span-4 space-y-6">
+          
+          <Card className="h-full flex flex-col">
+              <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
+                <CardTitle className="text-lg">Top Learners</CardTitle>
+                <div className="flex gap-2">
+                   <Select defaultValue="weekly">
+                    <SelectTrigger className="w-[100px] h-8 text-xs">
+                      <SelectValue placeholder="Time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="all_time">All Time</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4 flex-1">
+                  {[
+                    { name: 'AlexCode', xp: 2500, rank: 1, avatar: 'AC' },
+                    { name: 'SarahDev', xp: 2350, rank: 2, avatar: 'SD' },
+                    { name: 'JohnDoe', xp: 1800, rank: 3, avatar: 'JD' },
+                    { name: 'You', xp: user?.totalXp || 0, rank: 5, active: true, avatar: 'ME' },
+                    { name: 'ReactFan', xp: 1200, rank: 6, avatar: 'RF' },
+                  ].map((p, i) => (
+                    <div key={i} className={`flex items-center gap-3 p-2 rounded-xl transition-colors ${p.active ? 'bg-primary/10 border border-primary/20' : 'hover:bg-secondary/50 border border-transparent'}`}>
+                      <div className={`font-bold w-6 text-center text-sm ${p.rank <= 3 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                        {p.rank <= 3 ? ['🥇', '🥈', '🥉'][p.rank-1] : `#${p.rank}`}
+                      </div>
+                      <Avatar className="h-8 w-8 border border-border">
+                        <AvatarFallback className="text-xs bg-muted">{p.avatar}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-bold truncate ${p.active ? 'text-primary' : ''}`}>
+                          {p.name}
+                        </p>
+                        <div className="h-1.5 w-full bg-secondary rounded-full mt-1 overflow-hidden">
+                           <div className="h-full bg-primary/60 rounded-full" style={{ width: `${(p.xp / 3000) * 100}%` }} />
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono font-bold">{p.xp}</span>
+                    </div>
+                  ))}
+                  <Link to="/leaderboard" className="block text-center text-xs text-muted-foreground hover:text-primary mt-4 transition-colors">
+                    Lihat Leaderboard Lengkap &rarr;
+                  </Link>
+              </CardContent>
+            </Card>
 
         </div>
       </div>

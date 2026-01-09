@@ -12,17 +12,18 @@ import LoginPage from '@/pages/public/LoginPage';
 // User Pages
 import DashboardPage from '@/pages/user/DashboardPage';
 import LevelPage from '@/pages/user/LevelPage';
+import LevelDetailPage from '@/pages/user/LevelDetailPage';
 import LeaderboardPage from '@/pages/user/LeaderboardPage';
 import ProfilePage from '@/pages/user/ProfilePage';
 
 // Admin Pages
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import AdminUsersPage from '@/pages/admin/AdminUsersPage';
-import AdminLevelsPage from '@/pages/admin/AdminLevelsPage';
-import AdminMaterialsPage from '@/pages/admin/AdminMaterialsPage';
-import AdminChallengesPage from '@/pages/admin/AdminChallengesPage';
+import AdminLevelsPage from '@/pages/dosen/AdminLevelsPage';
+import AdminMaterialsPage from '@/pages/dosen/AdminMaterialsPage';
+import AdminChallengesPage from '@/pages/dosen/AdminChallengesPage';
 import AdminLogsPage from '@/pages/admin/AdminLogsPage';
-import AdminLeaderboardPage from '@/pages/admin/AdminLeaderboardPage';
+import AdminLeaderboardPage from '@/pages/public/AdminLeaderboardPage';
 
 /**
  * Route Configuration
@@ -73,6 +74,10 @@ const router = createBrowserRouter([
       {
         path: '/level',
         element: <LevelPage />,
+      },
+      {
+        path: '/level/:levelId',
+        element: <LevelDetailPage />,
       },
       {
         path: '/leaderboard',

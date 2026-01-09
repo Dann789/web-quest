@@ -81,7 +81,7 @@ export default function MainLayout() {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-1">
+            <div className="hidden md:flex items-center gap-2">
               {navItems.map(({ path, label, icon: Icon }) => (
                 <Link key={path} to={path}>
                   <Button
