@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 import AuthLayout from '@/layouts/AuthLayout';
+import FullscreenLayout from '@/layouts/FullscreenLayout';
 
 // Public Pages
 import LandingPage from '@/pages/public/LandingPage';
@@ -76,10 +77,6 @@ const router = createBrowserRouter([
         element: <LevelPage />,
       },
       {
-        path: '/level/:levelId',
-        element: <LevelDetailPage />,
-      },
-      {
         path: '/leaderboard',
         element: <LeaderboardPage />,
       },
@@ -91,6 +88,17 @@ const router = createBrowserRouter([
       // /levels/:levelId         → Level Detail
       // /levels/:levelId/material → Material Page
       // /levels/:levelId/challenges/:id → Challenge Workspace
+    ],
+  },
+  
+  // ===== FULLSCREEN ROUTES (Protected) =====
+  {
+    element: <FullscreenLayout />,
+    children: [
+      {
+        path: '/level/:levelId',
+        element: <LevelDetailPage />,
+      },
     ],
   },
 

@@ -1,10 +1,16 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Navbar from "./components/common/Navbar";
+import { BrowserRouter as Router } from "react-router-dom";
+
 import "./App.css";
+import AppRouter from "./routes";
 
 function App() {
   return (
-    <div></div>
+    <Router>
+      <div className="min-h-screen bg-slate-900 text-white font-sans selection:bg-blue-500 selection:text-white">
+
+        <AppRouter />
+      </div>
+    </Router>
   );
 }
 
