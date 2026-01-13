@@ -13,7 +13,8 @@ import LoginPage from '@/pages/public/LoginPage';
 // User Pages
 import DashboardPage from '@/pages/user/DashboardPage';
 import LevelPage from '@/pages/user/LevelPage';
-import LevelDetailPage from '@/pages/user/LevelDetailPage';
+import LevelDetailPage from '@/pages/user/LevelMapPage';
+import ChallengePage from '@/pages/user/ChallengePage';
 import LeaderboardPage from '@/pages/user/LeaderboardPage';
 import ProfilePage from '@/pages/user/ProfilePage';
 
@@ -98,6 +99,10 @@ const router = createBrowserRouter([
       {
         path: '/level/:levelId',
         element: <LevelDetailPage />,
+      },
+      {
+        path: '/challenge/:challengeId',
+        element: <ChallengePage />,
       },
     ],
   },
