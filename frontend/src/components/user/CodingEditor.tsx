@@ -1,4 +1,4 @@
-import { Code2 } from 'lucide-react';
+import { useRef, useEffect, useState } from 'react';
 
 interface CodingEditorProps {
   code: string;
@@ -6,23 +6,36 @@ interface CodingEditorProps {
   title?: string;
 }
 
-export default function CodingEditor({ code, onChange, title = "index.html" }: CodingEditorProps) {
+export default function CodingEditor({ code, onChange }: CodingEditorProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [lineCount, setLineCount] = useState(1);
+
+  useEffect(() => {
+    const lines = code.split('\n').length;
+    setLineCount(Math.max(lines, 15));
+  }, [code]);
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="bg-slate-950 text-xs text-slate-400 px-4 py-2 border-b border-slate-800 flex justify-between items-center">
-        <span className="flex items-center gap-2">
-          <Code2 size={14} className="text-indigo-400"/>
-          {title}
-        </span>
-        <span className="text-slate-600">Code Editor</span>
+    <div className="flex h-full font-mono text-sm bg-slate-950">
+      {/* Line Numbers */}
+      <div className="w-12 bg-slate-900/50 text-slate-600 text-right py-4 pr-3 select-none border-r border-slate-800/50">
+        {Array.from({ length: lineCount }, (_, i) => (
+          <div key={i} className="leading-6 text-xs">
+            {i + 1}
+          </div>
+        ))}
       </div>
-      <div className="flex-1 relative font-mono text-sm bg-slate-950">
+      
+      {/* Code Editor */}
+      <div className="flex-1 relative">
         <textarea
+          ref={textareaRef}
           value={code}
           onChange={(e) => onChange(e.target.value)}
-          className="absolute inset-0 w-full h-full bg-transparent text-slate-300 p-4 resize-none focus:outline-none focus:ring-0 leading-relaxed z-10"
+          className="absolute inset-0 w-full h-full bg-transparent text-slate-300 p-4 resize-none focus:outline-none focus:ring-0 leading-6"
           spellCheck={false}
-          placeholder="// Tulis kode HTML kamu di sini..."
+          placeholder="/* TODO: Add your code below */"
+          style={{ tabSize: 2 }}
         />
       </div>
     </div>

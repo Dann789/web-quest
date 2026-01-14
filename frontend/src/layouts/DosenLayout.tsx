@@ -2,7 +2,6 @@ import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   LayoutDashboard, 
-  Users, 
   Layers, 
   FileText, 
   Puzzle, 
@@ -11,52 +10,58 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Zap
+  Zap,
+  User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * AdminLayout - Layout untuk halaman Admin
- * 
- * Struktur:
- * ┌──────────┬───────────────────────────┐
- * │          │         HEADER            │
- * │ SIDEBAR  ├───────────────────────────┤
- * │          │                           │
- * │          │         CONTENT           │
- * │          │        (Outlet)           │
- * │          │                           │
- * └──────────┴───────────────────────────┘
+ * DosenLayout - Layout untuk halaman Dosen
  */
 
 // Sidebar navigation items
 const sidebarItems = [
   { 
-    path: '/admin', 
+    path: '/dosen', 
     label: 'Dashboard', 
     icon: LayoutDashboard,
     exact: true 
   },
   { 
-    path: '/admin/users', 
-    label: 'Manajemen User', 
-    icon: Users 
+    path: '/dosen/levels', 
+    label: 'Manajemen Level', 
+    icon: Layers 
   },
   { 
-    path: '/admin/logs', 
+    path: '/dosen/materials', 
+    label: 'Manajemen Materi', 
+    icon: FileText 
+  },
+  { 
+    path: '/dosen/challenges', 
+    label: 'Manajemen Soal', 
+    icon: Puzzle 
+  },
+  { 
+    path: '/dosen/logs', 
     label: 'Log Aktivitas', 
     icon: Activity 
   },
   { 
-    path: '/admin/leaderboard', 
+    path: '/dosen/leaderboard', 
     label: 'Leaderboard', 
     icon: Trophy 
   },
+  { 
+    path: '/dosen/profile', 
+    label: 'Profile Dosen', 
+    icon: User 
+  },
 ];
 
-export default function AdminLayout() {
+export default function DosenLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -75,8 +80,10 @@ export default function AdminLayout() {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Redirect non-admin users to user dashboard
-  if (user?.role !== 'ADMIN') {
+  // Redirect non-dosen users
+  // Note: Adjust role check as needed, e.g. 'DOSEN' or 'ADMIN' might also access? 
+  // Assuming 'DOSEN' role exists based on schema.
+  if (user?.role !== 'DOSEN' && user?.role !== 'ADMIN') {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -99,11 +106,11 @@ export default function AdminLayout() {
         {/* Logo */}
         <div className="flex h-16 items-center justify-between px-4 border-b border-border">
           {!sidebarCollapsed && (
-            <Link to="/admin" className="flex items-center gap-2">
+            <Link to="/dosen" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
                 <Zap className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="font-bold text-lg">Admin Web Quest</span>
+              <span className="font-bold text-lg">Dosen Web Quest</span>
             </Link>
           )}
           {sidebarCollapsed && (
@@ -134,22 +141,6 @@ export default function AdminLayout() {
 
         {/* Bottom Section */}
         <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-border">
-          {/* Collapse Toggle */}
-          {/* <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-center mb-2"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            {sidebarCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                <span>Collapse</span>
-              </>
-            )}
-          </Button> */}
 
           {/* Logout Button */}
           <Button
@@ -177,7 +168,7 @@ export default function AdminLayout() {
         {/* Header */}
         <header className="sticky top-0 z-30 h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex h-full items-center justify-between px-6">
-            {/* Page Title - akan diisi dari setiap page */}
+            {/* Page Title */}
             <div></div>
 
             {/* User Info */}

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { PlayCircle, Lock, CheckCircle, BookOpen, ChevronLeft } from 'lucide-react';
+import { PlayCircle, Lock, CheckCircle, BookOpen, ChevronLeft, Code2, Bug, GripVertical, LayoutTemplate } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import MaterialModal from './MaterialPage';
 import { getLevelData } from '@/mocks/levelMockData';
@@ -178,24 +178,36 @@ export default function LevelMapPage() {
 
 function ChallengeNode({ node, index, colorClass }: { node: any, index: number, colorClass: string }) {
     let bg = 'bg-slate-800 border-slate-700 text-slate-400';
-    let content = <Lock size={14} />;
     let shadow = '';
+    
+    // Get icon based on challenge type
+    const getTypeIcon = () => {
+        switch (node.type) {
+            case 'coding': return <Code2 size={16} />;
+            case 'fix-bug': return <Bug size={16} />;
+            case 'drag-drop': return <GripVertical size={16} />;
+            case 'scenario': return <LayoutTemplate size={16} />;
+            default: return <Code2 size={16} />;
+        }
+    };
+    
+    let content = <Lock size={14} />;
     
     // Styling states
     if (node.status === 'completed') {
         if (colorClass === 'emerald') bg = 'bg-emerald-500 border-emerald-600 text-white';
         if (colorClass === 'amber') bg = 'bg-amber-500 border-amber-600 text-white';
         if (colorClass === 'red') bg = 'bg-red-500 border-red-600 text-white';
-        content = <CheckCircle size={16} strokeWidth={3} />;
+        content = <CheckCircle size={18} strokeWidth={2.5} />;
         shadow = 'shadow-md scale-100';
     } else if (node.status === 'unlocked') {
-         // Current Active Node Style
-         bg = 'bg-slate-900 border-4 animate-bounce-slow';
-         if (colorClass === 'emerald') bg += ' border-emerald-500 text-emerald-600';
-         if (colorClass === 'amber') bg += ' border-amber-500 text-amber-600';
-         if (colorClass === 'red') bg += ' border-red-500 text-red-600';
-         content = <PlayCircle size={20} fill="currentColor" className="text-inherit" />;
-         shadow = 'shadow-[0_0_20px_rgba(0,0,0,0.15)] scale-110 z-10';
+         // Current Active Node Style - Show type icon
+         bg = 'bg-slate-900 border-4';
+         if (colorClass === 'emerald') bg += ' border-emerald-500 text-emerald-400';
+         if (colorClass === 'amber') bg += ' border-amber-500 text-amber-400';
+         if (colorClass === 'red') bg += ' border-red-500 text-red-400';
+         content = getTypeIcon();
+         shadow = 'shadow-[0_0_20px_rgba(0,0,0,0.15)] scale-110 z-10 hover:scale-125 transition-transform';
     }
 
     const nodeElement = (
@@ -206,9 +218,8 @@ function ChallengeNode({ node, index, colorClass }: { node: any, index: number, 
         )}>
             {content}
             
-            {/* Connection Line to next node (Visual only, simple CSS) */}
-            
-            {node.status !== 'locked' && node.status !== 'completed' && (
+            {/* Pulse indicator for unlocked nodes */}
+            {node.status === 'unlocked' && (
                 <div className="absolute -top-1 -right-1 flex h-3 w-3">
                   <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${colorClass === 'emerald' ? 'bg-emerald-400' : colorClass === 'amber' ? 'bg-amber-400' : 'bg-red-400'}`}></span>
                   <span className={`relative inline-flex rounded-full h-3 w-3 ${colorClass === 'emerald' ? 'bg-emerald-500' : colorClass === 'amber' ? 'bg-amber-500' : 'bg-red-500'}`}></span>
@@ -216,6 +227,17 @@ function ChallengeNode({ node, index, colorClass }: { node: any, index: number, 
             )}
         </div>
     );
+
+    // Get type label
+    const getTypeLabel = () => {
+        switch (node.type) {
+            case 'coding': return 'Coding';
+            case 'fix-bug': return 'Fix Bug';
+            case 'drag-drop': return 'Drag & Drop';
+            case 'scenario': return 'Skenario';
+            default: return 'Challenge';
+        }
+    };
 
     return (
         <TooltipProvider>
@@ -229,10 +251,15 @@ function ChallengeNode({ node, index, colorClass }: { node: any, index: number, 
                         nodeElement
                     )}
                 </TooltipTrigger>
-                <TooltipContent>
-                    <div className="text-center">
-                        <p className="font-bold">{node.title || `Challenge ${index + 1}`}</p>
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground">{node.xp} XP</p>
+                <TooltipContent className="bg-slate-900 border-slate-700">
+                    <div className="text-center space-y-1">
+                        <p className="font-bold text-white">{node.title || `Challenge ${index + 1}`}</p>
+                        <div className="flex items-center justify-center gap-2">
+                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">
+                                {getTypeLabel()}
+                            </Badge>
+                            <span className="text-[10px] font-bold text-yellow-400">⚡ {node.xp} XP</span>
+                        </div>
                     </div>
                 </TooltipContent>
             </Tooltip>

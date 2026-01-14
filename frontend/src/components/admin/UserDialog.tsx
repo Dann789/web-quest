@@ -134,12 +134,12 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? 'Edit User' : 'Create New User'}
+            {isEditMode ? 'Edit User' : 'Buat User Baru'}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? 'Update user information. Leave password empty to keep existing password.'
-              : 'Add a new user to the system. All fields are required.'}
+              ? 'Update informasi user. Kosongkan password jika tidak ingin diubah.'
+              : 'Tambah user baru ke dalam sistem'}
           </DialogDescription>
         </DialogHeader>
 
@@ -154,11 +154,11 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
 
             {/* Username */}
             <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Nama</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Enter username"
+                placeholder="Masukkan nama"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 disabled={isLoading}
@@ -174,7 +174,7 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter email"
+                placeholder="Masukkan email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 disabled={isLoading}
@@ -190,7 +190,7 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder={isEditMode ? 'Leave empty to keep current' : 'Enter password'}
+                  placeholder={isEditMode ? 'Kosongi jika tidak diubah' : 'Masukkan password'}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   disabled={isLoading}
@@ -219,7 +219,7 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
                 disabled={isLoading}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
+                  <SelectValue placeholder="Pilih role" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="USER">User (Mahasiswa)</SelectItem>
@@ -245,7 +245,7 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
                   {isEditMode ? 'Updating...' : 'Creating...'}
                 </>
               ) : (
-                <>{isEditMode ? 'Update User' : 'Create User'}</>
+                <>{isEditMode ? 'Perbarui User' : 'Buat User'}</>
               )}
             </Button>
           </DialogFooter>

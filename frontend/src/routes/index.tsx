@@ -18,14 +18,24 @@ import ChallengePage from '@/pages/user/ChallengePage';
 import LeaderboardPage from '@/pages/user/LeaderboardPage';
 import ProfilePage from '@/pages/user/ProfilePage';
 
+// Dosen Pages
+import DosenLayout from '@/layouts/DosenLayout';
+import DosenDashboard from '@/pages/dosen/DosenDashboard';
+import LevelsManagement from '@/pages/dosen/LevelsManagement';
+import MaterialsManagement from '@/pages/dosen/MaterialsManagement';
+import ChallengeManagement from '@/pages/dosen/ChallengeManagement';
+import DosenLogsPage from '@/pages/dosen/DosenLogsPage';
+import DosenLeaderboardPage from '@/pages/dosen/DosenLeaderboardPage';
+import DosenProfilePage from '@/pages/dosen/DosenProfilePage';
+
 // Admin Pages
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import AdminUsersPage from '@/pages/admin/AdminUsersPage';
-import AdminLevelsPage from '@/pages/dosen/AdminLevelsPage';
-import AdminMaterialsPage from '@/pages/dosen/AdminMaterialsPage';
-import AdminChallengesPage from '@/pages/dosen/AdminChallengesPage';
+import AdminLevelsPage from '@/pages/dosen/LevelsManagement'; // Reusing/Aliasing for legacy if needed
+import AdminMaterialsPage from '@/pages/dosen/MaterialsManagement';
+import AdminChallengesPage from '@/pages/dosen/ChallengeManagement';
 import AdminLogsPage from '@/pages/admin/AdminLogsPage';
-import AdminLeaderboardPage from '@/pages/public/AdminLeaderboardPage';
+import AdminLeaderboardPage from '@/pages/admin/AdminLeaderboardPage';
 
 /**
  * Route Configuration
@@ -107,6 +117,41 @@ const router = createBrowserRouter([
     ],
   },
 
+  // ===== DOSEN ROUTES (Protected) =====
+  {
+    element: <DosenLayout />,
+    children: [
+      {
+        path: '/dosen',
+        element: <DosenDashboard />,
+      },
+      {
+        path: '/dosen/levels',
+        element: <LevelsManagement />,
+      },
+      {
+        path: '/dosen/materials',
+        element: <MaterialsManagement />,
+      },
+      {
+        path: '/dosen/challenges',
+        element: <ChallengeManagement />,
+      },
+      {
+        path: '/dosen/logs',
+        element: <DosenLogsPage />,
+      },
+      {
+        path: '/dosen/leaderboard',
+        element: <DosenLeaderboardPage />,
+      },
+      {
+        path: '/dosen/profile',
+        element: <DosenProfilePage />,
+      },
+    ],
+  },
+
   // ===== ADMIN ROUTES (Protected) =====
   {
     element: <AdminLayout />,
@@ -119,6 +164,7 @@ const router = createBrowserRouter([
         path: '/admin/users',
         element: <AdminUsersPage />,
       },
+      // Admin Content Routes (Optional/Legacy)
       {
         path: '/admin/levels',
         element: <AdminLevelsPage />,

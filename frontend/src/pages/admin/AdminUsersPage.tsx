@@ -177,7 +177,7 @@ export default function AdminUsersPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <Users className="h-8 w-8" />
-            User Management
+            Manajemen User
           </h1>
           <p className="text-muted-foreground mt-3">
             Kelola data pengguna sistem
@@ -185,20 +185,20 @@ export default function AdminUsersPage() {
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
-          Add User
+          Tambah User
         </Button>
       </div>
       {/* Table Card */}
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle>All Users</CardTitle>
+            <CardTitle>Semua User</CardTitle>
             <div className="flex items-center gap-2">
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search users..."
+                  placeholder="Cari user..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 w-64"
@@ -241,7 +241,7 @@ export default function AdminUsersPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>No</TableHead>
-                    <TableHead>Username</TableHead>
+                    <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>XP</TableHead>
                     <TableHead>Created</TableHead>
@@ -282,7 +282,7 @@ export default function AdminUsersPage() {
                               className="text-destructive focus:text-destructive"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
+                              Hapus
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

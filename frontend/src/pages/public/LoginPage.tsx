@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Eye, EyeOff, User, Lock, ArrowRight, Zap } from 'lucide-react';
+import { Loader2, Eye, EyeOff, User, Lock, ArrowRight } from 'lucide-react';
 
 /**
  * Login Page - Split layout with branding and form
@@ -19,7 +18,6 @@ export default function LoginPage() {
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 

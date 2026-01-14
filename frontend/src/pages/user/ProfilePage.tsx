@@ -1,13 +1,22 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Zap, Trophy, Award, Calendar } from 'lucide-react';
+import { User, Zap, Trophy, Award, Calendar, Edit } from 'lucide-react';
+import { EditProfileDialog } from '@/components/user/EditProfileDialog';
 
 /**
  * Profile Page - Menampilkan profil dan badges user
  */
 export default function ProfilePage() {
   const { user } = useAuth();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
+  const handleEditProfile = (data: any) => {
+    console.log('Profile updated:', data);
+    // Here you would call the update profile API
+  };
 
   // Placeholder badges data
   const badges = [
@@ -49,15 +58,22 @@ export default function ProfilePage() {
             </div>
 
             {/* User Info */}
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold">{user?.username}</h2>
-              <p className="text-muted-foreground">{user?.email}</p>
-              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>Bergabung sejak {new Date(user?.createdAt || '').toLocaleDateString('id-ID', { 
-                  year: 'numeric', 
-                  month: 'long' 
-                })}</span>
+            <div className="flex-1 space-y-2">
+              <div>
+                <h2 className="text-2xl font-bold">{user?.username}</h2>
+                <p className="text-muted-foreground">{user?.email}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>Bergabung sejak {new Date(user?.createdAt || '').toLocaleDateString('id-ID', { 
+                    year: 'numeric', 
+                    month: 'long' 
+                  })}</span>
+                </div>
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsEditOpen(true)}>
+                   <Edit className="h-3 w-3" /> Edit Profil
+                </Button>
               </div>
             </div>
 
@@ -71,6 +87,13 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      <EditProfileDialog 
+        open={isEditOpen} 
+        onOpenChange={setIsEditOpen} 
+        user={user} 
+        onSave={handleEditProfile} 
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
  * Admin Activity Logs Page (Monitoring Progress)
  * Menampilkan status materi, challenge, progress, dan XP user
  */
-export default function AdminLogsPage() {
+export default function DosenLogsPage() {
   const [levelFilter, setLevelFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -24,7 +24,7 @@ export default function AdminLogsPage() {
       username: 'AlexCode', 
       avatar: 'AC',
       materialStatus: 'completed', 
-      challenges: { easy: 5, medium: 10, hard: 3},
+      challenges: { easy: 5, medium: 3, hard: 1 },
       progress: 100,
       totalXp: 3200,
       currentLevel: 'HTML Basics'
@@ -90,10 +90,10 @@ export default function AdminLogsPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <Activity className="h-8 w-8 text-primary" />
-            Log Aktivitas
+            Log Aktivitas Mahasiswa
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Monitoring progress belajar dan pencapaian user
+          <p className="text-muted-foreground mt-2">
+            Monitoring progress belajar dan pencapaian mahasiswa
           </p>
         </div>
       </div>
