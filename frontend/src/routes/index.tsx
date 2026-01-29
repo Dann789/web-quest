@@ -9,13 +9,13 @@ import FullscreenLayout from '@/layouts/FullscreenLayout';
 // Public Pages
 import LandingPage from '@/pages/public/LandingPage';
 import LoginPage from '@/pages/public/LoginPage';
+import LeaderboardPage from '@/pages/public/LeaderboardPage';
 
 // User Pages
 import DashboardPage from '@/pages/user/DashboardPage';
 import LevelPage from '@/pages/user/LevelPage';
 import LevelDetailPage from '@/pages/user/LevelMapPage';
 import ChallengePage from '@/pages/user/ChallengePage';
-import LeaderboardPage from '@/pages/user/LeaderboardPage';
 import ProfilePage from '@/pages/user/ProfilePage';
 
 // Dosen Pages
@@ -25,17 +25,15 @@ import LevelsManagement from '@/pages/dosen/LevelsManagement';
 import MaterialsManagement from '@/pages/dosen/MaterialsManagement';
 import ChallengeManagement from '@/pages/dosen/ChallengeManagement';
 import DosenLogsPage from '@/pages/dosen/DosenLogsPage';
-import DosenLeaderboardPage from '@/pages/dosen/DosenLeaderboardPage';
 import DosenProfilePage from '@/pages/dosen/DosenProfilePage';
 
 // Admin Pages
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import AdminUsersPage from '@/pages/admin/AdminUsersPage';
-import AdminLevelsPage from '@/pages/dosen/LevelsManagement'; // Reusing/Aliasing for legacy if needed
+import AdminLevelsPage from '@/pages/dosen/LevelsManagement';
 import AdminMaterialsPage from '@/pages/dosen/MaterialsManagement';
 import AdminChallengesPage from '@/pages/dosen/ChallengeManagement';
 import AdminLogsPage from '@/pages/admin/AdminLogsPage';
-import AdminLeaderboardPage from '@/pages/admin/AdminLeaderboardPage';
 
 /**
  * Route Configuration
@@ -143,7 +141,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/dosen/leaderboard',
-        element: <DosenLeaderboardPage />,
+        element: <LeaderboardPage />,
       },
       {
         path: '/dosen/profile',
@@ -183,7 +181,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/admin/leaderboard',
-        element: <AdminLeaderboardPage />,
+        element: <LeaderboardPage />,
       },
     ],
   },
