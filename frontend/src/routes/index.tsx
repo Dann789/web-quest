@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
@@ -7,7 +7,6 @@ import AuthLayout from '@/layouts/AuthLayout';
 import FullscreenLayout from '@/layouts/FullscreenLayout';
 
 // Public Pages
-import LandingPage from '@/pages/public/LandingPage';
 import LoginPage from '@/pages/public/LoginPage';
 import LeaderboardPage from '@/pages/public/LeaderboardPage';
 
@@ -59,7 +58,7 @@ const router = createBrowserRouter([
   // ===== PUBLIC ROUTES =====
   {
     path: '/',
-    element: <LandingPage />,
+    element: <Navigate to={'/login'} replace/>,
   },
 
   // ===== AUTH ROUTES =====

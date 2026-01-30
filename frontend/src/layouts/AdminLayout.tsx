@@ -3,14 +3,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   LayoutDashboard, 
   Users, 
-  Layers, 
-  FileText, 
-  Puzzle, 
   Activity, 
   Trophy,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -134,23 +129,6 @@ export default function AdminLayout() {
 
         {/* Bottom Section */}
         <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-border">
-          {/* Collapse Toggle */}
-          {/* <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-center mb-2"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            {sidebarCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                <span>Collapse</span>
-              </>
-            )}
-          </Button> */}
-
           {/* Logout Button */}
           <Button
             variant="ghost"
