@@ -1,246 +1,269 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  Zap, 
-  PlayCircle, 
   ChevronRight,
   Flame,
-  CheckCircle,
-  BookOpen
+  BookOpen,
+  Code,
+  CodeXml,
+  TrendingUp,
+  Medal,
+  BookOpenText,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 export default function DashboardPage() {
   const { user } = useAuth();
 
-  // Mock Data (Nantinya dari API)
+  // Mock Data
   const currentLevel = {
     id: 2,
     name: 'CSS Styling',
-    progress: 45,
-    lastLesson: 'Flexbox Basics'
+    totalXp: 500,
+    currentXp: 350,
+    lastLesson: 'CSS Styling'
   };
 
+  const studyData = [
+    { day: 'Sen', minutes: 45 },
+    { day: 'Sel', minutes: 30 },
+    { day: 'Rab', minutes: 60 },
+    { day: 'Kam', minutes: 15 },
+    { day: 'Jum', minutes: 90 },
+    { day: 'Sab', minutes: 120 },
+    { day: 'Min', minutes: 45 },
+  ];
+
+  const stats = [
+    { 
+      label: 'Challenges Done', 
+      value: 24, 
+      sub: '+3 minggu ini',
+      icon: <Code className="w-5 h-5 text-blue-500" />,
+      bg: 'bg-blue-500/10',
+      border: 'hover:border-blue-500/50'
+    },
+    { 
+      label: 'Levels Completed', 
+      value: '1 / 5', 
+      sub: 'HTML Foundation Selesai',
+      icon: <BookOpen className="w-5 h-5 text-purple-500" />,
+      bg: 'bg-purple-500/10',
+      border: 'hover:border-purple-500/50'
+    },
+    { 
+      label: 'Badges Earned', 
+      value: 3, 
+      sub: 'Latest: Fast Learner',
+      icon: <Medal className="w-5 h-5 text-amber-500" />,
+      bg: 'bg-amber-500/10',
+      border: 'hover:border-amber-500/50'
+    },
+  ];
+
   return (
-    <div className="space-y-8 pb-10">
+    <div className=" space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      {/* 1. HERO SECTION: Welcome & Resume */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 1. TOP SECTION: Hero & Level Status */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        
+        {/* HERO CARD (66%) */}
         <div className="lg:col-span-2">
-          <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-primary/20 h-full relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <Zap className="w-64 h-64 text-primary rotate-12" />
+          <Card className="relative h-full overflow-hidden border-none shadow-2xl bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900">
+            {/* Background Effects */}
+            <div className="absolute top-0 right-0 px-10 pt-16  opacity-10">
+              <CodeXml className="w-64 h-64 text-white" />
             </div>
-            <CardContent className="p-8 relative z-10">
-              <div className="space-y-4">
-                <div>
-                  <h1 className="text-3xl font-bold tracking-tight">
-                    Selamat datang kembali, <span className="text-primary">{user?.username}</span>! 👋
-                  </h1>
-                  <p className="text-muted-foreground text-lg mt-2">
-                    Siap melanjutkan perjalanan menjadi Web Developer?
-                  </p>
+            <div className="absolute rounded-full -bottom-20 -left-20 w-60 h-60 bg-blue-500/20 blur-3xl"></div>
+            
+            <CardContent className="relative z-10 p-8 flex flex-col justify-between h-full">
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <div>
+                    <h1 className="text-3xl font-extrabold tracking-tight text-white">
+                      Hi, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300">{user?.username}</span>! 👋
+                    </h1>
+                    <p className="mt-2 text-indigo-200 text-xl font-semibold">
+                      Siap melanjutkan belajar pemrograman web dasar hari ini?
+                    </p>
+                    <p className="mt-2 text-indigo-200 text-md font-medium">
+                      Klik tombol di bawah atau pergi ke menu Level!
+                    </p>
+                  </div>
                 </div>
                 
-                <div className="bg-background/50 backdrop-blur-sm border p-4 rounded-xl inline-flex items-center gap-4 mt-4">
-                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                    <PlayCircle className="h-6 w-6 text-primary" />
+                <div className="inline-flex items-center gap-4 mt-6 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors cursor-pointer group">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+                    <BookOpenText className="w-5 h-5 text-blue-300" />
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Lanjutkan Terakhir:</p>
-                    <p className="font-bold">{currentLevel.lastLesson} <span className="text-muted-foreground font-normal">({currentLevel.name})</span></p>
+                  <div className="flex-1">
+                    <p className="text-xs text-indigo-300 uppercase tracking-wider">Lanjutkan Belajar</p>
+                    <p className="font-bold text-white group-hover:text-blue-200 transition-colors">{currentLevel.lastLesson}</p>
                   </div>
-                  <Button className="ml-4 gap-2">
-                    Lanjut Belajar <ChevronRight className="h-4 w-4" />
-                  </Button>
+                  <ChevronRight className="w-5 h-5 text-white/50 group-hover:translate-x-1 transition-transform" />
+                </div>
+                {/* Daily Streak Badge */}
+                <div className="flex items-center w-fit gap-2 px-3 py-1.5 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md">
+                  <Flame className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
+                  <span className="text-xs font-bold text-orange-200">3 Days Streak</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* 2. STATS WIDGET: Login Streak */}
+        {/* LEVEL & XP CARD (33%) - Moved Here */}
         <div className="lg:col-span-1">
-          <Card className="h-full flex flex-col justify-center relative overflow-hidden">
+          <Card className="h-full flex flex-col justify-center relative overflow-hidden group hover:border-primary/50 transition-all">
              <CardHeader className="pb-2">
-               <CardTitle className="flex items-center gap-2">
-                 <Flame className="h-5 w-5 text-orange-500" />
-                 Daily Streak
+               <CardTitle className="flex justify-between items-center text-lg">
+                 <span>Level Saat ini</span>
+                 <TrendingUp className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                </CardTitle>
-               <CardDescription>Konsistensi adalah kunci!</CardDescription>
              </CardHeader>
              <CardContent>
-               <div className="text-4xl font-bold mb-2">3 <span className="text-lg font-normal text-muted-foreground">Hari</span></div>
-               <Progress value={60} className="h-2 mb-2" />
-               <p className="text-xs text-muted-foreground">Login besok untuk mencapai streak 4 hari!</p>
+               <div className="text-center mb-6">
+                 <div className="mx-auto w-20 h-20 flex items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/20 group-hover:scale-110 group-hover:ring-primary/40 transition-all duration-500 mb-3">
+                    <span className="text-3xl font-black text-primary">{currentLevel.id}</span>
+                 </div>
+                 <h3 className="font-bold text-xl">{currentLevel.name}</h3>
+                 <p className="text-xs text-muted-foreground mt-1">Level Selanjutnya: Javascript Logic</p>
+               </div>
+
+               <div className="space-y-2">
+                 <div className="flex justify-between text-xs font-medium">
+                   <span className="text-muted-foreground">XP Progress</span>
+                   <span className="text-primary">{currentLevel.currentXp} / {currentLevel.totalXp}</span>
+                 </div>
+                 <div className="h-3 bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full" 
+                      style={{ width: `${(currentLevel.currentXp / currentLevel.totalXp) * 100}%` }} 
+                    />
+                 </div>
+                 <p className="text-[10px] text-right text-muted-foreground">
+                   +150 XP to level up
+                 </p>
+               </div>
              </CardContent>
           </Card>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* 3. MAIN CONTENT (Stats & Details) */}
-        <div className="lg:col-span-8 space-y-6">
-          
-          {/* Row 1: Overview Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="hover:border-primary/50 transition-colors">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 rounded-2xl bg-amber-500/20 flex items-center justify-center shrink-0">
-                    <CheckCircle className="h-8 w-8 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Challenges Done</p>
-                    <h3 className="text-3xl font-bold mt-1">24</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      +3 dari minggu lalu
-                    </p>
-                  </div>
+      {/* 2. THREE CORE STATS (Challenges, Levels, Badges) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {stats.map((stat, i) => (
+          <Card key={i} className={`group transition-all duration-300 hover:shadow-lg ${stat.border}`}>
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                <div className="flex items-end gap-2 mt-1">
+                  <h3 className="text-3xl font-bold">{stat.value}</h3>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:border-primary/50 transition-colors">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 rounded-2xl bg-blue-500/20 flex items-center justify-center shrink-0">
-                    <BookOpen className="h-8 w-8 text-blue-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Levels Completed</p>
-                    <h3 className="text-3xl font-bold mt-1">1 <span className="text-lg text-muted-foreground font-normal">/ 5</span></h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      HTML Foundation selesai
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Row 2: Badges & TotalXP (Moved from Sidebar) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Badges Widget */}
-            <Card className="h-full">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  Badges Owned
-                </CardTitle>
-                <Link to="/profile" className="text-xs text-primary hover:underline">View All</Link>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { icon: '🌟', name: 'First Step', color: 'bg-yellow-500/20' },
-                    { icon: '🚀', name: 'Fast Learner', color: 'bg-blue-500/20' },
-                    { icon: '🔥', name: 'On Fire', color: 'bg-red-500/20' },
-                  ].map((badge, i) => (
-                    <div key={i} className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-1 p-2 ${badge.color} border border-white/5`} title={badge.name}>
-                      <div className="text-2xl">{badge.icon}</div>
-                    </div>
-                  ))}
-                  {/* Empty slots */}
-                  <div className="aspect-square rounded-xl border border-dashed border-muted-foreground/30 flex items-center justify-center">
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground/30" />
-                  </div>
-                  <div className="aspect-square rounded-xl border border-dashed border-muted-foreground/30 flex items-center justify-center">
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground/30" />
-                  </div>
-                  <div className="aspect-square rounded-xl border border-dashed border-muted-foreground/30 flex items-center justify-center">
-                    <span className="text-xs text-muted-foreground">+3</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* TotalXP Widget */}
-            <Card className="top-6">
-            <CardHeader>
-              <CardTitle className="text-lg">Level & XP</CardTitle>
-            </CardHeader>
-            <CardContent className="">
-              <div className="text-center mb-6">
-                <div className="inline-block p-4 rounded-full bg-primary/10 mb-2">
-                   <Zap className="h-8 w-8 text-primary" />
-                </div>
-                <div className="text-3xl font-bold">{user?.totalXp.toLocaleString()} XP</div>
-                <p className="text-sm text-muted-foreground">Level 3: JavaScript Novice</p>
+                <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span>Current Level</span>
-                  <span>Next Level</span>
-                </div>
-                <Progress value={75} className="h-3" />
-                <p className="text-xs text-center text-muted-foreground mt-1">
-                  250 XP lagi untuk naik level
-                </p>
+              <div className={`p-4 rounded-2xl ${stat.bg} group-hover:scale-110 transition-transform`}>
+                {stat.icon}
               </div>
             </CardContent>
           </Card>
-          </div>
+        ))}
+      </div>
+
+      {/* 3. BOTTOM SECTION: Study Chart & Leaderboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* STUDY TIME CHART (66%) */}
+        <div className="lg:col-span-2">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Waktu Belajar
+              </CardTitle>
+              <CardDescription>Aktivitas belajar kamu dalam 7 hari terakhir</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={studyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorMinutes" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="day" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} 
+                  />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '4 4' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="minutes" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorMinutes)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* 4. SIDEBAR WIDGETS */}
-        <div className="grid grid-cols-1 lg:col-span-4 space-y-6">
-          
+        {/* LEADERBOARD COMPACT (33%) */}
+        <div className="lg:col-span-1">
           <Card className="h-full flex flex-col">
-              <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
-                <CardTitle className="text-lg">Top Learners</CardTitle>
-                <div className="flex gap-2">
-                   <Select defaultValue="weekly">
-                    <SelectTrigger className="w-[100px] h-8 text-xs">
-                      <SelectValue placeholder="Time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="all_time">All Time</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  Top 5 Learners
+                </CardTitle>
+                <Link to="/leaderboard" className="text-xs text-primary hover:underline">
+                  View All
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-4">
+              {[
+                { name: 'AlexCode', xp: 2500, avatar: 'AC' },
+                { name: 'SarahDev', xp: 2350, avatar: 'SD' },
+                { name: 'JohnDoe', xp: 1800, avatar: 'JD' },
+                { name: 'You', xp: user?.totalXp || 0, active: true, avatar: 'ME' },
+                { name: 'ReactFan', xp: 1200, avatar: 'RF' },
+              ].map((p, i) => (
+                <div key={i} className={`flex items-center gap-3 p-2 rounded-xl transition-colors ${p.active ? 'bg-primary/10 border border-primary/20' : 'hover:bg-secondary/50 border border-transparent'}`}>
+                  <div className={`font-bold w-6 text-center text-sm ${i < 3 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                    {i < 3 ? ['🥇', '🥈', '🥉'][i] : `#${i+1}`}
+                  </div>
+                  <Avatar className="w-8 h-8 border border-border">
+                    <AvatarFallback className="text-xs font-bold">{p.avatar}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-bold truncate ${p.active ? 'text-primary' : ''}`}>
+                      {p.name}
+                    </p>
+                  </div>
+                  <span className="font-mono text-xs font-bold">{p.xp} XP</span>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4 flex-1">
-                  {[
-                    { name: 'AlexCode', xp: 2500, rank: 1, avatar: 'AC' },
-                    { name: 'SarahDev', xp: 2350, rank: 2, avatar: 'SD' },
-                    { name: 'JohnDoe', xp: 1800, rank: 3, avatar: 'JD' },
-                    { name: 'You', xp: user?.totalXp || 0, rank: 5, active: true, avatar: 'ME' },
-                    { name: 'ReactFan', xp: 1200, rank: 6, avatar: 'RF' },
-                  ].map((p, i) => (
-                    <div key={i} className={`flex items-center gap-3 p-2 rounded-xl transition-colors ${p.active ? 'bg-primary/10 border border-primary/20' : 'hover:bg-secondary/50 border border-transparent'}`}>
-                      <div className={`font-bold w-6 text-center text-sm ${p.rank <= 3 ? 'text-amber-500' : 'text-muted-foreground'}`}>
-                        {p.rank <= 3 ? ['🥇', '🥈', '🥉'][p.rank-1] : `#${p.rank}`}
-                      </div>
-                      <Avatar className="h-8 w-8 border border-border">
-                        <AvatarFallback className="text-xs bg-muted">{p.avatar}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-bold truncate ${p.active ? 'text-primary' : ''}`}>
-                          {p.name}
-                        </p>
-                        <div className="h-1.5 w-full bg-secondary rounded-full mt-1 overflow-hidden">
-                           <div className="h-full bg-primary/60 rounded-full" style={{ width: `${(p.xp / 3000) * 100}%` }} />
-                        </div>
-                      </div>
-                      <span className="text-xs font-mono font-bold">{p.xp}</span>
-                    </div>
-                  ))}
-                  <Link to="/leaderboard" className="block text-center text-xs text-muted-foreground hover:text-primary mt-4 transition-colors">
-                    Lihat Leaderboard Lengkap &rarr;
-                  </Link>
-              </CardContent>
-            </Card>
-
+              ))}
+            </CardContent>
+          </Card>
         </div>
+
       </div>
     </div>
   );
 }
-
