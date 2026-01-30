@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
  */
 export default function LeaderboardPage() {
   const { user } = useAuth();
-  const [filterLevel, setFilterLevel] = useState('global');
   const [filterTime, setFilterTime] = useState('all_time');
 
   // Role-based title
