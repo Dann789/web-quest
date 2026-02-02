@@ -2,7 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Lock, ArrowRight,  User, Database, Code, Server, FileCode } from 'lucide-react';
+import { Lock, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -19,7 +19,7 @@ export default function LevelPage() {
       description: 'Pelajari struktur dasar web dengan HTML5.',
       requiredXp: 0,
       image: 'bg-orange-500/10 text-orange-600',
-      icon: <FileCode className="h-6 w-6" />
+      icon: <i className="fa-brands fa-html5 fa-xl"></i>
     },
     {
       id: 2,
@@ -27,7 +27,7 @@ export default function LevelPage() {
       description: 'Percantik tampilan web menggunakan CSS3.',
       requiredXp: 250,
       image: 'bg-blue-500/10 text-blue-600',
-      icon: <Code className="h-6 w-6" />
+      icon: <i className="fa-brands fa-css3-alt fa-xl"></i>
     },
     {
       id: 3,
@@ -35,7 +35,7 @@ export default function LevelPage() {
       description: 'Buat web interaktif dengan logika pemrograman.',
       requiredXp: 500,
       image: 'bg-yellow-500/10 text-yellow-600',
-      icon: <User className="h-6 w-6" /> // Icon User as JS often handles user interaction/logic
+      icon: <i className="fa-brands fa-js fa-xl"></i>
     },
     {
       id: 4,
@@ -43,15 +43,15 @@ export default function LevelPage() {
       description: 'Pelajari server-side scripting dengan PHP.',
       requiredXp: 1000,
       image: 'bg-indigo-500/10 text-indigo-600',
-      icon: <Server className="h-6 w-6" />
+      icon: <i className="fa-brands fa-php fa-xl"></i>
     },
     {
       id: 5,
       title: 'Level 5: Database',
-      description: 'Kelola penyimpanan data dengan SQL & Database.',
+      description: 'Kelola penyimpanan data dengan PostgreSQL & Database.',
       requiredXp: 2000,
       image: 'bg-slate-500/10 text-slate-600',
-      icon: <Database className="h-6 w-6" />
+      icon: <i className="fa-solid fa-database fa-xl"></i>
     }
   ];
 
@@ -64,7 +64,7 @@ export default function LevelPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {levels.map((level) => {
           const isLocked = currentXP < level.requiredXp;
           // Kalkulasi progress sederhana (mock)

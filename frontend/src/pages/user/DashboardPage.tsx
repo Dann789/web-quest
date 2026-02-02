@@ -38,25 +38,22 @@ export default function DashboardPage() {
 
   const stats = [
     { 
-      label: 'Challenges Done', 
+      label: 'Challenge Selesai', 
       value: 24, 
-      sub: '+3 minggu ini',
       icon: <Code className="w-5 h-5 text-blue-500" />,
       bg: 'bg-blue-500/10',
       border: 'hover:border-blue-500/50'
     },
     { 
-      label: 'Levels Completed', 
+      label: 'Level Selesai', 
       value: '1 / 5', 
-      sub: 'HTML Foundation Selesai',
       icon: <BookOpen className="w-5 h-5 text-purple-500" />,
       bg: 'bg-purple-500/10',
       border: 'hover:border-purple-500/50'
     },
     { 
-      label: 'Badges Earned', 
+      label: 'Badge Didapat', 
       value: 3, 
-      sub: 'Latest: Fast Learner',
       icon: <Medal className="w-5 h-5 text-amber-500" />,
       bg: 'bg-amber-500/10',
       border: 'hover:border-amber-500/50'
@@ -162,7 +159,6 @@ export default function DashboardPage() {
                 <div className="flex items-end gap-2 mt-1">
                   <h3 className="text-3xl font-bold">{stat.value}</h3>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
               </div>
               <div className={`p-4 rounded-2xl ${stat.bg} group-hover:scale-110 transition-transform`}>
                 {stat.icon}
@@ -229,10 +225,10 @@ export default function DashboardPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  Top 5 Learners
+                  Peringkat 5 Besar
                 </CardTitle>
                 <Link to="/leaderboard" className="text-xs text-primary hover:underline">
-                  View All
+                  Lihat Semua
                 </Link>
               </div>
             </CardHeader>

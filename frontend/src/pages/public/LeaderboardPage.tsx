@@ -59,6 +59,9 @@ export default function LeaderboardPage() {
   ] : []),
     { rank: 6, username: 'ReactFan', xp: 2100, time: '20h 10m', avatar: 'RF' },
     { rank: 7, username: 'BugHunter', xp: 1950, time: '22h 05m', avatar: 'BH' },
+    { rank: 8, username: 'Faker', xp: 1900, time: '23h 05m', avatar: 'BH' },
+    { rank: 9, username: 'Ronaldo', xp: 1850, time: '23h 15m', avatar: 'BH' },
+    { rank: 10, username: 'Neymar Jr.', xp: 1750, time: '23h 35m', avatar: 'BH' },
   ].sort((a, b) => b.xp - a.xp);
 
   const rankedData = leaderboardData.map((item, index) => ({
