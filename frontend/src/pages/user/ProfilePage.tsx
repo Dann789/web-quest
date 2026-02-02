@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Zap, Trophy, Award, Calendar, Edit } from 'lucide-react';
+import { User, Zap, Award, Calendar, Edit, Lock } from 'lucide-react';
 import { EditProfileDialog } from '@/components/user/EditProfileDialog';
 
 /**
@@ -29,24 +29,57 @@ export default function ProfilePage() {
     { id: 7, name: 'Top Performer', description: 'Masuk Top 3 leaderboard', earned: false, rarity: 'EPIC' },
   ];
 
-  const getRarityColor = (rarity: string) => {
+  const getRarityStyles = (rarity: string) => {
     switch (rarity) {
       case 'COMMON':
-        return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+        return {
+          iconBg: 'bg-slate-100 dark:bg-slate-800',
+          iconColor: 'text-slate-600 dark:text-slate-400',
+          border: 'border-slate-200 dark:border-slate-700',
+          badge: 'bg-slate-100 text-slate-600 border-slate-200'
+        };
       case 'RARE':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+        return {
+          iconBg: 'bg-blue-100 dark:bg-blue-900/30',
+          iconColor: 'text-blue-600 dark:text-blue-400',
+          border: 'border-blue-200 dark:border-blue-800',
+          badge: 'bg-blue-100 text-blue-600 border-blue-200'
+        };
       case 'EPIC':
-        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+        return {
+          iconBg: 'bg-purple-100 dark:bg-purple-900/30',
+          iconColor: 'text-purple-600 dark:text-purple-400',
+          border: 'border-purple-200 dark:border-purple-800',
+          badge: 'bg-purple-100 text-purple-600 border-purple-200'
+        };
       case 'LEGENDARY':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+        return {
+          iconBg: 'bg-amber-100 dark:bg-amber-900/30',
+          iconColor: 'text-amber-600 dark:text-amber-400',
+          border: 'border-amber-200 dark:border-amber-800',
+          badge: 'bg-amber-100 text-amber-600 border-amber-200'
+        };
       default:
-        return '';
+        return { 
+          iconBg: 'bg-slate-100', 
+          iconColor: 'text-slate-600', 
+          border: 'border-slate-200', 
+          badge: 'bg-slate-100' 
+        };
     }
   };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Profile</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Profile</h1>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30">
+          <Zap className="h-5 w-5 text-emerald-400" />
+          <span className="text-lg font-bold text-emerald-400">
+            {user?.totalXp.toLocaleString()} XP
+          </span>
+        </div>
+      </div>
 
       {/* Profile Card */}
       <Card>
@@ -63,27 +96,17 @@ export default function ProfilePage() {
                 <h2 className="text-2xl font-bold">{user?.username}</h2>
                 <p className="text-muted-foreground">{user?.email}</p>
               </div>
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2">
                   <Calendar className="h-4 w-4" />
                   <span>Bergabung sejak {new Date(user?.createdAt || '').toLocaleDateString('id-ID', { 
                     year: 'numeric', 
                     month: 'long' 
                   })}</span>
-                </div>
-                <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsEditOpen(true)}>
-                   <Edit className="h-3 w-3" /> Edit Profil
-                </Button>
               </div>
             </div>
-
-            {/* XP Badge */}
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30">
-              <Zap className="h-5 w-5 text-emerald-400" />
-              <span className="text-lg font-bold text-emerald-400">
-                {user?.totalXp.toLocaleString()} XP
-              </span>
-            </div>
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsEditOpen(true)}>
+              <Edit className="h-3 w-3" /> Edit Profil
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -95,68 +118,57 @@ export default function ProfilePage() {
         onSave={handleEditProfile} 
       />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <Trophy className="h-8 w-8 text-amber-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold">2/5</p>
-            <p className="text-sm text-muted-foreground">Levels Unlocked</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <Zap className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold">24</p>
-            <p className="text-sm text-muted-foreground">Challenges Completed</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <Award className="h-8 w-8 text-purple-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold">#5</p>
-            <p className="text-sm text-muted-foreground">Global Rank</p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Badges Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5" />
-            Badges Collection
+            Koleksi Badge
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {badges.map((badge) => (
-              <div
-                key={badge.id}
-                className={`p-4 rounded-lg border ${
-                  badge.earned
-                    ? 'bg-card border-border'
-                    : 'bg-muted/30 border-muted opacity-50'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                      badge.earned ? 'bg-primary/20' : 'bg-muted'
-                    }`}>
-                      <Award className={`h-5 w-5 ${badge.earned ? 'text-primary' : 'text-muted-foreground'}`} />
-                    </div>
-                    <div>
-                      <p className="font-medium">{badge.name}</p>
-                      <p className="text-xs text-muted-foreground">{badge.description}</p>
-                    </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {badges.map((badge) => {
+              const styles = getRarityStyles(badge.rarity);
+              return (
+                <div
+                  key={badge.id}
+                  className={`group relative flex flex-col items-center p-5 rounded-xl border transition-all duration-300 ${
+                    badge.earned
+                      ? `bg-card ${styles.border}`
+                      : 'bg-muted/40 border-dashed border-muted opacity-70'
+                  }`}
+                >
+                  {/* Rarity Badge */}
+                  <div className="absolute top-3 right-3">
+                     <Badge variant="outline" className={`text-[10px] px-2 py-0 border-0 ${styles.badge}`}>
+                      {badge.rarity}
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className={getRarityColor(badge.rarity)}>
-                    {badge.rarity}
-                  </Badge>
+
+                  {/* Icon */}
+                  <div className={`h-14 w-14 rounded-full flex items-center justify-center mb-4 transition-transform ${
+                    badge.earned ? styles.iconBg : 'bg-muted'
+                  }`}>
+                    {badge.earned ? (
+                      <Award className={`h-7 w-7 ${styles.iconColor}`} />
+                    ) : (
+                      <Lock className="h-6 w-6 text-muted-foreground" />
+                    )}
+                  </div>
+
+                  {/* Text Content */}
+                  <div className="text-center space-y-1 w-full">
+                    <p className={`font-semibold truncate ${!badge.earned && 'text-muted-foreground'}`}>
+                      {badge.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2.5em]">
+                      {badge.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

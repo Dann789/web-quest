@@ -79,10 +79,10 @@ export default function LevelPage() {
                   </div>
                   {isLocked ? (
                      <Badge variant="outline" className="gap-1 bg-background text-muted-foreground border-dashed">
-                       <Lock className="h-3 w-3" /> {level.requiredXp} XP Needed
+                       <Lock className="h-3 w-3" /> {level.requiredXp} XP Dibutuhkan
                      </Badge>
                   ) : (
-                     <Badge className="bg-emerald-500 hover:bg-emerald-600">Unlocked</Badge>
+                     <Badge className="bg-emerald-500 hover:bg-emerald-600">Terbuka</Badge>
                   )}
                 </div>
                 <CardTitle className="mt-4 text-xl">{level.title}</CardTitle>
