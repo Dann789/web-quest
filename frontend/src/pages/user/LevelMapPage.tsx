@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Lock, CheckCircle, BookOpen, ChevronLeft, Code2, Bug, GripVertical, LayoutTemplate, Star } from 'lucide-react';
+import { Lock, BookOpen, ChevronLeft, } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import MaterialModal from './MaterialPage';
 import { getLevelData } from '@/mocks/levelMockData';
@@ -60,13 +60,13 @@ export default function LevelMapPage() {
     });
 
     // 2. Easy Challenges
-    levelData.challenges.easy.forEach(c => nodes.push({ ...c, difficulty: 'easy' }));
+    levelData.challenges.easy.forEach((c, idx) => nodes.push({ ...c, difficulty: 'easy', displayNumber: idx + 1 }));
     
     // 3. Medium Challenges
-    levelData.challenges.medium.forEach(c => nodes.push({ ...c, difficulty: 'medium' }));
+    levelData.challenges.medium.forEach((c, idx) => nodes.push({ ...c, difficulty: 'medium', displayNumber: idx + 1 }));
     
     // 4. Hard Challenges
-    levelData.challenges.hard.forEach(c => nodes.push({ ...c, difficulty: 'hard' }));
+    levelData.challenges.hard.forEach((c, idx) => nodes.push({ ...c, difficulty: 'hard', displayNumber: idx + 1 }));
 
     return nodes;
   }, [levelData]);
@@ -75,7 +75,7 @@ export default function LevelMapPage() {
   const { points, pathD, width, height, zones } = useMemo(() => {
     const startPadding = 100;
     const nodeSpacing = 160;
-    const groupGap = 400; // Large gap between difficulty groups
+    const groupGap = 300; // Large gap between difficulty groups
     const amplitude = 80;   
     const frequency = 0.8; 
     const containerHeight = 600;
@@ -149,7 +149,7 @@ export default function LevelMapPage() {
     return {
       points: resultPoints,
       pathD: d,
-      width: currentX + 200, // Final width with padding
+      width: currentX + 500, // Final width with extra padding for hard level
       height: containerHeight,
       zones: resultZones
     };
@@ -192,12 +192,11 @@ export default function LevelMapPage() {
                 <div 
                     key={idx}
                     className="absolute top-1/2 left-0 pointer-events-none select-none flex flex-col items-center justify-center"
-                    style={{ left: zone.centerX, transform: 'translate(-50%, -150px)' }}
+                    style={{ left: zone.centerX, transform: 'translate(-65%, -200px)' }}
                 >
                     <h2 className={`text-6xl md:text-8xl font-black opacity-[0.07] whitespace-nowrap tracking-tighter ${zone.color}`}>
                         {zone.label}
                     </h2>
-                    <div className={`h-1 w-20 mt-4 rounded-full opacity-20 bg-current ${zone.color}`} />
                 </div>
             ))}
 
@@ -304,7 +303,7 @@ function MapNode({ node, index, position }: { node: any, index: number, position
             base: 'bg-slate-800 border-slate-700',
             active: 'bg-slate-700 border-slate-600',
             glow: 'shadow-none',
-            icon: 'text-slate-500'
+            text: 'text-slate-500'
         };
 
         if (node.difficulty === 'easy') {
@@ -312,21 +311,21 @@ function MapNode({ node, index, position }: { node: any, index: number, position
                 base: 'bg-emerald-950 border-emerald-900',
                 active: 'bg-emerald-600 border-emerald-400',
                 glow: 'shadow-[0_0_20px_rgba(16,185,129,0.4)]',
-                icon: 'text-emerald-400'
+                text: 'text-emerald-400'
             };
         } else if (node.difficulty === 'medium') {
             theme = {
                 base: 'bg-amber-950 border-amber-900',
                 active: 'bg-amber-600 border-amber-400',
                 glow: 'shadow-[0_0_20px_rgba(245,158,11,0.4)]',
-                icon: 'text-amber-400'
+                text: 'text-amber-400'
             };
         } else if (node.difficulty === 'hard') {
             theme = {
                 base: 'bg-red-950 border-red-900',
                 active: 'bg-red-600 border-red-400',
                 glow: 'shadow-[0_0_20px_rgba(239,68,68,0.4)]',
-                icon: 'text-red-400'
+                text: 'text-red-400'
             };
         }
 
@@ -334,7 +333,7 @@ function MapNode({ node, index, position }: { node: any, index: number, position
             return {
                 bg: theme.active,
                 border: 'border-2',
-                iconColor: 'text-white',
+                textColor: 'text-white',
                 shadow: theme.glow,
                 scale: 'scale-100'
             };
@@ -342,7 +341,7 @@ function MapNode({ node, index, position }: { node: any, index: number, position
             return {
                 bg: 'bg-slate-900',
                 border: `border-4 ${theme.active.split(' ')[1]}`, // Take border color
-                iconColor: theme.icon,
+                textColor: theme.text,
                 shadow: `${theme.glow} scale-110`,
                 scale: 'scale-110'
             };
@@ -350,27 +349,62 @@ function MapNode({ node, index, position }: { node: any, index: number, position
             return {
                 bg: 'bg-slate-900',
                 border: 'border-slate-800',
-                iconColor: 'text-slate-700',
+                textColor: 'text-slate-700',
                 shadow: '',
                 scale: 'scale-90 opacity-80'
             };
         }
     }, [node]);
 
-    // Icon logic
-    const Icon = useMemo(() => {
-        if (node.status === 'locked') return Lock;
-        if (node.status === 'completed') return CheckCircle;
+    // Calculate level number relative to difficulty group
+    const levelNumber = useMemo(() => {
+        // Since we know the data structure, we can calculate based on index
+        // Index 0 is materi
+        // Easy starts at 1
+        // Medium starts after easy
+        // Hard starts after medium
         
-        switch (node.type) {
-            case 'coding': return Code2;
-            case 'fix-bug': return Bug;
-            case 'drag-drop': return GripVertical;
-            case 'scenario': return LayoutTemplate;
-            default: return Star;
-        }
+        // This is a simplified approach assuming sequential rendering from the flattened list
+        // However, the 'index' prop passed here is the index in the flattened 'mapNodes' array.
+        
+        // A better way is to pass the specific index within the group from the parent, 
+        // OR calculate it here if we had access to group counts.
+        // For now, let's use a heuristic based on the flat index.
+        
+        // Actually, let's look at the parent 'LevelMapPage'. 
+        // 'mapNodes' is flattened: [Materi, Easy..., Medium..., Hard...]
+        // We can just rely on the fact that the parent renders them in order.
+        
+        // To do this robustly without prop drilling from parent, we can't easily know "which number in the group" 
+        // this node is just from 'node' and absolute 'index'.
+        
+        // Let's modify the PARENT to pass 'groupIndex' or similar. 
+        // BUT, since I am only editing this function, I will rely on the provided 'node' object 
+        // if I can add a property to it in the parent? 
+        // I cannot edit the parent in this single replace block if I target only this function.
+        
+        // WAIT, I CAN replace the whole file content or a larger chunk.
+        // The instruction says "Modify the MapNode component". 
+        // I will strictly allow myself to just use the node's title if it contained the number, 
+        // but the user wants "Level (angka)".
+        
+        // Refactoring strategy:
+        // I will rely on `node.id` or similar if possible? No.
+        // I will imply the number based on the index if accurate ranges are known?
+        // No, lengths are dynamic.
+        
+        // BEST APPROACH: The user request implies I can change the display. 
+        // I will assume the `node` object or a new prop logic is best.
+        // Since I can't change the parent in *this* specific function-only tool call effectively without context of counts.
+        
+        // Let's assume I will update the PARENT 'mapNodes' creation to include 'displayNumber'.
+        // I will do that in a subsequent step if needed, or simply update the whole file now to be safe.
+        // Since I see 'mapNodes' in file view, I'll update the 'mapNodes' generation logic AND the component.
+        
+        return 0; // Placeholder, will be replaced by logic in 'mapNodes'
     }, [node]);
 
+    // Content Display
     const content = (
         <div 
             className={cn(
@@ -380,7 +414,16 @@ function MapNode({ node, index, position }: { node: any, index: number, position
                 styles.shadow,
             )}
         >
-            <Icon className={cn("h-6 w-6", styles.iconColor)} strokeWidth={2.5} />
+             {/* Show Number instead of Icon */}
+             {node.status === 'unlocked' ? (
+                <span className={cn("text-xl font-bold font-mono", styles.textColor)}>
+                    {node.displayNumber}
+                </span>
+             ) : (
+                <span className={cn("text-xl font-bold font-mono", styles.textColor)}>
+                    <Lock/>
+                </span>
+             )}
             
             {/* Status Indicator Pulse */}
             {node.status === 'unlocked' && (
@@ -409,7 +452,8 @@ function MapNode({ node, index, position }: { node: any, index: number, position
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="bg-slate-900/95 backdrop-blur border-slate-700 max-w-[200px]">
                         <div className="text-center space-y-1">
-                            <p className="font-bold text-sm text-slate-200">{node.title}</p>
+                            {/* Updated Tooltip Title */}
+                            <p className="font-bold text-sm text-slate-200">Challenge {node.displayNumber}</p>
                             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                                 <Badge variant="outline" className="text-[10px] px-1 h-5 capitalize border-slate-600 text-slate-400">
                                     {node.difficulty}
@@ -421,12 +465,12 @@ function MapNode({ node, index, position }: { node: any, index: number, position
                 </Tooltip>
             </TooltipProvider>
 
-             {/* Level Number floating below */}
+             {/* Updated Level Label floating below */}
              <div className={cn(
                 "absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-mono font-bold transition-opacity whitespace-nowrap",
                 node.status === 'locked' ? 'text-slate-800' : 'text-slate-500'
             )}>
-                 {node.title.length > 15 ? node.title.substring(0, 12) + '...' : node.title}
+                 Challenge {node.displayNumber}
             </div>
         </div>
     );
