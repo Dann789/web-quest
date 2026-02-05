@@ -32,14 +32,12 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
   return (
     <div className={cn("flex flex-col h-full bg-card border-r border-border", className)}>
       {/* 1. Header: Logo */}
-      <div className="p-6 border-b border-border/50">
-        <Link to="/dashboard" className="flex items-center gap-2 group" onClick={onClose}>
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all duration-300">
-            <Zap className="h-6 w-6 text-primary-foreground fill-current" />
-          </div>
+      <div className="border-b border-border/50 p-0.5">
+        <Link to="/dashboard" className="flex items-center group" onClick={onClose}> 
+          <img src="/src/assets/logo/logo-sidebar.png" alt="Web Quest Logo" className="object-cover" width={80} height={80} />
           <div className="flex flex-col gap-1">
             <span className="font-bold text-xl tracking-tight leading-none group-hover:text-primary transition-colors">Web Quest</span>
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Learning Web</span>
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Belajar Web Dasar</span>
           </div>
         </Link>
       </div>
