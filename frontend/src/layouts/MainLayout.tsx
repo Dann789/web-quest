@@ -10,11 +10,11 @@ import Sidebar from '@/components/layout/Sidebar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 /**
- * MainLayout - Layout utama untuk halaman User
+ * MainLayout - Layout utama untuk halaman semua role
  * Menggunakan Sidebar navigation (Vertical) alih-alih Navbar atas.
  */
 export default function MainLayout() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -30,11 +30,6 @@ export default function MainLayout() {
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  // Redirect admin to admin dashboard
-  if (user?.role === 'ADMIN') {
-    return <Navigate to="/admin" replace />;
   }
 
   return (

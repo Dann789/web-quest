@@ -1,9 +1,30 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Layers, Puzzle, Activity, Loader2, AlertCircle } from 'lucide-react';
-import { getUsers } from '@/services/UserService';
-import type { User } from '@/types';
-import { useCallback, useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Users,
+  Layers,
+  Puzzle,
+  Activity,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import { getUsers } from "@/services/UserService";
+import type { User } from "@/types";
+import { useCallback, useEffect, useState } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 /**
  * Admin Dashboard - Halaman utama untuk Admin
@@ -11,18 +32,18 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
-    setError('');
+    setError("");
 
     const result = await getUsers();
 
     if (result.success && result.data) {
       setUsers(result.data);
     } else {
-      setError(result.message || 'Failed to fetch users');
+      setError(result.message || "Failed to fetch users");
     }
 
     setIsLoading(false);
@@ -34,29 +55,29 @@ export default function AdminDashboard() {
 
   // Stats data - menggunakan isLoading untuk menampilkan placeholder
   const stats = [
-    { 
-      label: 'Total Users', 
-      value: isLoading ? '-' : users.length, 
-      icon: Users, 
-      color: 'text-blue-400 bg-blue-500/20' 
+    {
+      label: "Total User",
+      value: isLoading ? "-" : users.length,
+      icon: Users,
+      color: "text-blue-400 bg-blue-500/20",
     },
-    { 
-      label: 'Total Levels', 
-      value: 5, 
-      icon: Layers, 
-      color: 'text-purple-400 bg-purple-500/20' 
+    {
+      label: "Total Level",
+      value: 5,
+      icon: Layers,
+      color: "text-purple-400 bg-purple-500/20",
     },
-    { 
-      label: 'Total Challenges', 
-      value: 90, 
-      icon: Puzzle, 
-      color: 'text-amber-400 bg-amber-500/20' 
+    {
+      label: "Total Challenge",
+      value: 90,
+      icon: Puzzle,
+      color: "text-amber-400 bg-amber-500/20",
     },
-    { 
-      label: 'Active Today', 
-      value: 12, 
-      icon: Activity, 
-      color: 'text-emerald-400 bg-emerald-500/20' 
+    {
+      label: "Aktif Hari Ini",
+      value: 12,
+      icon: Activity,
+      color: "text-emerald-400 bg-emerald-500/20",
     },
   ];
 
@@ -64,9 +85,7 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Overview sistem Web Quest
-        </p>
+        <p className="text-muted-foreground mt-1">Overview sistem Web Quest</p>
       </div>
 
       {/* Error State - Ditampilkan jika ada error */}
@@ -86,13 +105,15 @@ export default function AdminDashboard() {
           <Card key={stat.label}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${stat.color}`}>
+                <div
+                  className={`h-12 w-12 rounded-xl flex items-center justify-center ${stat.color}`}
+                >
                   <stat.icon className="h-6 w-6" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
                   <p className="text-2xl font-bold">
-                    {isLoading && stat.label === 'Total Users' ? (
+                    {isLoading && stat.label === "Total Users" ? (
                       <Loader2 className="h-7 w-8 animate-spin" />
                     ) : (
                       stat.value
@@ -107,7 +128,6 @@ export default function AdminDashboard() {
 
       {/* Recent Activities & Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
         {/* Recent Activities List */}
         <div className="md:col-span-2">
           <Card className="h-full">
@@ -120,35 +140,41 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="h-[300px] w-full mt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={[
-                    { day: 'Mon', users: 12 },
-                    { day: 'Tue', users: 18 },
-                    { day: 'Wed', users: 24 },
-                    { day: 'Thu', users: 15 },
-                    { day: 'Fri', users: 28 },
-                    { day: 'Sat', users: 32 },
-                    { day: 'Sun', users: 20 },
-                  ]}>
+                  <LineChart
+                    data={[
+                      { day: "Mon", users: 12 },
+                      { day: "Tue", users: 18 },
+                      { day: "Wed", users: 24 },
+                      { day: "Thu", users: 15 },
+                      { day: "Fri", users: 28 },
+                      { day: "Sat", users: 32 },
+                      { day: "Sun", users: 20 },
+                    ]}
+                  >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis 
-                      dataKey="day" 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tick={{ fontSize: 12, fill: '#888' }} 
+                    <XAxis
+                      dataKey="day"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 12, fill: "#888" }}
                       dy={10}
                     />
-                    <YAxis 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tick={{ fontSize: 12, fill: '#888' }} 
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 12, fill: "#888" }}
                     />
-                    <Tooltip 
-                      cursor={{ fill: 'transparent' }}
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    <RechartsTooltip
+                      cursor={{ fill: "transparent" }}
+                      contentStyle={{
+                        borderRadius: "8px",
+                        border: "none",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      }}
                     />
-                    <Line 
-                      dataKey="users" 
-                      fill="currentColor" 
+                    <Line
+                      dataKey="users"
+                      fill="currentColor"
                       className="fill-primary"
                       type="monotone"
                       strokeWidth={2}
@@ -166,48 +192,62 @@ export default function AdminDashboard() {
             <CardTitle>Ringkasan Platform</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-             {/* Stat 1 */}
-             <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Pengguna Baru</p>
-                  <h4 className="text-2xl font-bold mt-1">+12</h4>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                  <Activity className="h-5 w-5" />
-                </div>
-             </div>
-             <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Target Mingguan</span>
-                  <span className="font-bold">85%</span>
-                </div>
-                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 w-[85%]" />
-                </div>
-             </div>
+            {/* Stat 1 */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Pengguna Baru
+                </p>
+                <h4 className="text-2xl font-bold mt-1">+12</h4>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                <Activity className="h-5 w-5" />
+              </div>
+            </div>
 
-             {/* Stat 2 */}
-             <div className="pt-4 border-t border-border">
-               <div className="flex items-center justify-between mb-2">
-                 <span className="text-sm font-medium">Level Terpopuler</span>
-                 <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">HTML</span>
-               </div>
-               <p className="text-xs text-muted-foreground">
-                 <span className="font-bold text-foreground">85 user</span> sedang mempelajari HTML Basics minggu ini.
-               </p>
-             </div>
-             
-             <div className="pt-4 border-t border-border">
-                <p className="text-xs text-muted-foreground mb-3">Navigasi Cepat</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <a href="/admin/users" className="text-xs bg-secondary hover:bg-secondary/80 p-2 rounded text-center transition-colors">
-                    Kelola User
-                  </a>
-                  <a href="/admin/logs" className="text-xs bg-secondary hover:bg-secondary/80 p-2 rounded text-center transition-colors">
-                    Log Aktivitas
-                  </a>
-                </div>
-             </div>
+            <div className="pt-4 border-t border-border flex flex-col items-center text-center space-y-3">
+              <span className="text-sm font-medium self-start w-full text-left">
+                Level Terpopuler
+              </span>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="bg-orange-500/10 text-orange-600 rounded-xl flex items-center justify-center p-2">
+                      <i className="fab fa-html5 text-orange-600 text-5xl drop-shadow-md"></i>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>HTML Basics</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <p className="text-xs text-muted-foreground w-full text-left">
+                <span className="font-bold text-foreground">85 user</span>{" "}
+                sedang mempelajari topik ini minggu ini.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground mb-3">
+                Navigasi Cepat
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href="/admin/users"
+                  className="text-xs bg-secondary hover:bg-secondary/80 p-2 rounded text-center transition-colors"
+                >
+                  Kelola User
+                </a>
+                <a
+                  href="/admin/logs"
+                  className="text-xs bg-secondary hover:bg-secondary/80 p-2 rounded text-center transition-colors"
+                >
+                  Log Aktivitas
+                </a>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
