@@ -2,7 +2,6 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
-import AdminLayout from '@/layouts/AdminLayout';
 import AuthLayout from '@/layouts/AuthLayout';
 import FullscreenLayout from '@/layouts/FullscreenLayout';
 
@@ -18,7 +17,6 @@ import ChallengePage from '@/pages/user/ChallengePage';
 import ProfilePage from '@/pages/user/ProfilePage';
 
 // Dosen Pages
-import DosenLayout from '@/layouts/DosenLayout';
 import DosenDashboard from '@/pages/dosen/DosenDashboard';
 import LevelsManagement from '@/pages/dosen/LevelsManagement';
 import MaterialsManagement from '@/pages/dosen/MaterialsManagement';
@@ -92,32 +90,6 @@ const router = createBrowserRouter([
         path: '/profile',
         element: <ProfilePage />,
       },
-      // TODO: Add more user routes
-      // /levels/:levelId         → Level Detail
-      // /levels/:levelId/material → Material Page
-      // /levels/:levelId/challenges/:id → Challenge Workspace
-    ],
-  },
-  
-  // ===== FULLSCREEN ROUTES (Protected) =====
-  {
-    element: <FullscreenLayout />,
-    children: [
-      {
-        path: '/level/:levelId',
-        element: <LevelDetailPage />,
-      },
-      {
-        path: '/challenge/:challengeId',
-        element: <ChallengePage />,
-      },
-    ],
-  },
-
-  // ===== DOSEN ROUTES (Protected) =====
-  {
-    element: <DosenLayout />,
-    children: [
       {
         path: '/dosen',
         element: <DosenDashboard />,
@@ -146,13 +118,6 @@ const router = createBrowserRouter([
         path: '/dosen/profile',
         element: <DosenProfilePage />,
       },
-    ],
-  },
-
-  // ===== ADMIN ROUTES (Protected) =====
-  {
-    element: <AdminLayout />,
-    children: [
       {
         path: '/admin',
         element: <AdminDashboard />,
@@ -181,6 +146,25 @@ const router = createBrowserRouter([
       {
         path: '/admin/leaderboard',
         element: <LeaderboardPage />,
+      },
+      // TODO: Add more user routes
+      // /levels/:levelId         → Level Detail
+      // /levels/:levelId/material → Material Page
+      // /levels/:levelId/challenges/:id → Challenge Workspace
+    ],
+  },
+  
+  // ===== FULLSCREEN ROUTES (Protected) =====
+  {
+    element: <FullscreenLayout />,
+    children: [
+      {
+        path: '/level/:levelId',
+        element: <LevelDetailPage />,
+      },
+      {
+        path: '/challenge/:challengeId',
+        element: <ChallengePage />,
       },
     ],
   },

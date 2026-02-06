@@ -26,7 +26,6 @@ export default function AdminLogsPage() {
       materialStatus: 'completed', 
       challenges: { easy: 5, medium: 10, hard: 3},
       progress: 100,
-      totalXp: 3200,
       currentLevel: 'HTML Basics'
     },
     { 
@@ -36,7 +35,6 @@ export default function AdminLogsPage() {
       materialStatus: 'in-progress',
       challenges: { easy: 4, medium: 2, hard: 0 },
       progress: 75,
-      totalXp: 2950,
       currentLevel: 'CSS Styling'
     },
     { 
@@ -46,7 +44,6 @@ export default function AdminLogsPage() {
       materialStatus: 'in-progress',
       challenges: { easy: 2, medium: 0, hard: 0 },
       progress: 30,
-      totalXp: 1800,
       currentLevel: 'HTML Basics'
     },
     { 
@@ -56,7 +53,6 @@ export default function AdminLogsPage() {
       materialStatus: 'not-started',
       challenges: { easy: 0, medium: 0, hard: 0 },
       progress: 0,
-      totalXp: 0,
       currentLevel: 'HTML Basics'
     },
     { 
@@ -66,7 +62,6 @@ export default function AdminLogsPage() {
       materialStatus: 'completed',
       challenges: { easy: 5, medium: 10, hard: 3 }, // Maxed out
       progress: 100,
-      totalXp: 5400,
       currentLevel: 'JavaScript Advanced'
     },
   ];
@@ -198,11 +193,6 @@ export default function AdminLogsPage() {
                         <Progress value={data.progress} className="h-2 flex-1" />
                         <span className="text-xs font-bold w-9 text-right">{data.progress}%</span>
                       </div>
-                    </TableCell>
-
-                    {/* Total XP */}
-                    <TableCell className="text-right">
-                      <span className="font-mono font-bold text-primary">{data.totalXp.toLocaleString()} XP</span>
                     </TableCell>
                   </TableRow>
                 ))
