@@ -136,7 +136,6 @@ export default function AdminLogsPage() {
                 <TableHead>Status Materi</TableHead>
                 <TableHead className="text-center">Challenges (E / M / H)</TableHead>
                 <TableHead>Progress Level</TableHead>
-                <TableHead className="text-right">Total XP</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

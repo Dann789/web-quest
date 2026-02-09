@@ -120,16 +120,20 @@ export default function LoginPage() {
         </div>
         
         {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
+        <div className="relative z-10 flex flex-col justify-center items-center xl:px-20 gap-4">
+          {/* Logo */}
+          <div>
+            <img src="/src/assets/logo/logo-tab.png" alt="Logo Web Quest" width={120} height={120}/>
+          </div>
           {/* Headline */}
-          <h1 className="text-4xl xl:text-5xl font-bold text-foreground leading-tight mb-6">
+          <h1 className="text-4xl xl:text-5xl font-bold text-foreground leading-tight">
             Web 
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">
               Quest
             </span>
           </h1>
           
-          <p className="text-muted-foreground text-lg mb-12 max-w-md">
+          <p className="text-muted-foreground text-lg mb-12 max-w-md text-center">
             Platform Pembelajaran Pemrograman Web Berbasis Gamifikasi
           </p>
         </div>

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Lock, BookOpen, ChevronLeft, } from 'lucide-react';
+import { Lock, BookOpen, ChevronLeft, Info, X, CircleHelp, MoveRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import MaterialModal from './MaterialPage';
 import { getLevelData } from '@/mocks/levelMockData';
@@ -11,6 +11,7 @@ import { getLevelData } from '@/mocks/levelMockData';
 export default function LevelMapPage() {
   const { levelId } = useParams();
   const [isMaterialOpen, setIsMaterialOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Drag to scroll state
@@ -155,12 +156,75 @@ export default function LevelMapPage() {
     };
   }, [mapNodes]);
 
+  // Generate random stars
+  const stars = useMemo(() => {
+    return Array.from({ length: 100 }).map((_, i) => ({
+      id: i,
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      size: Math.random() * 2 + 1,
+      opacity: Math.random() * 0.5 + 0.1,
+      delay: `${Math.random() * 4}s`
+    }));
+  }, []);
+
+  // Generate background planets
+  const planets = useMemo(() => {
+     return [
+        { id: 1, top: '15%', left: '10%', size: 120, gradient: 'from-purple-600/20 to-indigo-600/20', blur: 'blur-3xl' },
+        { id: 2, top: '75%', left: '85%', size: 200, gradient: 'from-emerald-600/10 to-teal-600/10', blur: 'blur-3xl' },
+        { id: 3, top: '25%', left: '90%', size: 80, gradient: 'from-orange-500/10 to-red-500/10', blur: 'blur-2xl' },
+        { id: 4, top: '80%', left: '5%', size: 100, gradient: 'from-blue-500/10 to-cyan-500/10', blur: 'blur-3xl' },
+        { id: 5, top: '40%', left: '50%', size: 300, gradient: 'from-indigo-500/5 to-purple-500/5', blur: 'blur-[100px]' }, // Nebula effect
+     ];
+  }, []);
+
   return (
     <div className="h-screen w-full bg-slate-950 flex flex-col relative overflow-hidden select-none">
       
       {/* Background Elements */}
-      <div className="fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-slate-950 to-slate-950 pointer-events-none" />
-      <div className="fixed inset-0 z-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+      <div className="fixed inset-0 z-0 bg-slate-950 pointer-events-none overflow-hidden">
+          {/* Base Gradient */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-950/40 via-slate-950 to-slate-950" />
+          
+          {/* Grid Overlay */}
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '50px 50px' }} />
+
+          {/* Stars */}
+          {stars.map((star) => (
+              <div 
+                  key={star.id}
+                  className="absolute rounded-full bg-white animate-pulse"
+                  style={{
+                      top: star.top,
+                      left: star.left,
+                      width: star.size,
+                      height: star.size,
+                      opacity: star.opacity,
+                      animationDuration: '3s',
+                      animationDelay: star.delay
+                  }}
+              />
+          ))}
+
+          {/* Planets/Nebulas */}
+          {planets.map((planet) => (
+              <div 
+                  key={planet.id}
+                  className={cn(
+                      "absolute rounded-full bg-gradient-to-br",
+                      planet.gradient,
+                      planet.blur
+                  )}
+                  style={{
+                      top: planet.top,
+                      left: planet.left,
+                      width: planet.size,
+                      height: planet.size,
+                  }}
+              />
+          ))}
+      </div>
 
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 p-6 z-50 flex justify-between items-start pointer-events-none">
@@ -194,7 +258,7 @@ export default function LevelMapPage() {
                     className="absolute top-1/2 left-0 pointer-events-none select-none flex flex-col items-center justify-center"
                     style={{ left: zone.centerX, transform: 'translate(-65%, -200px)' }}
                 >
-                    <h2 className={`text-6xl md:text-8xl font-black opacity-[0.07] whitespace-nowrap tracking-tighter ${zone.color}`}>
+                    <h2 className={`text-6xl md:text-8xl font-black opacity-[0.7] whitespace-nowrap tracking-tighter ${zone.color}`}>
                         {zone.label}
                     </h2>
                 </div>
@@ -287,6 +351,43 @@ export default function LevelMapPage() {
         materialContent={levelData.materialContent}
       />
 
+      {/* Guide Floating Action Button */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 pointer-events-auto">
+        {/* Popup/Modal Content */}
+        {isGuideOpen && (
+            <div className="bg-slate-900/95 backdrop-blur border border-slate-700 p-4 rounded-xl shadow-2xl w-80 mb-2 animate-in slide-in-from-bottom-2 fade-in duration-300">
+                <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-bold text-slate-100 flex items-center gap-2">
+                        <Info className="h-4 w-4 text-indigo-400" />
+                        Petunjuk Pengerjaan
+                    </h3>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 -mt-1 hover:bg-slate-800 text-slate-400" onClick={() => setIsGuideOpen(false)}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+                <ol className="text-sm text-slate-300 space-y-2 list-decimal list-outside pl-4 marker:text-indigo-500">
+                    <li>Baca dan pelajari materi terlebih dahulu</li>
+                    <li>Kerjakan Challenge yang sudah terbuka</li>
+                    <li>Pastikan untuk menyelesaikan setiap challenge dengan tepat waktu dan jawaban yang benar</li>
+                    <li>Anda akan mendapatkan XP setelah mempelajari materi dan mengerjakan setiap challenge</li>
+                </ol>
+            </div>
+        )}
+
+        {/* Toggle Button */}
+        <Button 
+            onClick={() => setIsGuideOpen(!isGuideOpen)}
+            className={cn(
+                "rounded-full w-12 h-12 shadow-lg transition-all duration-300",
+                isGuideOpen 
+                    ? "bg-slate-800 hover:bg-slate-700 text-slate-200 rotate-90" 
+                    : "bg-indigo-600 hover:bg-indigo-700 hover:scale-110 shadow-indigo-500/30"
+            )}
+        >
+            {isGuideOpen ? <X className="h-6 w-6" /> : <CircleHelp className="h-6 w-6" />}
+        </Button>
+      </div>
+
     </div>
   );
 }
@@ -356,53 +457,7 @@ function MapNode({ node, index, position }: { node: any, index: number, position
         }
     }, [node]);
 
-    // Calculate level number relative to difficulty group
-    const levelNumber = useMemo(() => {
-        // Since we know the data structure, we can calculate based on index
-        // Index 0 is materi
-        // Easy starts at 1
-        // Medium starts after easy
-        // Hard starts after medium
-        
-        // This is a simplified approach assuming sequential rendering from the flattened list
-        // However, the 'index' prop passed here is the index in the flattened 'mapNodes' array.
-        
-        // A better way is to pass the specific index within the group from the parent, 
-        // OR calculate it here if we had access to group counts.
-        // For now, let's use a heuristic based on the flat index.
-        
-        // Actually, let's look at the parent 'LevelMapPage'. 
-        // 'mapNodes' is flattened: [Materi, Easy..., Medium..., Hard...]
-        // We can just rely on the fact that the parent renders them in order.
-        
-        // To do this robustly without prop drilling from parent, we can't easily know "which number in the group" 
-        // this node is just from 'node' and absolute 'index'.
-        
-        // Let's modify the PARENT to pass 'groupIndex' or similar. 
-        // BUT, since I am only editing this function, I will rely on the provided 'node' object 
-        // if I can add a property to it in the parent? 
-        // I cannot edit the parent in this single replace block if I target only this function.
-        
-        // WAIT, I CAN replace the whole file content or a larger chunk.
-        // The instruction says "Modify the MapNode component". 
-        // I will strictly allow myself to just use the node's title if it contained the number, 
-        // but the user wants "Level (angka)".
-        
-        // Refactoring strategy:
-        // I will rely on `node.id` or similar if possible? No.
-        // I will imply the number based on the index if accurate ranges are known?
-        // No, lengths are dynamic.
-        
-        // BEST APPROACH: The user request implies I can change the display. 
-        // I will assume the `node` object or a new prop logic is best.
-        // Since I can't change the parent in *this* specific function-only tool call effectively without context of counts.
-        
-        // Let's assume I will update the PARENT 'mapNodes' creation to include 'displayNumber'.
-        // I will do that in a subsequent step if needed, or simply update the whole file now to be safe.
-        // Since I see 'mapNodes' in file view, I'll update the 'mapNodes' generation logic AND the component.
-        
-        return 0; // Placeholder, will be replaced by logic in 'mapNodes'
-    }, [node]);
+
 
     // Content Display
     const content = (
