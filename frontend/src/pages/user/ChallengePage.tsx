@@ -36,21 +36,26 @@ import { getLevelData } from '@/mocks/levelMockData';
 import MonacoCodeEditor from '@/components/user/MonacoCodeEditor';
 import DragDropEditor from '@/components/user/DragDropEditor';
 import ScenarioViewer from '@/components/user/ScenarioViewer';
+import ChallengeTutorial, { type TutorialStep } from '@/components/user/ChallengeTutorial';
 
 // Timer Hook
-function useTimer() {
+function useTimer(isActive: boolean) {
   const [seconds, setSeconds] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setSeconds(prev => prev + 1);
-    }, 1000);
+    if (isActive) {
+      intervalRef.current = setInterval(() => {
+        setSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    }
     
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [isActive]);
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -160,7 +165,8 @@ ${code}
 export default function ChallengePage() {
   const { challengeId } = useParams();
   const navigate = useNavigate();
-  const timer = useTimer();
+  const [isTutorialActive, setIsTutorialActive] = useState(true);
+  const timer = useTimer(!isTutorialActive);
   
   // Get level data
   const levelData = getLevelData('1');
@@ -281,6 +287,55 @@ export default function ChallengePage() {
 
   const isCodeChallenge = activeChallenge.type === 'coding' || activeChallenge.type === 'fix-bug';
 
+  // Define Tutorial Steps based on challenge type
+  const tutorialSteps: TutorialStep[] = [
+    {
+      title: "Selamat Datang Challenger! 👋",
+      description: "Sebelum mulai, yuk kenalan dulu sama antarmuka challenge ini biar nggak bingung saat ngerjain.",
+      position: "center"
+    },
+    {
+      targetId: "tutorial-info",
+      title: "Informasi Challenge",
+      description: "Di sini kamu bisa melihat Judul, Deskripsi, dan Instruksi detail mengenai apa yang harus kamu kerjakan.",
+      position: "right"
+    },
+    ...(activeChallenge.hint ? [{
+      targetId: "tutorial-hint",
+      title: "Butuh Bantuan?",
+      description: "Kalau mentok, cek Hint di sini. Tapi ingat, gunakan sebijak mungkin ya!",
+      position: "right"
+    } as TutorialStep] : []),
+    {
+      targetId: "tutorial-editor",
+      title: "Code Editor / Workspace",
+      description: activeChallenge.type === 'drag-drop' 
+        ? "Susun blok-blok kode di sini sesuai urutan yang benar."
+        : "Tuliskan solusi kodinganmu di area ini. Syntax highlighting akan membantumu.",
+      position: "left"
+    },
+    ...(isCodeChallenge ? [
+      {
+        targetId: "tutorial-run",
+        title: "Test Kodemu",
+        description: "Klik tombol Run untuk menjalankan kode dan melihat hasilnya di panel preview.",
+        position: "top"
+      },
+      {
+        targetId: "tutorial-preview",
+        title: "Live Preview",
+        description: "Hasil output dari kodemu akan muncul secara real-time di sini.",
+        position: "left"
+      }
+    ] as TutorialStep[] : []),
+    {
+      targetId: "tutorial-submit",
+      title: "Kumpulkan Jawaban",
+      description: "Sudah yakin benar? Klik Submit untuk memeriksa jawabanmu dan mendapatkan XP!",
+      position: "top"
+    }
+  ];
+
   return (
     <div className="h-screen w-full bg-slate-950 flex flex-col text-slate-200 overflow-hidden">
       
@@ -316,34 +371,34 @@ export default function ChallengePage() {
       </header>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
         
         {/* LEFT PANEL: INSTRUCTIONS */}
-        <div className="w-[320px] border-r border-slate-800 flex flex-col bg-slate-900/50">
-          <div className="p-5 flex-1 overflow-y-auto">
+        <div id="tutorial-info" className="w-full lg:w-[350px] h-[40vh] lg:h-full border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col bg-slate-900/50 shrink-0">
+          <div className="p-4 lg:p-5 flex-1 overflow-y-auto">
             
             {/* Title */}
-            <h1 className="text-xl font-bold text-white mb-3">{activeChallenge.title}</h1>
-            <p className="text-slate-400 text-sm mb-6 leading-relaxed">{activeChallenge.description}</p>
+            <h1 className="text-lg lg:text-xl font-bold text-white mb-2 lg:mb-3">{activeChallenge.title}</h1>
+            <p className="text-slate-400 text-xs lg:text-sm mb-4 lg:mb-6 leading-relaxed">{activeChallenge.description}</p>
             
             {/* Task Section */}
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="mb-4 lg:mb-6">
+              <div className="flex items-center gap-2 mb-2 lg:mb-3">
                 <div className="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
                 <span className="text-xs font-bold uppercase text-slate-300">Task</span>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-4 text-sm text-slate-300 border border-slate-700/50">
+              <div className="bg-slate-800/50 rounded-lg p-3 lg:p-4 text-xs lg:text-sm text-slate-300 border border-slate-700/50">
                 {activeChallenge.description}
               </div>
             </div>
             
             {/* Expected Result (for coding challenges) */}
             {isCodeChallenge && activeChallenge.correctCode && (
-              <div className="mb-6">
+              <div className="mb-4 lg:mb-6">
                 <div className="text-xs font-semibold text-slate-400 mb-2">Expected Result:</div>
-                <div className="bg-slate-800 rounded-lg p-4 border border-slate-700 min-h-[60px]">
+                <div className="bg-slate-800 rounded-lg p-3 lg:p-4 border border-slate-700 min-h-[60px]">
                   <div 
-                    className="text-white [&>h1]:text-2xl [&>h1]:font-bold [&>p]:text-slate-300"
+                    className="text-white [&>h1]:text-xl lg:[&>h1]:text-2xl [&>h1]:font-bold [&>p]:text-slate-300 text-xs lg:text-base"
                     dangerouslySetInnerHTML={{ __html: activeChallenge.correctCode }}
                   />
                 </div>
@@ -354,8 +409,9 @@ export default function ChallengePage() {
             {activeChallenge.hint && (
               <div className="mb-4">
                 <button 
+                  id="tutorial-hint"
                   onClick={() => setShowHint(!showHint)}
-                  className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
+                  className="flex items-center gap-2 text-xs lg:text-sm text-slate-400 hover:text-slate-200 transition-colors"
                 >
                   <ChevronRight className={cn("h-4 w-4 transition-transform", showHint && "rotate-90")} />
                   <span>Show Hint</span>
@@ -373,23 +429,24 @@ export default function ChallengePage() {
           </div>
           
           {/* Action Buttons */}
-          <div className="p-4 border-t border-slate-800 space-y-2">
+          <div className="p-3 lg:p-4 border-t border-slate-800 space-y-2 bg-slate-900 lg:bg-transparent z-10">
             {/* Run & Reset Buttons for coding challenges */}
             {isCodeChallenge && (
               <div className="flex gap-2">
                 <Button 
+                  id="tutorial-run"
                   variant="outline"
-                  className="flex-1 h-10 border-slate-700 hover:bg-slate-800 hover:border-indigo-500/50"
+                  className="flex-1 h-9 lg:h-10 text-xs lg:text-sm border-slate-700 hover:bg-slate-800 hover:border-indigo-500/50"
                   onClick={handleRun}
                   disabled={isRunning}
                 >
-                  <Play className={cn("mr-2 h-4 w-4", isRunning && "animate-pulse")} />
+                  <Play className={cn("mr-2 h-3 w-3 lg:h-4 lg:w-4", isRunning && "animate-pulse")} />
                   {isRunning ? 'Running...' : 'Run Code'}
                 </Button>
                 <Button 
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10 hover:bg-slate-800"
+                  className="h-9 w-9 lg:h-10 lg:w-10 hover:bg-slate-800"
                   onClick={handleReset}
                   title="Reset Code"
                 >
@@ -400,8 +457,9 @@ export default function ChallengePage() {
             
             {/* Submit Button */}
             <Button 
+              id="tutorial-submit"
               className={cn(
-                  "w-full h-11 font-semibold transition-all duration-300",
+                  "w-full h-10 lg:h-11 font-semibold transition-all duration-300 text-xs lg:text-sm",
                   submitStatus === 'success' ? "bg-emerald-600 hover:bg-emerald-700" : 
                   submitStatus === 'error' ? "bg-red-600 hover:bg-red-700" :
                   "bg-indigo-600 hover:bg-indigo-700"
@@ -409,27 +467,27 @@ export default function ChallengePage() {
               onClick={handleSubmit}
               disabled={submitStatus === 'success'}
             >
-              {submitStatus === 'idle' && <><Send className="mr-2 h-4 w-4" /> Submit Answer</>}
-              {submitStatus === 'success' && <><CheckCircle2 className="mr-2 h-4 w-4" /> Correct! Next</>}
-              {submitStatus === 'error' && <><AlertCircle className="mr-2 h-4 w-4" /> Try Again</>}
+              {submitStatus === 'idle' && <><Send className="mr-2 h-3 w-3 lg:h-4 lg:w-4" /> Submit Answer</>}
+              {submitStatus === 'success' && <><CheckCircle2 className="mr-2 h-3 w-3 lg:h-4 lg:w-4" /> Correct! Next</>}
+              {submitStatus === 'error' && <><AlertCircle className="mr-2 h-3 w-3 lg:h-4 lg:w-4" /> Try Again</>}
             </Button>
           </div>
         </div>
 
         {/* RIGHT PANEL: EDITOR + PREVIEW */}
-        <div className="flex-1 flex flex-col bg-slate-950">
+        <div className="flex-1 flex flex-col bg-slate-950 min-h-0 overflow-hidden">
           
           {/* CODE EDITOR SECTION */}
-          <div className={cn("flex flex-col border-b border-slate-800", isCodeChallenge ? "flex-1" : "flex-1")}>
+          <div id="tutorial-editor" className={cn("flex flex-col border-b border-slate-800 min-h-0", isCodeChallenge ? "flex-1" : "flex-1")}>
             
             {/* Editor Tabs */}
             {isCodeChallenge && (
-              <div className="h-10 bg-slate-900 border-b border-slate-800 flex items-center px-2 shrink-0">
+              <div className="h-9 lg:h-10 bg-slate-900 border-b border-slate-800 flex items-center px-2 shrink-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
                   <TabsList className="h-full bg-transparent p-0 gap-0">
                     <TabsTrigger 
                       value="html" 
-                      className="h-full px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-indigo-500 text-xs font-medium"
+                      className="h-full px-3 lg:px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-indigo-500 text-xs font-medium"
                     >
                       <span className="text-orange-400 mr-1.5">⧩</span> index.html
                     </TabsTrigger>
@@ -439,7 +497,7 @@ export default function ChallengePage() {
             )}
             
             {/* Editor Content - Using Monaco Editor */}
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 relative">
               {activeChallenge.type === 'coding' && (
                 <MonacoCodeEditor 
                   code={userCode} 
@@ -476,23 +534,23 @@ export default function ChallengePage() {
 
           {/* LIVE PREVIEW SECTION */}
           {isCodeChallenge && (
-            <div className="h-[260px] flex flex-col bg-slate-900/50 shrink-0">
+            <div id="tutorial-preview" className="h-[200px] lg:h-[260px] flex flex-col bg-slate-900/50 shrink-0 border-t border-slate-800">
               
               {/* Preview Header */}
-              <div className="h-9 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 shrink-0">
-                <div className="flex items-center gap-4">
+              <div className="h-8 lg:h-9 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-3 lg:px-4 shrink-0">
+                <div className="flex items-center gap-3 lg:gap-4">
                   <div className="flex items-center gap-2">
                     <div className={cn(
-                      "w-2 h-2 rounded-full transition-colors",
+                      "w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full transition-colors",
                       hasRunPreview ? "bg-emerald-500 animate-pulse" : "bg-slate-600"
                     )}></div>
-                    <span className="text-xs font-bold uppercase text-slate-300">Live Preview</span>
+                    <span className="text-[10px] lg:text-xs font-bold uppercase text-slate-300">Live Preview</span>
                   </div>
-                  <button className="text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1">
-                    <Terminal className="h-3 w-3" /> Console
+                  <button className="text-[10px] lg:text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1">
+                    <Terminal className="h-2.5 w-2.5 lg:h-3 lg:w-3" /> Console
                   </button>
                 </div>
-                <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1 sm:flex">
                   <Eye className="h-3 w-3" />
                   1920 × 1080
                 </div>
@@ -588,6 +646,15 @@ export default function ChallengePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* TUTORIAL OVERLAY */}
+      {isTutorialActive && (
+        <ChallengeTutorial 
+          steps={tutorialSteps}
+          onComplete={() => setIsTutorialActive(false)}
+          onSkip={() => setIsTutorialActive(false)}
+        />
+      )}
 
     </div>
   );

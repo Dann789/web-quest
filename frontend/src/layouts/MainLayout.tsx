@@ -1,8 +1,7 @@
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  Menu,
-  Zap
+  Menu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -46,9 +45,13 @@ export default function MainLayout() {
         {/* MOBILE HEADER (Visible on < md) */}
         <header className="md:hidden sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md px-4 h-16 flex items-center justify-between">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <Zap className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <img
+            src="/src/assets/logo/logo-sidebar.png"
+            alt="Web Quest Logo"
+            className="object-cover"
+            width={60}
+            height={60}
+          />
             <span className="font-bold text-lg">Web Quest</span>
           </Link>
 

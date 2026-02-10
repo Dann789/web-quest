@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Lock, BookOpen, ChevronLeft, Info, X, CircleHelp, MoveRight } from 'lucide-react';
+import { Lock, BookOpen, ChevronLeft, X, CircleHelp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import MaterialModal from './MaterialPage';
 import { getLevelData } from '@/mocks/levelMockData';
@@ -358,7 +358,6 @@ export default function LevelMapPage() {
             <div className="bg-slate-900/95 backdrop-blur border border-slate-700 p-4 rounded-xl shadow-2xl w-80 mb-2 animate-in slide-in-from-bottom-2 fade-in duration-300">
                 <div className="flex justify-between items-start mb-3">
                     <h3 className="font-bold text-slate-100 flex items-center gap-2">
-                        <Info className="h-4 w-4 text-indigo-400" />
                         Petunjuk Pengerjaan
                     </h3>
                     <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 -mt-1 hover:bg-slate-800 text-slate-400" onClick={() => setIsGuideOpen(false)}>
