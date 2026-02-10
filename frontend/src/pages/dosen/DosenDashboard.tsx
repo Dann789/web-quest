@@ -2,9 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Users, Layers, Puzzle, ArrowRight, Trophy } from 'lucide-react';
+import { Users, Layers, Puzzle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { BarChart, Bar, Cell, ResponsiveContainer, Legend, Tooltip, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 /**
  * Dosen Dashboard
@@ -78,22 +78,32 @@ export default function DosenDashboard() {
           <CardContent>
              <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: 'Level 1', value: 30 },
-                        { name: 'Level 2', value: 25 },
-                        { name: 'Level 3', value: 20 },
-                        { name: 'Level 4', value: 15 },
-                        { name: 'Level 5', value: 10 },
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
+                  <BarChart
+                    data={[
+                      { name: 'Level 1', value: 30 },
+                      { name: 'Level 2', value: 25 },
+                      { name: 'Level 3', value: 20 },
+                      { name: 'Level 4', value: 15 },
+                      { name: 'Level 5', value: 10 },
+                    ]}
+                    margin={{
+                      top: 10,
+                      right: 30,
+                      left: 0,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip 
+                       formatter={(value: number | undefined) => [`${value}% Mahasiswa`, 'Completion']}
+                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                       itemStyle={{ color: '#333' }}
+                       cursor={{ fill: 'transparent' }}
+                    />
+                    <Legend />
+                    <Bar dataKey="value" name="Mahasiswa">
                       {[
                         '#10b981', // Emerald (L1)
                         '#3b82f6', // Blue (L2) 
@@ -101,20 +111,10 @@ export default function DosenDashboard() {
                         '#f59e0b', // Amber (L4)
                         '#ef4444'  // Red (L5)
                       ].map((color, index) => (
-                        <Cell key={`cell-${index}`} fill={color} strokeWidth={0} />
+                        <Cell key={`cell-${index}`} fill={color} />
                       ))}
-                    </Pie>
-                    <Tooltip 
-                       formatter={(value: number | undefined) => [`${value}% Mahasiswa`, 'Completion']}
-                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                       itemStyle={{ color: '#333' }}
-                    />
-                    <Legend 
-                      verticalAlign="bottom" 
-                      height={36}
-                      iconType="circle"
-                    />
-                  </PieChart>
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
              </div>
           </CardContent>
@@ -123,7 +123,6 @@ export default function DosenDashboard() {
         <Card className="lg:col-span-1 border-primary/20 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-amber-500" />
               Top Mahasiswa
             </CardTitle>
             <Link to="/dosen/leaderboard">
