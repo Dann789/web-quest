@@ -101,12 +101,14 @@ export const mockLevelData: LevelData = {
         description: 'Susunlah elemen-elemen berikut menjadi struktur HTML yang valid dari atas ke bawah.',
         dragItems: [
           { id: '1', content: '</html>' },
-          { id: '2', content: '<body>...</body>' },
+          { id: '2', content: '<body>' },
           { id: '3', content: '<!DOCTYPE html>' },
           { id: '4', content: '<html>' },
-          { id: '5', content: '<head>...</head>' }
+          { id: '5', content: '<head>...</head>' },
+          { id: '6', content: '</body>' },
+          { id: '7', content: '<h1>Hello World</h1>' }
         ],
-        dragSolution: ['3', '4', '5', '2', '1']
+        dragSolution: ['3', '4', '5', '2', '7', '6', '1']
       },
       {
         id: 'e-2',
