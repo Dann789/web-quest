@@ -26,6 +26,7 @@ import {
   PartyPopper,
   XCircle,
   MapPin,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLevelData, type DragItem } from "@/mocks/levelMockData";
@@ -773,58 +774,57 @@ export default function ChallengePage() {
               : "border-red-500/50 bg-slate-900",
           )}
         >
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-3 text-xl">
+          <AlertDialogHeader className="text-center">
+            <AlertDialogTitle className="flex flex-col items-center gap-4 text-2xl">
               {submitStatus === "success" ? (
                 <>
-                  <div className="h-12 w-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <PartyPopper className="h-6 w-6 text-emerald-400" />
+                  <div className="h-20 w-20 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <PartyPopper className="h-10 w-10 text-emerald-400" />
                   </div>
-                  <span className="text-emerald-400">Jawaban Benar! 🎉</span>
+                  <span className="text-emerald-400">Jawaban Anda Benar!</span>
                 </>
               ) : (
                 <>
-                  <div className="h-12 w-12 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <XCircle className="h-6 w-6 text-red-400" />
+                  <div className="h-20 w-20 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <XCircle className="h-10 w-10 text-red-400" />
                   </div>
                   <span className="text-red-400">Jawaban Salah</span>
                 </>
               )}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400 mt-4 text-base">
+            <AlertDialogDescription className="flex flex-col justify-center items-center text-slate-400 mt-4  text-base text-center">
               {submitStatus === "success" ? (
-                <div className="space-y-3">
+                <div>
                   <p>Selamat! Kamu berhasil menyelesaikan challenge ini.</p>
-                  <div className="flex items-center gap-2 text-emerald-400 font-medium">
+                  <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-full  bg-emerald-500/20 border border-emerald-500/30 font-medium mt-6 w-fit mx-auto">
                     <span>+{activeChallenge.xp} XP</span>
-                    <span className="text-yellow-400">⚡</span>
+                    <Zap className="h-5 w-5 text-yellow-400" />
                   </div>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div>
                   <p>Periksa kembali codingan/jawaban kamu.</p>
-                  <p className="text-sm text-slate-500">
-                    Pastikan syntax dan struktur kode sudah sesuai dengan yang
-                    diminta.
+                  <p className="text-sm text-slate-500 mt-2">
+                    Pastikan syntax dan struktur kode sudah sesuai dengan yang diminta.
                   </p>
                 </div>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-6">
+          <AlertDialogFooter className="mt-3 flex justify-center sm:justify-center">
             {submitStatus === "success" ? (
               <AlertDialogAction
                 onClick={handleBackToMap}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white w-auto px-8"
               >
                 <MapPin className="mr-2 h-4 w-4" />
                 Kembali ke Map
               </AlertDialogAction>
             ) : (
-              <>
+              <div className="flex gap-3 justify-center">
                 <AlertDialogCancel
                   onClick={handleTryAgain}
-                  className="border-slate-700 hover:bg-slate-800"
+                  className="border-slate-700 hover:bg-slate-800 w-auto px-6"
                 >
                   Coba Lagi
                 </AlertDialogCancel>
@@ -835,13 +835,13 @@ export default function ChallengePage() {
                       setShowHint(true);
                       setSubmitStatus("idle");
                     }}
-                    className="bg-indigo-600 hover:bg-indigo-700"
+                    className="bg-indigo-600 hover:bg-indigo-700 w-auto px-6"
                   >
                     <Lightbulb className="mr-2 h-4 w-4" />
                     Lihat Hint
                   </AlertDialogAction>
                 )}
-              </>
+              </div>
             )}
           </AlertDialogFooter>
         </AlertDialogContent>
