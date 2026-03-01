@@ -26,7 +26,7 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 263.4 70% 50.4%;
     --radius: 0.5rem;
-    
+
     /* Custom Web Quest Colors */
     --xp-green: 160 84% 39%;
     --easy: 160 84% 39%;
@@ -48,7 +48,30 @@
     @apply bg-background text-foreground;
     margin: 0;
     min-height: 100vh;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+
+  /* Custom Scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full cursor-pointer;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
   }
 }
 
@@ -65,12 +88,12 @@
   .badge-hard {
     @apply bg-red-500/20 text-red-400 border-red-500/30;
   }
-  
+
   /* XP animation */
   .xp-glow {
     @apply shadow-[0_0_15px_rgba(16,185,129,0.5)];
   }
-  
+
   /* Glass morphism effect */
   .glass {
     @apply bg-white/5 backdrop-blur-md border border-white/10;
