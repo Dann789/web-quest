@@ -31,8 +31,9 @@ model User {
   assignments      Assignment[]
   attempts         Attempt[]
   badges           UserBadge[]
-  leaderboard      LeaderboardEntry[]
   activityLogs     ActivityLog[]
+  reason           Reason[]
+  response         Response[]
 
   @@map("users")
 }
@@ -54,7 +55,7 @@ model Level {
   name        String   @db.VarChar(50)
   xpRequired  Int      @map("xp_required")
   description String?  @db.Text
-  iconName    String?  @db.Varchar(50)
+  iconName    String?  @db.VarChar(50)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -63,7 +64,6 @@ model Level {
   challenges   Challenge[]
   progress     Progress[]
   assignments  Assignment[]
-  leaderboards Leaderboard[]
 
   @@map("levels")
 }
@@ -112,7 +112,7 @@ model Challenge {
   attempts     Attempt[]
 
   @@index([levelId, difficulty], name: "idx_challenges_level_difficulty")
-  @@index([isActive], name: "idx_challenges_active")
+  @@index([levelId, isActive], name: "idx_challenges_active")
   @@map("challenges")
 }
 
@@ -128,7 +128,6 @@ enum ChallengeMethod {
   DRAG_AND_DROP  @map("drag_and_drop")
   CODING_MANUAL  @map("coding_manual")
   FIX_THE_BUG    @map("fix_the_bug")
-  SCENARIO_BASED @map("scenario_based")
 
   @@map("challenge_method")
 }
@@ -142,16 +141,6 @@ model Progress {
   userId     Int     @map("user_id")
   levelId    Int     @map("level_id")
   isUnlocked Boolean @default(false) @map("is_unlocked")
-  
-  // Challenge unlock tracking
-  easyUnlocked   Int @default(0) @map("easy_unlocked") @db.SmallInt
-  mediumUnlocked Int @default(0) @map("medium_unlocked") @db.SmallInt
-  hardUnlocked   Int @default(0) @map("hard_unlocked") @db.SmallInt
-  
-  // Aggregates
-  totalXpEarned Int @default(0) @map("total_xp_earned") // ✅ Keep for per-level leaderboard
-  
-  // Timestamps
   unlockedAt  DateTime? @map("unlocked_at") @db.Timestamptz(3)
   completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -162,7 +151,6 @@ model Progress {
 
   @@unique([userId, levelId], name: "idx_progress_unique")
   @@index([userId], name: "idx_progress_user")
-  @@index([levelId, totalXpEarned], name: "idx_progress_leaderboard") // ✅ Index untuk leaderboard
   @@map("user_progress")
 }
 
@@ -208,7 +196,6 @@ model Attempt {
   id             Int      @id @default(autoincrement())
   userId         Int      @map("user_id")
   challengeId    Int      @map("challenge_id")
-  answerCode     String   @map("answer_code") @db.Text
   isFirstAttempt Boolean  @map("is_first_attempt")
   timeSpent      Int      @map("time_spent")
   xpEarned       Int      @map("xp_earned") @db.SmallInt
@@ -267,28 +254,43 @@ model UserBadge {
 }
 
 // ============================================
-// ADMIN/DOSEN MONITORING
+// User Evaluation - MRC
 // ============================================
 
-model ActivityLog {
+model MrcWords {
+  id          Int      @id @default(autoincrement())
+  word        String   @db.VarChar(30)
+  description String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  responses         Response[]
+
+  @@map("mrc_words")
+}
+
+model Reason {
   id          Int      @id @default(autoincrement())
   userId      Int      @map("user_id")
-  levelId     Int?     @map("level_id")
-  action      ActivityActionType
+  reason_text String   @db.Text
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   // Relations
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  level    Level?      @relation(fields: [levelId], references: [id], onDelete: SetNull)
-
-  @@index([userId, createdAt], name: "idx_logs_user_time")
-  @@index([createdAt], name: "idx_logs_time")
-  @@map("activity_logs")
+  @@index([userId])
+  @@map("reason")
 }
 
-enum ActivityActionType {
- COMPLETE_MATERIAL
- COMPLETE_CHALLENGE
- 
-@@map("ActivityActionType")
+model Response {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  mrcWordId   Int      @map("mrc_word_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  // Relations
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mrcWord   MrcWords    @relation(fields: [mrcWordId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([mrcWordId])
+  @@map("response")
 }

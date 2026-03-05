@@ -72,8 +72,6 @@ export type ChallengeMethod =
   | 'DRAG_AND_DROP' 
   | 'CODING_MANUAL' 
   | 'FIX_THE_BUG' 
-  | 'SCENARIO_BASED' 
-  | 'MICRO_CHALLENGE_CHAIN';
 
 export interface Challenge {
   id: number;
