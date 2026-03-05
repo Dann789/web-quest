@@ -121,7 +121,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
           </Link>
         ))}
 
-        {(user?.role === "USER" || user?.role === "DOSEN") && (
+        {(user?.role === "MAHASISWA" || user?.role === "DOSEN") && (
         <div className="pt-6">
           <p className="px-4 text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
             Akun
@@ -154,14 +154,14 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
         <div className="flex items-center gap-3 mb-4 p-2">
           <Avatar className="h-10 w-10 border border-primary/20">
             <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-              {user?.username?.substring(0, 2).toUpperCase() || "US"}
+              {user?.name?.substring(0, 2).toUpperCase() || "US"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-md font-bold truncate">{user?.username}</p>
+            <p className="text-md font-bold truncate">{user?.name}</p>
             <p className="text-xs text-muted-foreground truncate">
               {user?.role === "ADMIN"
-                ? "Administrator"
+                ? "Admin"
                 : user?.role === "DOSEN"
                   ? "Dosen"
                   : "Mahasiswa"}

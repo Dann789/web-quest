@@ -5,6 +5,7 @@
 export interface User {
   id: number;
   username: string;
+  name: string;
   email: string;
   role: UserRole;
   totalXp: number;
@@ -12,14 +13,14 @@ export interface User {
   updatedAt: string;
 }
 
-export type UserRole = 'ADMIN' | 'DOSEN' | 'USER';
+export type UserRole = 'ADMIN' | 'DOSEN' | 'MAHASISWA';
 
 // ============================================
 // AUTH TYPES
 // ============================================
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 

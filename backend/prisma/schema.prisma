@@ -31,7 +31,6 @@ model User {
   assignments      Assignment[]
   attempts         Attempt[]
   badges           UserBadge[]
-  activityLogs     ActivityLog[]
   reason           Reason[]
   response         Response[]
 

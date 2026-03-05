@@ -25,8 +25,6 @@ import {
   Pencil, 
   Trash2,
   Loader2,
-  RefreshCw,
-  Zap
 } from 'lucide-react';
 import UserDialog, { type UserFormData } from '@/components/admin/UserDialog';
 import DeleteUserDialog from '@/components/admin/DeleteUserDialog';
@@ -52,6 +50,7 @@ export default function AdminUsersPage() {
 
   // State untuk search
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'ALL' | 'MAHASISWA' | 'DOSEN'>('ALL');
 
   // State untuk dialogs
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -81,26 +80,35 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  // Filter users when search query changes
+  // Filter users when search query or role filter changes
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredUsers(users);
-    } else {
+    let result = users;
+
+    // Filter by role
+    if (roleFilter !== 'ALL') {
+      result = result.filter((user) => user.role === roleFilter);
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      const filtered = users.filter(
+      result = result.filter(
         (user) =>
-          user.username.toLowerCase().includes(query) ||
+          user.name?.toLowerCase().includes(query) ||
+          user.username?.toLowerCase().includes(query) ||
           user.email.toLowerCase().includes(query)
       );
-      setFilteredUsers(filtered);
     }
-  }, [searchQuery, users]);
+
+    setFilteredUsers(result);
+  }, [searchQuery, roleFilter, users]);
 
   // Handle create user
   const handleCreate = async (data: UserFormData) => {
     const result = await createUser({
       username: data.username,
       email: data.email,
+      name: data.name,
       password: data.password!,
       role: data.role,
     });
@@ -118,6 +126,7 @@ export default function AdminUsersPage() {
 
     const updateData: Partial<UserFormData> = {
       username: data.username,
+      name: data.name,
       email: data.email,
       role: data.role,
     };
@@ -192,27 +201,34 @@ export default function AdminUsersPage() {
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle>Semua User</CardTitle>
-            <div className="flex items-center gap-2">
+            <CardTitle>List User</CardTitle>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              {/* Role Filter Tabs */}
+              <div className="flex items-center rounded-lg border border-border overflow-hidden">
+                {(['ALL', 'MAHASISWA', 'DOSEN'] as const).map((role) => (
+                  <button
+                    key={role}
+                    onClick={() => setRoleFilter(role)}
+                    className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                      roleFilter === role
+                        ? 'bg-primary text-primary-foreground'
+                        : 'hover:bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {role === 'ALL' ? 'Semua' : role === 'MAHASISWA' ? 'Mahasiswa' : 'Dosen'}
+                  </button>
+                ))}
+              </div>
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Cari user..."
+                  placeholder="Cari nama, NIM, email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 w-64"
                 />
               </div>
-              {/* Refresh */}
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={fetchUsers}
-                disabled={isLoading}
-              >
-                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              </Button>
             </div>
           </div>
         </CardHeader>
@@ -241,10 +257,11 @@ export default function AdminUsersPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>No</TableHead>
-                    <TableHead>Name</TableHead>
+                    <TableHead>Nama</TableHead>
+                    <TableHead>NIM/NIP</TableHead>
+                    <TableHead>Role</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>XP</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead>Ditambahkan</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -252,14 +269,18 @@ export default function AdminUsersPage() {
                   {filteredUsers.map((user, index) => (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">{index + 1}</TableCell>
-                      <TableCell className="font-medium">{user.username}</TableCell>
-                      <TableCell>{user.email}</TableCell>
+                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell>{user.username}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1 text-emerald-400">
-                          <Zap className="h-3 w-3" />
-                          {user.totalXp.toLocaleString()}
-                        </div>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          user.role === 'DOSEN'
+                            ? 'bg-blue-500/15 text-blue-400'
+                            : 'bg-purple-500/15 text-purple-400'
+                        }`}>
+                          {user.role === 'DOSEN' ? 'Dosen' : 'Mahasiswa'}
+                        </span>
                       </TableCell>
+                      <TableCell>{user.email}</TableCell>
                       <TableCell className="text-muted-foreground">
                         {formatDate(user.createdAt)}
                       </TableCell>

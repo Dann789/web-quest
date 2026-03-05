@@ -32,6 +32,7 @@ function createHeaders(): HeadersInit {
 
 export interface CreateUserData {
   username: string;
+  name: string;
   email: string;
   password: string;
   role?: UserRole;
@@ -39,6 +40,7 @@ export interface CreateUserData {
 
 export interface UpdateUserData {
   username?: string;
+  name?: string;
   email?: string;
   password?: string;
   role?: UserRole;

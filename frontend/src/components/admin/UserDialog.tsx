@@ -28,6 +28,7 @@ interface UserDialogProps {
 }
 
 export interface UserFormData {
+  name: string;
   username: string;
   email: string;
   password?: string;
@@ -46,9 +47,10 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
   
   const [formData, setFormData] = useState<UserFormData>({
     username: '',
+    name: '',
     email: '',
     password: '',
-    role: 'USER',
+    role: 'MAHASISWA',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +63,7 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
         // Edit mode - populate form with user data
         setFormData({
           username: user.username,
+          name: user.name,
           email: user.email,
           password: '', // Don't show existing password
           role: user.role,
@@ -69,9 +72,10 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
         // Create mode - reset form
         setFormData({
           username: '',
+          name: '',
           email: '',
           password: '',
-          role: 'USER',
+          role: 'MAHASISWA'
         });
       }
       setError('');
@@ -86,18 +90,23 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
 
     try {
       // Validation
+      if (!formData.name.trim()) {
+        setError('Nama lengkap wajib diisi');
+        setIsLoading(false);
+        return;
+      }
       if (!formData.username.trim()) {
-        setError('Username is required');
+        setError('NIM/NIP wajib diisi');
         setIsLoading(false);
         return;
       }
       if (!formData.email.trim()) {
-        setError('Email is required');
+        setError('Email wajib diisi');
         setIsLoading(false);
         return;
       }
       if (!isEditMode && !formData.password) {
-        setError('Password is required');
+        setError('Password wajib diisi');
         setIsLoading(false);
         return;
       }
@@ -105,6 +114,7 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
       // Build data to submit
       const dataToSubmit: UserFormData = {
         username: formData.username.trim(),
+        name: formData.name.trim(),
         email: formData.email.trim(),
         role: formData.role,
       };
@@ -152,20 +162,32 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
               </div>
             )}
 
-            {/* Username */}
+            {/* Name */}
             <div className="grid gap-2">
-              <Label htmlFor="username">Nama</Label>
+              <Label htmlFor="name">Nama Lengkap</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Masukkan nama lengkap"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                disabled={isLoading}
+                required
+              />
+            </div>
+
+            {/*Username*/}
+            <div className="grid gap-2">
+              <Label htmlFor="username">NIM/NIP</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Masukkan nama"
+                placeholder="Masukkan NIM/NIP"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 disabled={isLoading}
-                minLength={5}
-                maxLength={20}
+                required
               />
-              <p className="text-xs text-muted-foreground">5-20 characters</p>
             </div>
 
             {/* Email */}
@@ -214,6 +236,7 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
             <div className="grid gap-2">
               <Label htmlFor="role">Role</Label>
               <Select
+                key={formData.role}
                 value={formData.role}
                 onValueChange={(value: UserRole) => setFormData({ ...formData, role: value })}
                 disabled={isLoading}
@@ -222,8 +245,8 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
                   <SelectValue placeholder="Pilih role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USER">User (Mahasiswa)</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="MAHASISWA">Mahasiswa</SelectItem>
+                  <SelectItem value="DOSEN">Dosen</SelectItem>
                 </SelectContent>
               </Select>
             </div>

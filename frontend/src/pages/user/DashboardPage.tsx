@@ -154,7 +154,7 @@ export default function DashboardPage() {
                     <h1 className="text-3xl font-extrabold tracking-tight text-white">
                       Hi,{" "}
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300">
-                        {user?.username}
+                        {user?.name}
                       </span>
                       ! 👋
                     </h1>

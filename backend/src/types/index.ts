@@ -21,9 +21,11 @@ export interface LoginResponse {
         user: {
             id: number;
             username: string;
+            name: string;
             email: string;
             role: UserRole;
             totalXp: number;
+            createdAt: Date;
         };
     };
 }
@@ -48,6 +50,7 @@ export interface AuthContext {
 
 export interface CreateUserRequest {
     username: string;
+    name: string;
     email: string;
     password: string;
     role?: UserRole;
@@ -55,7 +58,9 @@ export interface CreateUserRequest {
 
 export interface UpdateUserRequest {
     username?: string;
+    name?: string;
     email?: string;
+    password?: string;
     role?: UserRole;
 }
 

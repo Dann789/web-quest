@@ -7,12 +7,16 @@ export class UserController {
     try {
       const users = await prisma.user.findMany({
         where: {
-          role: UserRole.USER,
+          role: {
+            in: [UserRole.DOSEN, UserRole.MAHASISWA]
+          }
         },
         select: {
           id: true,
           username: true,
+          name: true,
           email: true,
+          role: true,
           totalXp: true,
           createdAt: true,
         },
@@ -36,12 +40,12 @@ export class UserController {
 
   static async createUser(options: CreateUserRequest) {
     try {
-      const { username, email, password, role = UserRole.USER } = options;
+      const { username, name, email, password, role } = options;
 
-      if (!username || !email || !password) {
+      if (!username || !name || !email || !password) {
         return {
           success: false,
-          message: "Username, email, and password are required",
+          message: "Username, name, email, and password are required",
         };
       }
 
@@ -55,19 +59,32 @@ export class UserController {
         };
       }
 
+      // Check username uniqueness
+      const existingUsername = await prisma.user.findUnique({
+        where: { username },
+      });
+      if (existingUsername) {
+        return {
+          success: false,
+          message: "NIM/NIP sudah digunakan oleh user lain",
+        };
+      }
+
       const hashedPassword = await Bun.password.hash(password);
 
       const user = await prisma.user.create({
         data: {
           username,
+          name,
           email,
           password: hashedPassword,
-          role,
+          role: role ?? UserRole.MAHASISWA,
           totalXp: 0,
         },
         select: {
           id: true,
           username: true,
+          name: true,
           email: true,
           role: true,
           totalXp: true,
@@ -126,7 +143,7 @@ export class UserController {
 
   static async updateUser(id: number, options: UpdateUserRequest) {
     try {
-      const { username, email, role } = options;
+      const { username, name, email, password, role } = options;
 
       // Check if user exists
       const existingUser = await prisma.user.findUnique({
@@ -154,11 +171,15 @@ export class UserController {
         }
       }
 
-      // Prepare update data (only username, email, and role)
+      // Prepare update data
       const updateData: any = {};
       if (username) updateData.username = username;
+      if (name) updateData.name = name;
       if (email) updateData.email = email;
       if (role) updateData.role = role;
+      if (password) {
+        updateData.password = await Bun.password.hash(password);
+      }
 
       // Update user
       const user = await prisma.user.update({
@@ -167,6 +188,7 @@ export class UserController {
         select: {
           id: true,
           username: true,
+          name: true,
           email: true,
           role: true,
           totalXp: true,

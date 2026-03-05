@@ -7,7 +7,7 @@
     "dev": "bun --watch src/index.ts"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "bun prisma/seed.ts"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

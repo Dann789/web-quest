@@ -29,6 +29,8 @@ export default function AuthLayout() {
   if (isAuthenticated) {
     if (user?.role === 'ADMIN') {
       return <Navigate to="/admin" replace />;
+    } else if (user?.role === 'DOSEN') {
+      return <Navigate to="/dosen" replace />;
     }
     return <Navigate to="/dashboard" replace />;
   }

@@ -10,12 +10,12 @@ import { EditProfileDialog } from '@/components/user/EditProfileDialog';
  * Profile Page - Menampilkan profil dan badges user
  */
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const handleEditProfile = (data: any) => {
-    console.log('Profile updated:', data);
-    // Here you would call the update profile API
+  const handleEditProfile = (updatedUser: any) => {
+    // Update user in AuthContext + localStorage so all components update instantly
+    updateUser(updatedUser);
   };
 
   // Placeholder badges data
@@ -93,8 +93,8 @@ export default function ProfilePage() {
             {/* User Info */}
             <div className="flex-1 space-y-2">
               <div>
-                <h2 className="text-2xl font-bold">{user?.username}</h2>
-                <p className="text-muted-foreground">{user?.email}</p>
+                <h2 className="text-2xl font-bold mb-1">{user?.name}</h2>
+                <p className="text-muted-foreground">{user?.username}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                   <Calendar className="h-4 w-4" />

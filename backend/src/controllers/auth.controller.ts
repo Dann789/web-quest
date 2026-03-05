@@ -25,10 +25,12 @@ export class AuthController {
                 select: {
                     id: true,
                     username: true,
+                    name: true,
                     email: true,
                     password: true,
                     role: true,
                     totalXp: true,
+                    createdAt: true,
                 },
             });
 
@@ -66,9 +68,11 @@ export class AuthController {
                     user: {
                         id: user.id,
                         username: user.username,
+                        name: user.name,
                         email: user.email,
                         role: user.role,
                         totalXp: user.totalXp,
+                        createdAt: user.createdAt,
                     },
                 },
             };
