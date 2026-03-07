@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { MaterialController } from "../../controllers/admin/material.controller";
+import { MaterialController } from "../../controllers/dosen/material.controller";
 import { type CreateMaterialRequest, type UpdateMaterialRequest } from "../../types";
 
 export const materialRoutes = new Elysia({ prefix: "/api/materials" })

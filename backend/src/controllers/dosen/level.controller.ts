@@ -1,5 +1,5 @@
 import prisma from "../../config/database";
-import { type UpdateLevelRequest } from "../../types";
+import { type CreateLevelRequest, type UpdateLevelRequest } from "../../types";
 
 export class LevelController {
   /**
@@ -11,10 +11,9 @@ export class LevelController {
         select: {
           id: true,
           name: true,
-          order: true,
           xpRequired: true,
           description: true,
-          iconUrl: true,
+          iconName: true,
           createdAt: true,
           _count: {
             select: {
@@ -23,7 +22,9 @@ export class LevelController {
             },
           },
         },
-        orderBy: { order: 'asc' },
+        orderBy: {
+          xpRequired: 'asc',
+        },
       });
 
       // Transform _count to more readable format
@@ -48,73 +49,61 @@ export class LevelController {
     }
   }
 
-  /**
-   * Get level by ID with related materials and challenges count
-   */
-  static async getLevelById(id: number) {
-    try {
-      const level = await prisma.level.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          name: true,
-          order: true,
-          xpRequired: true,
-          description: true,
-          iconUrl: true,
-          createdAt: true,
-          materials: {
-            select: {
-              id: true,
-              title: true,
-              xpReward: true,
-              order: true,
-            },
-            orderBy: { order: 'asc' },
-          },
-          _count: {
-            select: {
-              challenges: true,
-            },
-          },
-        },
-      });
+  
+ static async createLevel(options: CreateLevelRequest) {
+  try {
+    const { name, xpRequired, description, iconName } = options;
 
-      if (!level) {
-        return {
-          success: false,
-          message: "Level not found",
-        };
-      }
+    // Check if level already exists
+    const existingLevel = await prisma.level.findFirst({
+      where: { name },
+    });
 
-      // Format response
-      const formattedLevel = {
-        ...level,
-        totalMaterials: level.materials.length,
-        totalChallenges: level._count.challenges,
-        _count: undefined,
-      };
-
-      return {
-        success: true,
-        message: "Level Found!",
-        data: formattedLevel,
-      };
-    } catch (e: unknown) {
-      console.error(`Error getting level by id:`, e);
+    if (existingLevel) {
       return {
         success: false,
-        message: `Failed to get level: ${e instanceof Error ? e.message : String(e)}`,
+        message: "Level already exists",
       };
     }
+
+    // Create level
+    const level = await prisma.level.create({
+      data: {
+        name,
+        xpRequired,
+        description,
+        iconName,
+      },
+      select: {
+        id: true,
+        name: true,
+        xpRequired: true,
+        description: true,
+        iconName: true,
+        createdAt: true,
+      },
+    });
+
+    return {
+      success: true,
+      message: "Level created successfully!",
+      data: level,
+    };
+  } catch (e: unknown) {
+    console.error(`Error creating level:`, e);
+    return {
+      success: false,
+      message: `Failed to create level: ${e instanceof Error ? e.message : String(e)}`,
+    };
   }
+ }
 
   /**
    * Update level
    */
   static async updateLevel(id: number, options: UpdateLevelRequest) {
     try {
-      const { name, xpRequired, description, iconUrl } = options;
+      const { name, xpRequired, description, iconName } = options;
 
       // Check if level exists
       const existingLevel = await prisma.level.findUnique({
@@ -133,7 +122,7 @@ export class LevelController {
       if (name !== undefined) updateData.name = name;
       if (xpRequired !== undefined) updateData.xpRequired = xpRequired;
       if (description !== undefined) updateData.description = description;
-      if (iconUrl !== undefined) updateData.iconUrl = iconUrl;
+      if (iconName !== undefined) updateData.iconName = iconName;
 
       // Check if there's anything to update
       if (Object.keys(updateData).length === 0) {
@@ -150,10 +139,9 @@ export class LevelController {
         select: {
           id: true,
           name: true,
-          order: true,
           xpRequired: true,
           description: true,
-          iconUrl: true,
+          iconName: true,
           createdAt: true,
         },
       });
@@ -172,26 +160,44 @@ export class LevelController {
     }
   }
 
+  static async DeleteLevel(id: number) {
+    try {
+      const level = await prisma.level.delete({
+        where: { id },
+      });
+
+      return {
+        success: true,
+        message: "Level deleted successfully!",
+        data: level,
+      };
+    } catch (e: unknown) {
+      console.error(`Error deleting level:`, e);
+      return {
+        success: false,
+        message: `Failed to delete level: ${e instanceof Error ? e.message : String(e)}`,
+      };
+    }
+  }
+
   /**
    * Get level by order number (1-5)
    */
-  static async getLevelByOrder(order: number) {
+  static async getLevelById(id: number) {
     try {
       const level = await prisma.level.findUnique({
-        where: { order },
+        where: { id },
         select: {
           id: true,
           name: true,
-          order: true,
           xpRequired: true,
           description: true,
-          iconUrl: true,
+          iconName: true,
           createdAt: true,
           materials: {
             select: {
               id: true,
               title: true,
-              xpReward: true,
               order: true,
             },
             orderBy: { order: 'asc' },
@@ -207,7 +213,7 @@ export class LevelController {
       if (!level) {
         return {
           success: false,
-          message: `Level with order ${order} not found`,
+          message: `Level with id ${id} not found`,
         };
       }
 
@@ -225,7 +231,7 @@ export class LevelController {
         data: formattedLevel,
       };
     } catch (e: unknown) {
-      console.error(`Error getting level by order:`, e);
+      console.error(`Error getting level by id:`, e);
       return {
         success: false,
         message: `Failed to get level: ${e instanceof Error ? e.message : String(e)}`,

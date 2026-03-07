@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
-import { LevelController } from "../../controllers/admin/level.controller";
-import { type UpdateLevelRequest } from "../../types";
+import { LevelController } from "../../controllers/dosen/level.controller";
+import { type CreateLevelRequest, type UpdateLevelRequest } from "../../types";
 
 export const levelRoutes = new Elysia({ prefix: "/api/levels" })
     // GET all levels
@@ -13,12 +13,19 @@ export const levelRoutes = new Elysia({ prefix: "/api/levels" })
         })
     })
 
-    // GET level by order (1-5)
-    .get("/order/:order", ({ params: { order } }) => LevelController.getLevelByOrder(order), {
-        params: t.Object({
-            order: t.Numeric({
-                minimum: 1,
-                maximum: 5
+    // Create Level
+    .post("/", ({ body }) => LevelController.createLevel(body as CreateLevelRequest), {
+        body: t.Object({
+            name: t.String({
+                minLength: 1,
+                maxLength: 50
+            }),
+            xpRequired: t.Numeric({
+                minimum: 0
+            }),
+            description: t.String(),
+            iconName: t.String({
+                maxLength: 255
             })
         })
     })
@@ -37,8 +44,14 @@ export const levelRoutes = new Elysia({ prefix: "/api/levels" })
                 minimum: 0
             })),
             description: t.Optional(t.String()),
-            iconUrl: t.Optional(t.String({
+            iconName: t.Optional(t.String({
                 maxLength: 255
             }))
         })
-    });
+    })
+
+    .delete("/:id", ({ params: { id } }) => LevelController.DeleteLevel(id), {
+        params: t.Object({
+            id: t.Numeric()
+        })
+    }); 

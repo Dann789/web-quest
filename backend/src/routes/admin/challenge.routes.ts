@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { Difficulty, ChallengeMethod } from "@prisma/client";
-import { ChallengeController } from "../../controllers/admin/challenge.controller";
+import { ChallengeController } from "../../controllers/dosen/challenge.controller";
 import {
   type CreateChallengeRequest,
   type UpdateChallengeRequest,

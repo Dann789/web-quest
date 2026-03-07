@@ -82,11 +82,18 @@ export interface UpdateMaterialRequest {
 }
 
 // LEVEL TYPES
+export interface CreateLevelRequest {
+    name: string;
+    xpRequired: number;
+    description: string;
+    iconName: string;
+}
+
 export interface UpdateLevelRequest {
     name?: string;
     xpRequired?: number;
     description?: string;
-    iconUrl?: string;
+    iconName?: string;
 }
 
 // CHALLENGE TYPES

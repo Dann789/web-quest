@@ -50,7 +50,7 @@ export interface Level {
   order: number;
   xpRequired: number;
   description?: string;
-  iconUrl?: string;
+  iconName?: string;
 }
 
 export interface UserProgress {

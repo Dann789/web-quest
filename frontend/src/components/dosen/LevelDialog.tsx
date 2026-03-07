@@ -6,6 +6,24 @@ import { Textarea } from '@/components/ui/textarea';
 import { useEffect, useState } from 'react';
 import { type Level } from '@/types';
 
+// List of available FontAwesome icons
+const AVAILABLE_ICONS = [
+  { id: 'fa-code', type: 'fa-solid' },
+  { id: 'fa-html5', type: 'fa-brands' },
+  { id: 'fa-css3', type: 'fa-brands' },
+  { id: 'fa-js', type: 'fa-brands' },
+  { id: 'fa-php', type: 'fa-brands' },
+  { id: 'fa-react', type: 'fa-brands' },
+  { id: 'fa-vuejs', type: 'fa-brands' },
+  { id: 'fa-database', type: 'fa-solid' },
+  { id: 'fa-bug', type: 'fa-solid' },
+  { id: 'fa-terminal', type: 'fa-solid' },
+  { id: 'fa-layer-group', type: 'fa-solid' },
+  { id: 'fa-gears', type: 'fa-solid' },
+  { id: 'fa-lightbulb', type: 'fa-solid' },
+  { id: 'fa-shield-halved', type: 'fa-solid' }
+];
+
 interface LevelDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -18,7 +36,7 @@ export function LevelDialog({ open, onOpenChange, level, onSubmit }: LevelDialog
     name: '',
     description: '',
     xpRequired: 0,
-    order: 1
+    iconName: 'fa-code'
   });
 
   const isEditMode = !!level;
@@ -29,14 +47,14 @@ export function LevelDialog({ open, onOpenChange, level, onSubmit }: LevelDialog
         name: level.name,
         description: level.description || '',
         xpRequired: level.xpRequired,
-        order: level.order
+        iconName: level.iconName || 'fa-code'
       });
     } else {
       setFormData({
         name: '',
         description: '',
         xpRequired: 0,
-        order: 1
+        iconName: 'fa-code'
       });
     }
   }, [level, open]);
@@ -110,19 +128,32 @@ export function LevelDialog({ open, onOpenChange, level, onSubmit }: LevelDialog
               </div>
             </div>
 
-            {/* Order */}
-            <div className="grid grid-cols-4 items-center gap-4">
-               <Label htmlFor="order" className="text-right">
-                 Urutan
-               </Label>
-               <Input 
-                  type="number"
-                  id="order"
-                  min={1}
-                  value={formData.order}
-                  onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 1 })}
-                  className="w-24 col-span-3"
-               />
+            {/* Icon Picker */}
+            <div className="grid grid-cols-4 gap-4 mt-2">
+              <Label className="text-right pt-2">Icon Level</Label>
+              <div className="col-span-3">
+                <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto p-1 pr-2">
+                  {AVAILABLE_ICONS.map((icon) => (
+                    <button
+                      key={icon.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, iconName: icon.id })}
+                      className={`flex items-center justify-center p-3 rounded-lg border-2 transition-all duration-200 ${
+                        formData.iconName === icon.id
+                          ? 'border-primary bg-primary/10 text-primary scale-105 shadow-sm'
+                          : 'border-border/50 bg-background hover:bg-muted hover:border-primary/50 text-muted-foreground hover:text-foreground'
+                      }`}
+                      title={icon.id}
+                    >
+                      <i className={`${icon.type} ${icon.id} text-xl`} />
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
+                  <span className="font-semibold text-foreground">Icon Terpilih:</span> 
+                  <code className="bg-muted px-1.5 py-0.5 rounded text-primary">{formData.iconName}</code>
+                </p>
+              </div>
             </div>
           </div>
 

@@ -126,6 +126,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
           <p className="px-4 text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
             Akun
           </p>
+          {user?.role === "MAHASISWA" && (
           <Link to="/profile" onClick={onClose}>
             <Button
               variant="ghost"
@@ -145,6 +146,28 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
               Profile
             </Button>
           </Link>
+          )}
+          {user?.role === "DOSEN" && (
+          <Link to="/dosen/profile" onClick={onClose}>
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full justify-start gap-3 h-10 rounded-xl transition-all duration-200",
+                isActive("/dosen/profile")
+                  ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
+                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
+              )}
+            >
+              <User
+                className={cn(
+                  "h-5 w-5",
+                  isActive("/dosen/profile") && "fill-current",
+                )}
+              />
+              Profile
+            </Button>
+          </Link>
+          )}
         </div>
         )}
       </div>

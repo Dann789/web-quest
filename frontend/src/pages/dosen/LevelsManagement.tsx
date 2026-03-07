@@ -1,47 +1,84 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash, Layers } from 'lucide-react';
 import { LevelDialog } from '@/components/dosen/LevelDialog';
 import { DeleteLevelDialog } from '@/components/dosen/DeleteLevelDialog';
+import { getLevels, createLevel, updateLevel, deleteLevel } from '@/services/LevelService';
+import type { Level } from '@/types';
 
 /**
  * Levels Management Page for Dosen
  */
 export default function LevelsManagement() {
-  // Mock Data
-  const [levels, setLevels] = useState([
-    { id: 1, name: 'HTML Basics', order: 1, xpRequired: 0, description: 'Pengenalan dasar HTML' },
-    { id: 2, name: 'CSS Styling', order: 2, xpRequired: 500, description: 'Dasar styling dengan CSS' },
-    { id: 3, name: 'JavaScript Novice', order: 3, xpRequired: 1200, description: 'Logika pemrograman dasar JS' },
-  ]);
+
+  // Helper to determine icon type (brands vs solid)
+  const getIconType = (iconName: string) => {
+    const brands = ['fa-html5', 'fa-css3', 'fa-js', 'fa-php', 'fa-react', 'fa-vuejs'];
+    return brands.includes(iconName) ? 'fa-brands' : 'fa-solid';
+  };
 
   // Dialog States
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<any>(null);
+  const [levels, setLevels] = useState<Level[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load levels on mount
+  useEffect(() => {
+    loadLevels();
+  }, []);
+
+  const loadLevels = async () => {
+    setLoading(true);
+    const response = await getLevels();
+    if (response.success) {
+      setLevels(response.data || []);
+    } else {
+      setError(response.message);
+    }
+    setLoading(false);
+  };
 
   // Handlers
-  const handleCreate = (data: any) => {
-    // Di sini nanti panggil API create
-    const newId = Math.max(...levels.map(l => l.id)) + 1;
-    setLevels([...levels, { ...data, id: newId }]);
-    console.log('Created:', data);
+  const handleCreate = async (data: any) => {
+    setLoading(true);
+    const response = await createLevel(data);
+    if (response.success) {
+      await loadLevels();
+    } else {
+      setError(response.message);
+    }
+    setLoading(false);
   };
 
-  const handleEdit = (data: any) => {
-    // Di sini nanti panggil API update
-    setLevels(levels.map(l => l.id === selectedLevel.id ? { ...l, ...data } : l));
-    console.log('Edited:', data, 'for ID:', selectedLevel.id);
+  const handleEdit = async (data: any) => {
+    if (!selectedLevel) return;
+    setLoading(true);
+    const response = await updateLevel(selectedLevel.id, data);
+    if (response.success) {
+      await loadLevels();
+    } else {
+      setError(response.message);
+    }
+    setLoading(false);
   };
 
-  const handleDelete = () => {
-    // Di sini nanti panggil API delete
-    setLevels(levels.filter(l => l.id !== selectedLevel.id));
-    setIsDeleteOpen(false);
-    console.log('Deleted ID:', selectedLevel.id);
+  const handleDelete = async () => {
+    if (!selectedLevel) return;
+    setLoading(true);
+    const response = await deleteLevel(selectedLevel.id);
+    if (response.success) {
+      await loadLevels();
+      setIsDeleteOpen(false);
+    } else {
+      setError(response.message);
+    }
+    setLoading(false);
   };
 
   const openEdit = (level: any) => {
@@ -64,10 +101,18 @@ export default function LevelsManagement() {
           </h1>
           <p className="text-muted-foreground mt-2">Kelola urutan dan konten level pembelajaran</p>
         </div>
-        <Button className="gap-2" onClick={() => setIsCreateOpen(true)}>
+        <Button className="gap-2" onClick={() => setIsCreateOpen(true)} disabled={loading}>
           <Plus className="h-4 w-4" /> Tambah Level
         </Button>
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="flex items-center justify-between p-4 rounded-lg bg-destructive/20 border border-destructive/30 text-destructive text-sm">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="ml-4 font-bold text-lg leading-none">×</button>
+        </div>
+      )}
 
       <Card>
         <CardContent className="p-0">
@@ -82,11 +127,27 @@ export default function LevelsManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {levels.length > 0 ? (
-                levels.map((level) => (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      Memuat data...
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : levels.length > 0 ? (
+                levels.map((level, index) => (
                   <TableRow key={level.id}>
-                    <TableCell className="font-bold text-center bg-muted/30">{level.order}</TableCell>
-                    <TableCell className="font-medium">{level.name}</TableCell>
+                    <TableCell className="text-center">{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center h-10 w-10 shrink-0 rounded-md bg-primary/10 text-primary">
+                          <i className={`${getIconType(level.iconName || 'fa-code')} ${level.iconName || 'fa-code'} text-lg`} />
+                        </div>
+                        <span className="font-medium whitespace-nowrap">{level.name}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{level.xpRequired} XP</TableCell>
                     <TableCell className="text-muted-foreground truncate max-w-[300px]">{level.description}</TableCell>
                     <TableCell className="text-center">
