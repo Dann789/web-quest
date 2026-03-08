@@ -49,8 +49,8 @@ export interface Level {
   name: string;
   order: number;
   xpRequired: number;
-  description?: string;
-  iconName?: string;
+  description: string;
+  iconName: string;
 }
 
 export interface UserProgress {

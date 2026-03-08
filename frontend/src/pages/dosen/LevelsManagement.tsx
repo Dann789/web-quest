@@ -15,7 +15,7 @@ export default function LevelsManagement() {
 
   // Helper to determine icon type (brands vs solid)
   const getIconType = (iconName: string) => {
-    const brands = ['fa-html5', 'fa-css3', 'fa-js', 'fa-php', 'fa-react', 'fa-vuejs'];
+    const brands = ['fa-html5', 'fa-css3', 'fa-js', 'fa-php', 'fa-react', 'fa-vuejs', 'fa-postgresql'];
     return brands.includes(iconName) ? 'fa-brands' : 'fa-solid';
   };
 

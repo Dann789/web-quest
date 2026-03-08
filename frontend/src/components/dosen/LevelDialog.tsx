@@ -15,7 +15,7 @@ const AVAILABLE_ICONS = [
   { id: 'fa-php', type: 'fa-brands' },
   { id: 'fa-react', type: 'fa-brands' },
   { id: 'fa-vuejs', type: 'fa-brands' },
-  { id: 'fa-database', type: 'fa-solid' },
+  { id: 'fa-postgresql', type: 'fa-brands' },
   { id: 'fa-bug', type: 'fa-solid' },
   { id: 'fa-terminal', type: 'fa-solid' },
   { id: 'fa-layer-group', type: 'fa-solid' },

@@ -2,60 +2,80 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Lock, ArrowRight } from 'lucide-react';
+import { Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Level } from '@/types/index';
+import { useEffect, useState } from 'react';
+import { getLevels } from '@/services/LevelService';
 
 export default function LevelPage() {
   const { user } = useAuth();
+
+  const [level, setLevels] = useState<Level[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   
   // Mock User XP jika belum ada (fallback)
-  const currentXP = user?.totalXp || 350; 
+  let currentXP = user?.totalXp ?? 0;
 
-  const levels = [
-    {
-      id: 1,
-      title: 'Level 1: HTML Foundation',
-      description: 'Pelajari struktur dasar web dengan HTML5.',
-      requiredXp: 0,
-      image: 'bg-orange-500/10 text-orange-600',
-      icon: <i className="fa-brands fa-html5 fa-xl"></i>
-    },
-    {
-      id: 2,
-      title: 'Level 2: CSS Styling',
-      description: 'Percantik tampilan web menggunakan CSS3.',
-      requiredXp: 250,
-      image: 'bg-blue-500/10 text-blue-600',
-      icon: <i className="fa-brands fa-css3-alt fa-xl"></i>
-    },
-    {
-      id: 3,
-      title: 'Level 3: JavaScript Logic',
-      description: 'Buat web interaktif dengan logika pemrograman.',
-      requiredXp: 500,
-      image: 'bg-yellow-500/10 text-yellow-600',
-      icon: <i className="fa-brands fa-js fa-xl"></i>
-    },
-    {
-      id: 4,
-      title: 'Level 4: PHP Backend',
-      description: 'Pelajari server-side scripting dengan PHP.',
-      requiredXp: 1000,
-      image: 'bg-indigo-500/10 text-indigo-600',
-      icon: <i className="fa-brands fa-php fa-xl"></i>
-    },
-    {
-      id: 5,
-      title: 'Level 5: Database',
-      description: 'Kelola penyimpanan data dengan PostgreSQL & Database.',
-      requiredXp: 2000,
-      image: 'bg-slate-500/10 text-slate-600',
-      icon: <i className="fa-solid fa-database fa-xl"></i>
-    }
-  ];
+  const theme = [
+    'bg-orange-500/10 text-orange-600',
+    'bg-blue-500/10 text-blue-600',
+    'bg-yellow-500/10 text-yellow-600',
+    'bg-indigo-500/10 text-indigo-600',
+    'bg-slate-500/10 text-slate-600',
+    'bg-green-500/10 text-green-600',
+    'bg-purple-500/10 text-purple-600',
+    'bg-pink-500/10 text-pink-600',
+    'bg-red-500/10 text-red-600',
+    'bg-teal-500/10 text-teal-600',
+    'bg-cyan-500/10 text-cyan-600',
+    'bg-fuchsia-500/10 text-fuchsia-600',
+    'bg-lime-500/10 text-lime-600',
+    'bg-orange-500/10 text-orange-600',
+    'bg-blue-500/10 text-blue-600',
+    'bg-green-500/10 text-green-600',
+    'bg-purple-500/10 text-purple-600',
+    'bg-pink-500/10 text-pink-600',
+    'bg-yellow-500/10 text-yellow-600',
+    'bg-red-500/10 text-red-600',
+    'bg-indigo-500/10 text-indigo-600',
+    'bg-teal-500/10 text-teal-600',
+    'bg-cyan-500/10 text-cyan-600',
+    'bg-fuchsia-500/10 text-fuchsia-600',
+    'bg-lime-500/10 text-lime-600',
+  ]
 
-  return (
+  useEffect(() => {
+    const fetchLevels = async () => {
+      try {
+        setLoading(true);
+        const result = await getLevels();
+        if (result.success && result.data) {
+          setLevels(result.data);
+        } else {
+          setError(result.message || 'Failed to fetch levels');
+        }
+      } catch (error) {
+        console.error('Error fetching levels:', error);
+        setError('Failed to fetch levels');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLevels();
+  }, []);
+
+  return loading ? (
+    <div className="flex items-center justify-center h-64">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
+  ) : error ? (
+    <div className="flex items-center justify-center h-64">
+      <p className="text-red-500">{error}</p>
+    </div>
+  ) : (
     <div className="space-y-8 pb-10">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Pilih Level Belajar</h1>
@@ -65,27 +85,26 @@ export default function LevelPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {levels.map((level) => {
-          const isLocked = currentXP < level.requiredXp;
-          // Kalkulasi progress sederhana (mock)
-          const progress = isLocked ? 0 : currentXP > level.requiredXp + 250 ? 100 : 45; 
+        {level.map((level) => {
+          const isLocked = currentXP < level.xpRequired;
+          const progress = isLocked ? 0 : currentXP > level.xpRequired + 250 ? 100 : 45; 
 
           return (
             <Card key={level.id} className={`flex flex-col h-full transition-all duration-300 ${isLocked ? 'opacity-75 bg-muted/30' : 'hover:border-primary/50 hover:shadow-lg'}`}>
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
-                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${level.image}`}>
-                    {level.icon}
+                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${theme[(level.id - 1) % theme.length]}`}>
+                    <i className={`text-2xl fa-brands ${level.iconName}`}></i>
                   </div>
                   {isLocked ? (
                      <Badge variant="outline" className="gap-1 bg-background text-muted-foreground border-dashed">
-                       <Lock className="h-3 w-3" /> {level.requiredXp} XP Dibutuhkan
+                       <Lock className="h-3 w-3" /> {level.xpRequired} XP Dibutuhkan
                      </Badge>
                   ) : (
                      <Badge className="bg-emerald-500 hover:bg-emerald-600">Terbuka</Badge>
                   )}
                 </div>
-                <CardTitle className="mt-4 text-xl">{level.title}</CardTitle>
+                <CardTitle className="mt-4 text-xl">{level.name}</CardTitle>
                 <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
                   {level.description}
                 </p>
@@ -101,7 +120,7 @@ export default function LevelPage() {
                    </div>
                  ) : (
                    <div className="h-full flex items-center justify-center text-sm text-muted-foreground bg-muted/20 rounded-lg p-4 border border-dashed text-center">
-                     Kumpulkan {level.requiredXp - currentXP} XP lagi untuk membuka
+                     Kumpulkan {level.xpRequired - currentXP} XP lagi untuk membuka
                    </div>
                  )}
               </CardContent>
