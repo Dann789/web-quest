@@ -15,6 +15,12 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SidebarProps {
   className?: string;
@@ -97,7 +103,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
       </div>
 
       {/* 2. Navigation Items */}
-      <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+      <div className="flex-1 overflow-y-auto py-5 px-3 space-y-1">
         <p className="px-4 text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
           Menu Utama
         </p>
@@ -122,59 +128,59 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
         ))}
 
         {(user?.role === "MAHASISWA" || user?.role === "DOSEN") && (
-        <div className="pt-6">
-          <p className="px-4 text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-            Akun
-          </p>
-          {user?.role === "MAHASISWA" && (
-          <Link to="/profile" onClick={onClose}>
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full justify-start gap-3 h-10 rounded-xl transition-all duration-200",
-                isActive("/profile")
-                  ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
-                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
-              )}
-            >
-              <User
-                className={cn(
-                  "h-5 w-5",
-                  isActive("/profile") && "fill-current",
-                )}
-              />
-              Profile
-            </Button>
-          </Link>
-          )}
-          {user?.role === "DOSEN" && (
-          <Link to="/dosen/profile" onClick={onClose}>
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full justify-start gap-3 h-10 rounded-xl transition-all duration-200",
-                isActive("/dosen/profile")
-                  ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
-                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
-              )}
-            >
-              <User
-                className={cn(
-                  "h-5 w-5",
-                  isActive("/dosen/profile") && "fill-current",
-                )}
-              />
-              Profile
-            </Button>
-          </Link>
-          )}
-        </div>
+          <div className="pt-3">
+            <p className="px-4 text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+              Akun
+            </p>
+            {user?.role === "MAHASISWA" && (
+              <Link to="/profile" onClick={onClose}>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200",
+                    isActive("/profile")
+                      ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
+                      : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
+                  )}
+                >
+                  <User
+                    className={cn(
+                      "h-5 w-5",
+                      isActive("/profile") && "fill-current",
+                    )}
+                  />
+                  Profile
+                </Button>
+              </Link>
+            )}
+            {user?.role === "DOSEN" && (
+              <Link to="/dosen/profile" onClick={onClose}>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200",
+                    isActive("/dosen/profile")
+                      ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
+                      : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
+                  )}
+                >
+                  <User
+                    className={cn(
+                      "h-5 w-5",
+                      isActive("/dosen/profile") && "fill-current",
+                    )}
+                  />
+                  Profile
+                </Button>
+              </Link>
+            )}
+          </div>
         )}
       </div>
 
       {/* 3. Footer: User Profile & Logout */}
-      <div className="p-4 border-t border-border/50 bg-secondary/20">
-        <div className="flex items-center gap-3 mb-4 p-2">
+      <div className="p-2.5 border-t border-border/50 bg-secondary/20">
+        <div className="flex items-center gap-3 p-2">
           <Avatar className="h-10 w-10 border border-primary/20">
             <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
               {user?.name?.substring(0, 2).toUpperCase() || "US"}
@@ -190,16 +196,23 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
                   : "Mahasiswa"}
             </p>
           </div>
+          <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                variant="ghost"
+                className=" justify-start gap-3 h-10 rounded-xl transition-all duration-200"
+                onClick={logout}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Logout</p>
+            </TooltipContent>
+          </Tooltip>
+          </TooltipProvider>
         </div>
-
-        <Button
-          variant="destructive"
-          className="w-full gap-2 shadow-lg shadow-red-500/10 hover:shadow-red-500/20"
-          onClick={logout}
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-        </Button>
       </div>
     </div>
   );

@@ -3,14 +3,9 @@ import { MaterialController } from "../../controllers/dosen/material.controller"
 import { type CreateMaterialRequest, type UpdateMaterialRequest } from "../../types";
 
 export const materialRoutes = new Elysia({ prefix: "/api/materials" })
-    // GET all materials (optional filter by levelId)
-    .get("/", ({ query }) => {
-        const levelId = query.levelId ? Number(query.levelId) : undefined;
-        return MaterialController.getAllMaterials(levelId);
-    }, {
-        query: t.Object({
-            levelId: t.Optional(t.String())
-        })
+    // GET all materials
+    .get("/", () => {
+        return MaterialController.getAllMaterials();
     })
 
     // POST create new material
@@ -23,10 +18,6 @@ export const materialRoutes = new Elysia({ prefix: "/api/materials" })
             }),
             content: t.String({
                 minLength: 10
-            }),
-            xpReward: t.Numeric({
-                minimum: 1,
-                maximum: 100
             }),
             order: t.Numeric({
                 minimum: 1
@@ -61,10 +52,6 @@ export const materialRoutes = new Elysia({ prefix: "/api/materials" })
             })),
             content: t.Optional(t.String({
                 minLength: 10
-            })),
-            xpReward: t.Optional(t.Numeric({
-                minimum: 1,
-                maximum: 100
             })),
             order: t.Optional(t.Numeric({
                 minimum: 1

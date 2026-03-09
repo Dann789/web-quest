@@ -5,18 +5,14 @@ export class MaterialController {
   /**
    * Get all materials with optional level filter
    */
-  static async getAllMaterials(levelId?: number) {
+  static async getAllMaterials() {
     try {
-      const whereClause = levelId ? { levelId } : {};
-
       const materials = await prisma.material.findMany({
-        where: whereClause,
         select: {
           id: true,
           levelId: true,
           title: true,
           content: true,
-          xpReward: true,
           order: true,
           createdAt: true,
           updatedAt: true,
@@ -24,7 +20,6 @@ export class MaterialController {
             select: {
               id: true,
               name: true,
-              order: true,
             },
           },
         },
@@ -53,13 +48,13 @@ export class MaterialController {
    */
   static async createMaterial(options: CreateMaterialRequest) {
     try {
-      const { levelId, title, content, xpReward, order } = options;
+      const { levelId, title, content, order } = options;
 
       // Validation
-      if (!levelId || !title || !content || xpReward === undefined || order === undefined) {
+      if (!levelId || !title || !content || order === undefined) {
         return {
           success: false,
-          message: "All fields are required: levelId, title, content, xpReward, order",
+          message: "All fields are required: levelId, title, content, order",
         };
       }
 
@@ -96,7 +91,6 @@ export class MaterialController {
           levelId,
           title,
           content,
-          xpReward,
           order,
         },
         select: {
@@ -104,7 +98,6 @@ export class MaterialController {
           levelId: true,
           title: true,
           content: true,
-          xpReward: true,
           order: true,
           createdAt: true,
           level: {
@@ -142,7 +135,6 @@ export class MaterialController {
           levelId: true,
           title: true,
           content: true,
-          xpReward: true,
           order: true,
           createdAt: true,
           updatedAt: true,
@@ -150,7 +142,6 @@ export class MaterialController {
             select: {
               id: true,
               name: true,
-              order: true,
             },
           },
         },
@@ -182,7 +173,7 @@ export class MaterialController {
    */
   static async updateMaterial(id: number, options: UpdateMaterialRequest) {
     try {
-      const { levelId, title, content, xpReward, order } = options;
+      const { levelId, title, content, order } = options;
 
       // Check if material exists
       const existingMaterial = await prisma.material.findUnique({
@@ -210,31 +201,11 @@ export class MaterialController {
         }
       }
 
-      // If order is being updated, check if new order is unique within level
-      const targetLevelId = levelId || existingMaterial.levelId;
-      if (order && order !== existingMaterial.order) {
-        const orderExists = await prisma.material.findFirst({
-          where: {
-            levelId: targetLevelId,
-            order,
-            NOT: { id },
-          },
-        });
-
-        if (orderExists) {
-          return {
-            success: false,
-            message: `Material with order ${order} already exists in this level`,
-          };
-        }
-      }
-
       // Prepare update data
       const updateData: any = {};
       if (levelId !== undefined) updateData.levelId = levelId;
       if (title !== undefined) updateData.title = title;
       if (content !== undefined) updateData.content = content;
-      if (xpReward !== undefined) updateData.xpReward = xpReward;
       if (order !== undefined) updateData.order = order;
 
       // Update material
@@ -246,7 +217,6 @@ export class MaterialController {
           levelId: true,
           title: true,
           content: true,
-          xpReward: true,
           order: true,
           createdAt: true,
           updatedAt: true,
@@ -332,7 +302,6 @@ export class MaterialController {
           levelId: true,
           title: true,
           content: true,
-          xpReward: true,
           order: true,
           createdAt: true,
         },

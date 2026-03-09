@@ -94,7 +94,6 @@ export interface Material {
   levelId: number;
   title: string;
   content: string;
-  xpReward: number;
   order: number;
 }
 

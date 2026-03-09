@@ -121,8 +121,8 @@ export default function LevelsManagement() {
               <TableRow>
                 <TableHead className="text-center w-[80px]">No</TableHead>
                 <TableHead>Nama Level</TableHead>
-                <TableHead>XP Requirement</TableHead>
-                <TableHead>Deskripsi</TableHead>
+                <TableHead className="text-center">XP Requirement</TableHead>
+                <TableHead className="text-center">Deskripsi</TableHead>
                 <TableHead className="text-center w-[120px]">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -148,8 +148,8 @@ export default function LevelsManagement() {
                         <span className="font-medium whitespace-nowrap">{level.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{level.xpRequired} XP</TableCell>
-                    <TableCell className="text-muted-foreground truncate max-w-[300px]">{level.description}</TableCell>
+                    <TableCell className="text-center">{level.xpRequired} XP</TableCell>
+                    <TableCell className="text-muted-foreground text-center truncate max-w-[300px]">{level.description}</TableCell>
                     <TableCell className="text-center">
                       <div className="flex justify-center gap-2">
                         <Button 
