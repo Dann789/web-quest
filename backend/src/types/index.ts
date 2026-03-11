@@ -100,11 +100,14 @@ export interface CreateChallengeRequest {
     title: string;
     description: string;
     difficulty: 'EASY' | 'MEDIUM' | 'HARD';
-    method: 'DRAG_AND_DROP' | 'CODING_MANUAL' | 'FIX_THE_BUG' | 'SCENARIO_BASED' | 'MICRO_CHALLENGE_CHAIN';
+    method: 'DRAG_AND_DROP' | 'CODING_MANUAL' | 'FIX_THE_BUG';
     idealTime: number;
     xpBase: number;
-    validationRules: object;
-    isActive?: boolean;
+    content: string;
+    starterCode: string;
+    testCases: string;
+    hint: string;
+    isActive: boolean;
 }
 
 export interface UpdateChallengeRequest {
@@ -112,10 +115,13 @@ export interface UpdateChallengeRequest {
     title?: string;
     description?: string;
     difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
-    method?: 'DRAG_AND_DROP' | 'CODING_MANUAL' | 'FIX_THE_BUG' | 'SCENARIO_BASED' | 'MICRO_CHALLENGE_CHAIN';
+    method?: 'DRAG_AND_DROP' | 'CODING_MANUAL' | 'FIX_THE_BUG';
     idealTime?: number;
     xpBase?: number;
-    validationRules?: object;
+    content?: string;
+    starterCode?: string;
+    testCases?: string;
+    hint?: string;
     isActive?: boolean;
 }
 

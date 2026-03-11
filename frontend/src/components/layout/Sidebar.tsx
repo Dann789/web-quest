@@ -126,12 +126,6 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
             </Button>
           </Link>
         ))}
-
-        {(user?.role === "MAHASISWA" || user?.role === "DOSEN") && (
-          <div className="pt-3">
-            <p className="px-4 text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-              Akun
-            </p>
             {user?.role === "MAHASISWA" && (
               <Link to="/profile" onClick={onClose}>
                 <Button
@@ -174,8 +168,6 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
                 </Button>
               </Link>
             )}
-          </div>
-        )}
       </div>
 
       {/* 3. Footer: User Profile & Logout */}

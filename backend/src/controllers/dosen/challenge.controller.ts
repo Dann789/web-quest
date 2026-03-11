@@ -3,34 +3,15 @@ import prisma from "../../config/database";
 import {
   type CreateChallengeRequest,
   type UpdateChallengeRequest,
-  type CreateVariantRequest,
-  type UpdateVariantRequest,
 } from "../../types";
 
 export class ChallengeController {
-  // ============================================
-  // CHALLENGE CRUD
-  // ============================================
-
   /**
-   * Get all challenges with optional filters
+   * Get all challenges
    */
-  static async getAllChallenges(filters?: {
-    levelId?: number;
-    difficulty?: Difficulty;
-    method?: ChallengeMethod;
-    isActive?: boolean;
-  }) {
+  static async getAllChallenges() {
     try {
-      const whereClause: any = {};
-
-      if (filters?.levelId) whereClause.levelId = filters.levelId;
-      if (filters?.difficulty) whereClause.difficulty = filters.difficulty;
-      if (filters?.method) whereClause.method = filters.method;
-      if (filters?.isActive !== undefined) whereClause.isActive = filters.isActive;
-
       const challenges = await prisma.challenge.findMany({
-        where: whereClause,
         select: {
           id: true,
           levelId: true,
@@ -40,7 +21,10 @@ export class ChallengeController {
           method: true,
           idealTime: true,
           xpBase: true,
-          validationRules: true,
+          content: true,
+          starterCode: true,
+          testCases: true,
+          hint: true,
           isActive: true,
           createdAt: true,
           updatedAt: true,
@@ -48,12 +32,6 @@ export class ChallengeController {
             select: {
               id: true,
               name: true,
-              order: true,
-            },
-          },
-          _count: {
-            select: {
-              challengeVariants: true,
             },
           },
         },
@@ -63,18 +41,10 @@ export class ChallengeController {
         ],
       });
 
-      // Format response
-      const formattedChallenges = challenges.map(challenge => ({
-        ...challenge,
-        totalVariants: challenge._count.challengeVariants,
-        _count: undefined,
-      }));
-
       return {
         success: true,
         message: "List Data Challenge",
-        data: formattedChallenges,
-        total: formattedChallenges.length,
+        data: challenges,
       };
     } catch (e: unknown) {
       console.error(`Error getting challenges:`, e);
@@ -101,7 +71,10 @@ export class ChallengeController {
           method: true,
           idealTime: true,
           xpBase: true,
-          validationRules: true,
+          content: true,
+          starterCode: true,
+          testCases: true,
+          hint: true,
           isActive: true,
           createdAt: true,
           updatedAt: true,
@@ -109,20 +82,7 @@ export class ChallengeController {
             select: {
               id: true,
               name: true,
-              order: true,
             },
-          },
-          challengeVariants: {
-            select: {
-              id: true,
-              questionContent: true,
-              starterCode: true,
-              correctAnswer: true,
-              testCases: true,
-              difficultyWeight: true,
-              createdAt: true,
-            },
-            orderBy: { id: 'asc' },
           },
         },
       });
@@ -137,10 +97,7 @@ export class ChallengeController {
       return {
         success: true,
         message: "Challenge Found!",
-        data: {
-          ...challenge,
-          totalVariants: challenge.challengeVariants.length,
-        },
+        data: challenge
       };
     } catch (e: unknown) {
       console.error(`Error getting challenge by id:`, e);
@@ -164,15 +121,18 @@ export class ChallengeController {
         method,
         idealTime,
         xpBase,
-        validationRules,
+        content,
+        starterCode,
+        testCases,
+        hint,
         isActive = true,
       } = options;
 
-      // Validation
-      if (!levelId || !title || !description || !difficulty || !method || !idealTime || !xpBase || !validationRules) {
+      // Validation — only truly required fields
+      if (!levelId || !title || !description || !difficulty || !method || !idealTime || !xpBase) {
         return {
           success: false,
-          message: "All fields are required: levelId, title, description, difficulty, method, idealTime, xpBase, validationRules",
+          message: "Required fields: levelId, title, description, difficulty, method, idealTime, xpBase",
         };
       }
 
@@ -198,7 +158,10 @@ export class ChallengeController {
           method: method as ChallengeMethod,
           idealTime,
           xpBase,
-          validationRules,
+          content,
+          starterCode,
+          testCases,
+          hint,
           isActive,
         },
         select: {
@@ -210,7 +173,10 @@ export class ChallengeController {
           method: true,
           idealTime: true,
           xpBase: true,
-          validationRules: true,
+          content: true,
+          starterCode: true,
+          testCases: true,
+          hint: true,
           isActive: true,
           createdAt: true,
           level: {
@@ -276,7 +242,10 @@ export class ChallengeController {
       if (options.method !== undefined) updateData.method = options.method as ChallengeMethod;
       if (options.idealTime !== undefined) updateData.idealTime = options.idealTime;
       if (options.xpBase !== undefined) updateData.xpBase = options.xpBase;
-      if (options.validationRules !== undefined) updateData.validationRules = options.validationRules;
+      if (options.content !== undefined) updateData.content = options.content;
+      if (options.starterCode !== undefined) updateData.starterCode = options.starterCode;
+      if (options.testCases !== undefined) updateData.testCases = options.testCases;
+      if (options.hint !== undefined) updateData.hint = options.hint;
       if (options.isActive !== undefined) updateData.isActive = options.isActive;
 
       // Check if there's anything to update
@@ -300,7 +269,10 @@ export class ChallengeController {
           method: true,
           idealTime: true,
           xpBase: true,
-          validationRules: true,
+          content: true,
+          starterCode: true,
+          testCases: true,
+          hint: true,
           isActive: true,
           createdAt: true,
           updatedAt: true,
@@ -334,12 +306,7 @@ export class ChallengeController {
     try {
       // Check if challenge exists
       const existingChallenge = await prisma.challenge.findUnique({
-        where: { id },
-        include: {
-          _count: {
-            select: { challengeVariants: true },
-          },
-        },
+        where: { id }
       });
 
       if (!existingChallenge) {
@@ -356,7 +323,7 @@ export class ChallengeController {
 
       return {
         success: true,
-        message: `Challenge Deleted Successfully! (${existingChallenge._count.challengeVariants} variants also deleted)`,
+        message: "Challenge Deleted Successfully!",
       };
     } catch (e: unknown) {
       console.error(`Error deleting challenge:`, e);
@@ -385,7 +352,7 @@ export class ChallengeController {
       }
 
       const challenges = await prisma.challenge.findMany({
-        where: { levelId, isActive: true },
+        where: { levelId }, // Dosen bisa melihat semua challenge termasuk inactive
         select: {
           id: true,
           title: true,
@@ -394,27 +361,23 @@ export class ChallengeController {
           method: true,
           idealTime: true,
           xpBase: true,
+          content: true,
+          starterCode: true,
+          testCases: true,
+          hint: true,
           isActive: true,
-          _count: {
-            select: { challengeVariants: true },
-          },
+          createdAt: true,
         },
         orderBy: { difficulty: 'asc' },
       });
-
-      const formattedChallenges = challenges.map(c => ({
-        ...c,
-        totalVariants: c._count.challengeVariants,
-        _count: undefined,
-      }));
 
       return {
         success: true,
         message: `Challenges for Level: ${level.name}`,
         data: {
           level,
-          challenges: formattedChallenges,
-          totalChallenges: formattedChallenges.length,
+          challenges: challenges,
+          totalChallenges: challenges.length,
         },
       };
     } catch (e: unknown) {
@@ -426,240 +389,56 @@ export class ChallengeController {
     }
   }
 
-  // ============================================
-  // CHALLENGE VARIANT CRUD
-  // ============================================
-
   /**
-   * Add variant to challenge
+   * Get challenges filtered by method (DRAG_AND_DROP, CODING_MANUAL, FIX_THE_BUG)
    */
-  static async addVariant(options: CreateVariantRequest) {
+  static async getChallengeByMethod(method: ChallengeMethod) {
     try {
-      const {
-        challengeId,
-        questionContent,
-        starterCode,
-        correctAnswer,
-        testCases,
-        difficultyWeight = 1.0,
-      } = options;
-
-      // Validation
-      if (!challengeId || !questionContent) {
-        return {
-          success: false,
-          message: "challengeId and questionContent are required",
-        };
-      }
-
-      // Check if challenge exists
-      const challenge = await prisma.challenge.findUnique({
-        where: { id: challengeId },
-      });
-
-      if (!challenge) {
-        return {
-          success: false,
-          message: "Challenge not found",
-        };
-      }
-
-      // Check variant count (max 3 per challenge)
-      const variantCount = await prisma.challengeVariant.count({
-        where: { challengeId },
-      });
-
-      if (variantCount >= 3) {
-        return {
-          success: false,
-          message: "Maximum 3 variants per challenge",
-        };
-      }
-
-      // Create variant
-      const variant = await prisma.challengeVariant.create({
-        data: {
-          challengeId,
-          questionContent,
-          starterCode,
-          correctAnswer,
-          testCases: testCases || {},
-          difficultyWeight,
-        },
+      // method is NOT @unique, so use findMany to get all challenges with that method
+      const challenges = await prisma.challenge.findMany({
+        where: { method },
         select: {
           id: true,
-          challengeId: true,
-          questionContent: true,
-          starterCode: true,
-          correctAnswer: true,
-          testCases: true,
-          difficultyWeight: true,
-          createdAt: true,
-        },
-      });
-
-      return {
-        success: true,
-        message: "Variant Added Successfully!",
-        data: variant,
-      };
-    } catch (e: unknown) {
-      console.error(`Error adding variant:`, e);
-      return {
-        success: false,
-        message: `Failed to add variant: ${e instanceof Error ? e.message : String(e)}`,
-      };
-    }
-  }
-
-  /**
-   * Update variant
-   */
-  static async updateVariant(variantId: number, options: UpdateVariantRequest) {
-    try {
-      // Check if variant exists
-      const existingVariant = await prisma.challengeVariant.findUnique({
-        where: { id: variantId },
-      });
-
-      if (!existingVariant) {
-        return {
-          success: false,
-          message: "Variant not found",
-        };
-      }
-
-      // Prepare update data
-      const updateData: any = {};
-      if (options.questionContent !== undefined) updateData.questionContent = options.questionContent;
-      if (options.starterCode !== undefined) updateData.starterCode = options.starterCode;
-      if (options.correctAnswer !== undefined) updateData.correctAnswer = options.correctAnswer;
-      if (options.testCases !== undefined) updateData.testCases = options.testCases;
-      if (options.difficultyWeight !== undefined) updateData.difficultyWeight = options.difficultyWeight;
-
-      // Check if there's anything to update
-      if (Object.keys(updateData).length === 0) {
-        return {
-          success: false,
-          message: "No fields to update",
-        };
-      }
-
-      // Update variant
-      const variant = await prisma.challengeVariant.update({
-        where: { id: variantId },
-        data: updateData,
-        select: {
-          id: true,
-          challengeId: true,
-          questionContent: true,
-          starterCode: true,
-          correctAnswer: true,
-          testCases: true,
-          difficultyWeight: true,
-          createdAt: true,
-        },
-      });
-
-      return {
-        success: true,
-        message: "Variant Updated Successfully!",
-        data: variant,
-      };
-    } catch (e: unknown) {
-      console.error(`Error updating variant:`, e);
-      return {
-        success: false,
-        message: `Failed to update variant: ${e instanceof Error ? e.message : String(e)}`,
-      };
-    }
-  }
-
-  /**
-   * Delete variant
-   */
-  static async deleteVariant(variantId: number) {
-    try {
-      // Check if variant exists
-      const existingVariant = await prisma.challengeVariant.findUnique({
-        where: { id: variantId },
-      });
-
-      if (!existingVariant) {
-        return {
-          success: false,
-          message: "Variant not found",
-        };
-      }
-
-      // Delete variant
-      await prisma.challengeVariant.delete({
-        where: { id: variantId },
-      });
-
-      return {
-        success: true,
-        message: "Variant Deleted Successfully!",
-      };
-    } catch (e: unknown) {
-      console.error(`Error deleting variant:`, e);
-      return {
-        success: false,
-        message: `Failed to delete variant: ${e instanceof Error ? e.message : String(e)}`,
-      };
-    }
-  }
-
-  /**
-   * Get all variants for a challenge
-   */
-  static async getVariantsByChallenge(challengeId: number) {
-    try {
-      // Check if challenge exists
-      const challenge = await prisma.challenge.findUnique({
-        where: { id: challengeId },
-        select: {
-          id: true,
+          levelId: true,
           title: true,
+          description: true,
+          difficulty: true,
           method: true,
-        },
-      });
-
-      if (!challenge) {
-        return {
-          success: false,
-          message: "Challenge not found",
-        };
-      }
-
-      const variants = await prisma.challengeVariant.findMany({
-        where: { challengeId },
-        select: {
-          id: true,
-          questionContent: true,
+          idealTime: true,
+          xpBase: true,
+          content: true,
           starterCode: true,
-          correctAnswer: true,
           testCases: true,
-          difficultyWeight: true,
+          hint: true,
+          isActive: true,
           createdAt: true,
+          level: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
-        orderBy: { id: 'asc' },
+        orderBy: [
+          { levelId: 'asc' },
+          { difficulty: 'asc' },
+        ],
       });
 
       return {
         success: true,
-        message: `Variants for Challenge: ${challenge.title}`,
+        message: `Challenges with method: ${method}`,
         data: {
-          challenge,
-          variants,
-          totalVariants: variants.length,
+          method,
+          challenges,
+          total: challenges.length,
         },
       };
     } catch (e: unknown) {
-      console.error(`Error getting variants:`, e);
+      console.error(`Error getting challenges by method:`, e);
       return {
         success: false,
-        message: `Failed to get variants: ${e instanceof Error ? e.message : String(e)}`,
+        message: `Failed to get challenges by method: ${e instanceof Error ? e.message : String(e)}`,
       };
     }
   }
