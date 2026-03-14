@@ -74,12 +74,20 @@ export const challengeRoutes = new Elysia({ prefix: "/api/challenges" })
         minimum: 5,
         maximum: 50
       }),
-      // Optional fields (Json? / String? di schema Prisma)
-      content: t.Optional(t.Any()),
-      starterCode: t.Optional(t.String()),
-      testCases: t.Optional(t.Any()),
-      hint: t.Optional(t.String()),
-      isActive: t.Optional(t.Boolean())
+      // Optional fields (dipakai berdasarkan method)
+      hint: t.Optional(t.Nullable(t.String())),
+      isActive: t.Optional(t.Boolean()),
+
+      // CODING_MANUAL
+      starterCode: t.Optional(t.Nullable(t.String())),
+      correctAnswer: t.Optional(t.Nullable(t.String())),
+
+      // FIX_THE_BUG
+      buggyCode: t.Optional(t.Nullable(t.String())),
+
+      // DRAG_AND_DROP
+      blocks: t.Optional(t.Nullable(t.Array(t.String()))),
+      expectedOrder: t.Optional(t.Nullable(t.Array(t.String())))
     })
   })
 
@@ -112,11 +120,15 @@ export const challengeRoutes = new Elysia({ prefix: "/api/challenges" })
           minimum: 5,
           maximum: 50
         })),
-        content: t.Optional(t.Any()),
-        starterCode: t.Optional(t.String()),
-        testCases: t.Optional(t.Any()),
-        hint: t.Optional(t.String()),
-        isActive: t.Optional(t.Boolean())
+        hint: t.Optional(t.Nullable(t.String())),
+        isActive: t.Optional(t.Boolean()),
+
+        // Field spesifik per metode
+        starterCode: t.Optional(t.Nullable(t.String())),
+        correctAnswer: t.Optional(t.Nullable(t.String())),
+        buggyCode: t.Optional(t.Nullable(t.String())),
+        blocks: t.Optional(t.Nullable(t.Array(t.String()))),
+        expectedOrder: t.Optional(t.Nullable(t.Array(t.String())))
       })
     }
   )

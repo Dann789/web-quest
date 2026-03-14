@@ -5,6 +5,77 @@ import {
   type UpdateChallengeRequest,
 } from "../../types";
 
+// ============================================================
+// Helpers: build content & testCases JSON berdasarkan method
+// ============================================================
+
+/**
+ * Build kolom `content` (konfigurasi struktur soal).
+ * Backend yang bertanggung jawab membentuk JSON ini.
+ */
+function buildContent(method: string, options: Partial<CreateChallengeRequest>): object {
+  switch (method) {
+    case 'CODING_MANUAL':
+      return {
+        starterCode: options.starterCode ?? '',
+        correctAnswer: options.correctAnswer ?? '',
+        language: 'html', // default, bisa diperluas nanti
+      };
+    case 'FIX_THE_BUG':
+      return {
+        buggyCode: options.buggyCode ?? '',
+        correctAnswer: options.correctAnswer ?? '',
+        language: 'javascript',
+      };
+    case 'DRAG_AND_DROP':
+      return {
+        // blocks: urutan acak yang ditampilkan ke user
+        blocks: options.blocks ?? [],
+        // expectedOrder: urutan yang benar
+        expectedOrder: options.expectedOrder ?? [],
+      };
+    default:
+      return {};
+  }
+}
+
+/**
+ * Build kolom `testCases` (logika validasi jawaban).
+ * Auto-generate dari kunci jawaban — tidak butuh input manual dari dosen.
+ */
+function buildTestCases(method: string, options: Partial<CreateChallengeRequest>): object[] {
+  switch (method) {
+    case 'CODING_MANUAL':
+      return [{
+        input: null,
+        expectedOutput: options.correctAnswer ?? '',
+        isHidden: false,
+        weight: 100,
+      }];
+    case 'FIX_THE_BUG':
+      return [{
+        input: null,
+        expectedOutput: options.correctAnswer ?? '',
+        isHidden: false,
+        weight: 100,
+      }];
+    case 'DRAG_AND_DROP':
+      return [{
+        input: null,
+        // expectedOutput = urutan benar yang digabung dengan \n sebagai separator
+        expectedOutput: (options.expectedOrder ?? []).join('\n'),
+        isHidden: false,
+        weight: 100,
+      }];
+    default:
+      return [];
+  }
+}
+
+// ============================================================
+// Controller
+// ============================================================
+
 export class ChallengeController {
   /**
    * Get all challenges
@@ -56,7 +127,7 @@ export class ChallengeController {
   }
 
   /**
-   * Get challenge by ID with variants
+   * Get challenge by ID
    */
   static async getChallengeById(id: number) {
     try {
@@ -110,6 +181,7 @@ export class ChallengeController {
 
   /**
    * Create new challenge
+   * Backend yang membangun JSON untuk kolom `content` dan `testCases`
    */
   static async createChallenge(options: CreateChallengeRequest) {
     try {
@@ -121,14 +193,11 @@ export class ChallengeController {
         method,
         idealTime,
         xpBase,
-        content,
-        starterCode,
-        testCases,
         hint,
         isActive = true,
       } = options;
 
-      // Validation — only truly required fields
+      // Validasi field wajib
       if (!levelId || !title || !description || !difficulty || !method || !idealTime || !xpBase) {
         return {
           success: false,
@@ -136,19 +205,33 @@ export class ChallengeController {
         };
       }
 
-      // Check if level exists
-      const levelExists = await prisma.level.findUnique({
-        where: { id: levelId },
-      });
-
-      if (!levelExists) {
-        return {
-          success: false,
-          message: "Level not found",
-        };
+      // Validasi method-specific fields
+      if (method === 'CODING_MANUAL' && !options.correctAnswer) {
+        return { success: false, message: "CODING_MANUAL membutuhkan correctAnswer" };
+      }
+      if (method === 'FIX_THE_BUG' && (!options.buggyCode || !options.correctAnswer)) {
+        return { success: false, message: "FIX_THE_BUG membutuhkan buggyCode dan correctAnswer" };
+      }
+      if (method === 'DRAG_AND_DROP' && (!options.expectedOrder || options.expectedOrder.length === 0)) {
+        return { success: false, message: "DRAG_AND_DROP membutuhkan expectedOrder" };
       }
 
-      // Create challenge
+      // Cek level ada
+      const levelExists = await prisma.level.findUnique({ where: { id: levelId } });
+      if (!levelExists) {
+        return { success: false, message: "Level not found" };
+      }
+
+      // Build JSON columns di backend
+      const contentJson = buildContent(method, options);
+      const testCasesJson = buildTestCases(method, options);
+
+      // starterCode tetap disimpan ke kolom terpisah untuk akses cepat di frontend
+      const starterCode =
+        method === 'CODING_MANUAL' ? (options.starterCode ?? null) :
+        method === 'FIX_THE_BUG' ? (options.buggyCode ?? null) :
+        null;
+
       const challenge = await prisma.challenge.create({
         data: {
           levelId,
@@ -158,10 +241,10 @@ export class ChallengeController {
           method: method as ChallengeMethod,
           idealTime,
           xpBase,
-          content,
+          content: contentJson,
           starterCode,
-          testCases,
-          hint,
+          testCases: testCasesJson,
+          hint: hint ?? null,
           isActive,
         },
         select: {
@@ -180,10 +263,7 @@ export class ChallengeController {
           isActive: true,
           createdAt: true,
           level: {
-            select: {
-              id: true,
-              name: true,
-            },
+            select: { id: true, name: true },
           },
         },
       });
@@ -204,36 +284,25 @@ export class ChallengeController {
 
   /**
    * Update challenge
+   * Backend merekonstruksi JSON columns jika method-specific fields dikirim
    */
   static async updateChallenge(id: number, options: UpdateChallengeRequest) {
     try {
-      // Check if challenge exists
-      const existingChallenge = await prisma.challenge.findUnique({
-        where: { id },
-      });
-
+      const existingChallenge = await prisma.challenge.findUnique({ where: { id } });
       if (!existingChallenge) {
-        return {
-          success: false,
-          message: "Challenge not found",
-        };
+        return { success: false, message: "Challenge not found" };
       }
 
-      // If levelId is being updated, check if new level exists
-      if (options.levelId && options.levelId !== existingChallenge.levelId) {
-        const levelExists = await prisma.level.findUnique({
-          where: { id: options.levelId },
-        });
+      // Gunakan method lama jika tidak diupdate
+      const activeMethod = (options.method ?? existingChallenge.method) as string;
 
+      if (options.levelId && options.levelId !== existingChallenge.levelId) {
+        const levelExists = await prisma.level.findUnique({ where: { id: options.levelId } });
         if (!levelExists) {
-          return {
-            success: false,
-            message: "Level not found",
-          };
+          return { success: false, message: "Level not found" };
         }
       }
 
-      // Prepare update data
       const updateData: any = {};
       if (options.levelId !== undefined) updateData.levelId = options.levelId;
       if (options.title !== undefined) updateData.title = options.title;
@@ -242,21 +311,32 @@ export class ChallengeController {
       if (options.method !== undefined) updateData.method = options.method as ChallengeMethod;
       if (options.idealTime !== undefined) updateData.idealTime = options.idealTime;
       if (options.xpBase !== undefined) updateData.xpBase = options.xpBase;
-      if (options.content !== undefined) updateData.content = options.content;
-      if (options.starterCode !== undefined) updateData.starterCode = options.starterCode;
-      if (options.testCases !== undefined) updateData.testCases = options.testCases;
       if (options.hint !== undefined) updateData.hint = options.hint;
       if (options.isActive !== undefined) updateData.isActive = options.isActive;
 
-      // Check if there's anything to update
-      if (Object.keys(updateData).length === 0) {
-        return {
-          success: false,
-          message: "No fields to update",
-        };
+      // Rebuild JSON columns jika ada field spesifik yang dikirim
+      const hasMethodFields =
+        options.starterCode !== undefined ||
+        options.correctAnswer !== undefined ||
+        options.buggyCode !== undefined ||
+        options.blocks !== undefined ||
+        options.expectedOrder !== undefined;
+
+      if (hasMethodFields) {
+        updateData.content = buildContent(activeMethod, options as Partial<CreateChallengeRequest>);
+        updateData.testCases = buildTestCases(activeMethod, options as Partial<CreateChallengeRequest>);
+
+        // Update starterCode kolom terpisah
+        updateData.starterCode =
+          activeMethod === 'CODING_MANUAL' ? (options.starterCode ?? existingChallenge.starterCode) :
+          activeMethod === 'FIX_THE_BUG' ? (options.buggyCode ?? existingChallenge.starterCode) :
+          null;
       }
 
-      // Update challenge
+      if (Object.keys(updateData).length === 0) {
+        return { success: false, message: "No fields to update" };
+      }
+
       const challenge = await prisma.challenge.update({
         where: { id },
         data: updateData,
@@ -277,10 +357,7 @@ export class ChallengeController {
           createdAt: true,
           updatedAt: true,
           level: {
-            select: {
-              id: true,
-              name: true,
-            },
+            select: { id: true, name: true },
           },
         },
       });
@@ -300,26 +377,16 @@ export class ChallengeController {
   }
 
   /**
-   * Delete challenge (will cascade delete variants)
+   * Delete challenge
    */
   static async deleteChallenge(id: number) {
     try {
-      // Check if challenge exists
-      const existingChallenge = await prisma.challenge.findUnique({
-        where: { id }
-      });
-
+      const existingChallenge = await prisma.challenge.findUnique({ where: { id } });
       if (!existingChallenge) {
-        return {
-          success: false,
-          message: "Challenge not found",
-        };
+        return { success: false, message: "Challenge not found" };
       }
 
-      // Delete challenge (variants will be cascade deleted)
-      await prisma.challenge.delete({
-        where: { id },
-      });
+      await prisma.challenge.delete({ where: { id } });
 
       return {
         success: true,
@@ -339,20 +406,13 @@ export class ChallengeController {
    */
   static async getChallengesByLevel(levelId: number) {
     try {
-      // Check if level exists
-      const level = await prisma.level.findUnique({
-        where: { id: levelId },
-      });
-
+      const level = await prisma.level.findUnique({ where: { id: levelId } });
       if (!level) {
-        return {
-          success: false,
-          message: "Level not found",
-        };
+        return { success: false, message: "Level not found" };
       }
 
       const challenges = await prisma.challenge.findMany({
-        where: { levelId }, // Dosen bisa melihat semua challenge termasuk inactive
+        where: { levelId },
         select: {
           id: true,
           title: true,
@@ -376,7 +436,7 @@ export class ChallengeController {
         message: `Challenges for Level: ${level.name}`,
         data: {
           level,
-          challenges: challenges,
+          challenges,
           totalChallenges: challenges.length,
         },
       };
@@ -390,11 +450,10 @@ export class ChallengeController {
   }
 
   /**
-   * Get challenges filtered by method (DRAG_AND_DROP, CODING_MANUAL, FIX_THE_BUG)
+   * Get challenges filtered by method
    */
   static async getChallengeByMethod(method: ChallengeMethod) {
     try {
-      // method is NOT @unique, so use findMany to get all challenges with that method
       const challenges = await prisma.challenge.findMany({
         where: { method },
         select: {
@@ -413,10 +472,7 @@ export class ChallengeController {
           isActive: true,
           createdAt: true,
           level: {
-            select: {
-              id: true,
-              name: true,
-            },
+            select: { id: true, name: true },
           },
         },
         orderBy: [

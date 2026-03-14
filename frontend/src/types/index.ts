@@ -83,6 +83,11 @@ export interface Challenge {
   method: ChallengeMethod;
   idealTime: number;
   xpBase: number;
+  content: string;
+  starterCode: string;
+  testCases: string;
+  hint: string;
+  isActive: boolean;
 }
 
 // ============================================

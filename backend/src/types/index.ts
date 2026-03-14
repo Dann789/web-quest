@@ -95,6 +95,7 @@ export interface UpdateLevelRequest {
 }
 
 // CHALLENGE TYPES
+
 export interface CreateChallengeRequest {
     levelId: number;
     title: string;
@@ -103,11 +104,15 @@ export interface CreateChallengeRequest {
     method: 'DRAG_AND_DROP' | 'CODING_MANUAL' | 'FIX_THE_BUG';
     idealTime: number;
     xpBase: number;
-    content: string;
-    starterCode: string;
-    testCases: string;
-    hint: string;
-    isActive: boolean;
+    hint?: string | null;
+    isActive?: boolean;
+
+    // Field spesifik per metode (backend yang build JSON)
+    starterCode?: string | null;    // CODING_MANUAL: kode awal
+    correctAnswer?: string | null;  // CODING_MANUAL & FIX_THE_BUG: kunci jawaban
+    buggyCode?: string | null;      // FIX_THE_BUG: kode yang sengaja salah
+    blocks?: string[] | null;        // DRAG_AND_DROP: blok acak
+    expectedOrder?: string[] | null; // DRAG_AND_DROP: urutan benar
 }
 
 export interface UpdateChallengeRequest {
@@ -118,35 +123,39 @@ export interface UpdateChallengeRequest {
     method?: 'DRAG_AND_DROP' | 'CODING_MANUAL' | 'FIX_THE_BUG';
     idealTime?: number;
     xpBase?: number;
-    content?: string;
-    starterCode?: string;
-    testCases?: string;
-    hint?: string;
+    hint?: string | null;
     isActive?: boolean;
+
+    // Field spesifik per metode
+    starterCode?: string | null;
+    correctAnswer?: string | null;
+    buggyCode?: string | null;
+    blocks?: string[] | null;
+    expectedOrder?: string[] | null;
 }
 
-// CHALLENGE VARIANT TYPES
-export interface CreateVariantRequest {
-    challengeId: number;
-    questionContent: string;
-    starterCode?: string;
-    correctAnswer?: string;
-    testCases?: object;
-    difficultyWeight?: number;
-}
+// // CHALLENGE VARIANT TYPES
+// export interface CreateVariantRequest {
+//     challengeId: number;
+//     questionContent: string;
+//     starterCode?: string;
+//     correctAnswer?: string;
+//     testCases?: object;
+//     difficultyWeight?: number;
+// }
 
-export interface UpdateVariantRequest {
-    questionContent?: string;
-    starterCode?: string;
-    correctAnswer?: string;
-    testCases?: object;
-    difficultyWeight?: number;
-}
+// export interface UpdateVariantRequest {
+//     questionContent?: string;
+//     starterCode?: string;
+//     correctAnswer?: string;
+//     testCases?: object;
+//     difficultyWeight?: number;
+// }
 
-// CHALLENGE ATTEMPT TYPES
-export interface SubmitAnswerRequest {
-    challengeId: number;
-    variantId: number;
-    answerCode: string;
-    timeSpent: number;
-}
+// // CHALLENGE ATTEMPT TYPES
+// export interface SubmitAnswerRequest {
+//     challengeId: number;
+//     variantId: number;
+//     answerCode: string;
+//     timeSpent: number;
+// }
