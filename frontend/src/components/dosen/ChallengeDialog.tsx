@@ -198,8 +198,8 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{isEditMode ? 'Edit Soal' : 'Buat Soal Baru'}</DialogTitle>
-            <DialogDescription>
-              Pilih metode challenge, isi detail soal, lalu tambahkan test case untuk validasi otomatis.
+            <DialogDescription className='pt-1'>
+              Pilih metode challenge, isi detail soal, lalu tambahkan kode program yang diperlukan.
             </DialogDescription>
           </DialogHeader>
 
@@ -283,7 +283,7 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
                 />
               </div>
               {isEditMode && (
-                <div className="space-y-2 flex items-end gap-3 pb-1">
+                <div className="flex flex-row items-center gap-3 pt-8">
                   <Label>Status Soal</Label>
                   <Switch
                     checked={formData.isActive}

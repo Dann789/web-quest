@@ -16,7 +16,6 @@ export default function LevelPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Mock User XP jika belum ada (fallback)
   let currentXP = user?.totalXp ?? 0;
 
   const theme = [

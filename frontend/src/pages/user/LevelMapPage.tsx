@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Lock, BookOpen, ChevronLeft, X, CircleHelp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import MaterialModal from './MaterialPage';
+import MaterialModal from './MaterialModal';
 import { getLevelData } from '@/mocks/levelMockData';
 
 export default function LevelMapPage() {
@@ -348,7 +348,7 @@ export default function LevelMapPage() {
       <MaterialModal 
         isOpen={isMaterialOpen}
         onClose={() => setIsMaterialOpen(false)}
-        materialContent={levelData.materialContent}
+        levelId={parseInt(levelId || '1', 10)}
       />
 
       {/* Guide Floating Action Button */}

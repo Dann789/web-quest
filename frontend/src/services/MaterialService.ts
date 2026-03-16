@@ -31,9 +31,13 @@ export async function getMaterialsById(id: number): Promise<ApiResponse<Material
   }
 }
 
-export async function getMaterialsByLevelId(levelId: number): Promise<ApiResponse<Material>> {
+export async function getMaterialsByLevelId(
+  levelId: number
+): Promise<ApiResponse<{ level: { id: number; name: string }; materials: Material[]; totalMaterials: number }>> {
   try {
-    const response = await fetch(`${API_BASE}/api/materials/level/${levelId}`);
+    const response = await fetch(`${API_BASE}/api/materials/level/${levelId}`, {
+      headers: getAuthHeaders(),
+    });
     const data = await response.json();
     return data;
   } catch (error) {
