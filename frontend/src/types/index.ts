@@ -53,14 +53,27 @@ export interface Level {
   iconName: string;
 }
 
-export interface UserProgress {
+export interface Progress {
   id: number;
+  userId: number;
   levelId: number;
   isUnlocked: boolean;
-  materialsCompleted: number;
-  challengesCompleted: number;
-  totalXpEarned: number;
-  progressPercentage: number;
+}
+
+export interface MaterialProgress {
+  id: number;
+  userId: number;
+  materialId: number;
+  isCompleted: boolean;
+}
+
+export interface Assignment {
+  id: number;
+  userId: number;
+  levelId: number;
+  nodeSlot: number;
+  challengeId: number;
+  isCompleted: boolean;
 }
 
 // ============================================
@@ -88,6 +101,16 @@ export interface Challenge {
   testCases: string;
   hint: string;
   isActive: boolean;
+}
+
+export interface Attempt {
+  id: number;
+  userId: number;
+  assignmentId: number;
+  challengeId: number;
+  isFirstAttempt: boolean;
+  timeSpent: number;
+  xpEarned: number;
 }
 
 // ============================================

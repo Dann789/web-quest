@@ -1,4 +1,4 @@
-import { UserRole } from "@prisma/client";
+import { ChallengeMethod, UserRole } from "@prisma/client";
 
 
 // AUTH TYPES
@@ -94,6 +94,32 @@ export interface UpdateLevelRequest {
     iconName?: string;
 }
 
+// Assignment Types
+export interface CreateAssignmentRequest {
+    userId: number;
+    levelId: number;
+    challengeId: number;
+    nodeSlot: number;
+    isCompleted: boolean;
+}
+
+export interface UpdateAssignmentRequest {
+    userId?: number;
+    levelId?: number;
+    challengeId?: number;
+    nodeSlot?: number;
+    isCompleted?: boolean;
+}
+
+export interface CreateAttemptRequest {
+    userId: number;
+    assignmentId: number;
+    challengeId: number;
+    isFirstAttempt: boolean;
+    timeSpent: number;
+    xpEarned: number;
+}
+
 // CHALLENGE TYPES
 
 export interface CreateChallengeRequest {
@@ -134,28 +160,10 @@ export interface UpdateChallengeRequest {
     expectedOrder?: string[] | null;
 }
 
-// // CHALLENGE VARIANT TYPES
-// export interface CreateVariantRequest {
-//     challengeId: number;
-//     questionContent: string;
-//     starterCode?: string;
-//     correctAnswer?: string;
-//     testCases?: object;
-//     difficultyWeight?: number;
-// }
-
-// export interface UpdateVariantRequest {
-//     questionContent?: string;
-//     starterCode?: string;
-//     correctAnswer?: string;
-//     testCases?: object;
-//     difficultyWeight?: number;
-// }
-
 // // CHALLENGE ATTEMPT TYPES
-// export interface SubmitAnswerRequest {
-//     challengeId: number;
-//     variantId: number;
-//     answerCode: string;
-//     timeSpent: number;
-// }
+export interface SubmitAnswerRequest {
+    challengeId: number;
+    method: ChallengeMethod;
+    answerCode: string;
+    timeSpent: number;
+}
