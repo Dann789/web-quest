@@ -8,13 +8,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plus, Edit, Trash, Puzzle, Loader2 } from 'lucide-react';
 import { ChallengeDialog } from '@/components/dosen/ChallengeDialog';
 import { DeleteChallengeDialog } from '@/components/dosen/DeleteChallengeDialog';
-import { getLevels } from '@/services/LevelService';
+import { getLevels } from '@/services/dosen/LevelService';
 import {
   getChallenges,
   createChallenge,
   updateChallenge,
   deleteChallenge,
-} from '@/services/ChallengeService';
+} from '@/services/dosen/ChallengeService';
 import type { Challenge, Level } from '@/types';
 
 // Label map untuk method

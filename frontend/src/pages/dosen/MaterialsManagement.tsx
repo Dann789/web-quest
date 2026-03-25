@@ -6,9 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Edit, Trash, FileText } from 'lucide-react';
 import { MaterialDialog } from '@/components/dosen/MaterialDialog';
 import { DeleteMaterialDialog } from '@/components/dosen/DeleteMaterialDialog';
-import { getLevels } from '@/services/LevelService';
+import { getLevels } from '@/services/dosen/LevelService';
 import type { Level, Material } from '@/types';
-import { createMaterial, deleteMaterial, getMaterials, updateMaterial } from '@/services/MaterialService';
+import { createMaterial, deleteMaterial, getMaterials, updateMaterial } from '@/services/dosen/MaterialService';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 

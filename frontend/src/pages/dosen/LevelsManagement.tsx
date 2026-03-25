@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Edit, Trash, Layers } from 'lucide-react';
 import { LevelDialog } from '@/components/dosen/LevelDialog';
 import { DeleteLevelDialog } from '@/components/dosen/DeleteLevelDialog';
-import { getLevels, createLevel, updateLevel, deleteLevel } from '@/services/LevelService';
+import { getLevels, createLevel, updateLevel, deleteLevel } from '@/services/dosen/LevelService';
 import type { Level } from '@/types';
 
 /**

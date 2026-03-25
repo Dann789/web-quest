@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import UserDialog, { type UserFormData } from '@/components/admin/UserDialog';
 import DeleteUserDialog from '@/components/admin/DeleteUserDialog';
-import { getUsers, createUser, updateUser, deleteUser } from '@/services/UserService';
+import { getUsers, createUser, updateUser, deleteUser } from '@/services/admin/UserService';
 import type { User } from '@/types';
 
 /**

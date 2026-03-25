@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, Mail, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { updateUser } from '@/services/UserService';
+import { updateUser } from '@/services/admin/UserService';
 
 export default function DosenProfilePage() {
   const { user, updateUser: updateAuthUser } = useAuth();

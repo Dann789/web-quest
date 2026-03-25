@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Level } from '@/types/index';
 import { useEffect, useState } from 'react';
-import { getLevels } from '@/services/LevelService';
+import { getLevels } from '@/services/dosen/LevelService';
 
 export default function LevelPage() {
   const { user } = useAuth();

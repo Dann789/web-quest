@@ -8,7 +8,7 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { Material } from '@/types';
-import { getMaterialsByLevelId } from '@/services/MaterialService';
+import { getMaterialsByLevelId } from '@/services/dosen/MaterialService';
 
 interface MaterialModalProps {
   isOpen: boolean;

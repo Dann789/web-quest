@@ -13,7 +13,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { getUsers } from "@/services/UserService";
+import { getUsers } from "@/services/admin/UserService";
 import type { User } from "@/types";
 import { useCallback, useEffect, useState } from "react";
 import {
