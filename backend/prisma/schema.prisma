@@ -167,6 +167,7 @@ model MaterialProgress {
 
   @@unique([userId, materialId], name: "idx_material_progress_unique")
   @@index([userId], name: "idx_material_progress_user")
+  @@index([materialId], name: "idx_material_progress_material")
   @@map("material_progress")
 }
 
@@ -185,6 +186,8 @@ model Assignment {
   level     Level     @relation(fields: [levelId], references: [id], onDelete: Cascade)
   challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
+  attempts  Attempt[]
+
   @@unique([userId, levelId, nodeSlot], name: "idx_assignment_node_unique")
   @@unique([userId, levelId, challengeId], name: "idx_assignment_challenge_once")
   @@index([userId, levelId], name: "idx_assignment_user_level")
@@ -194,6 +197,7 @@ model Assignment {
 model Attempt {
   id             Int      @id @default(autoincrement())
   userId         Int      @map("user_id")
+  assignmentId   Int      @map("assignment_id")
   challengeId    Int      @map("challenge_id")
   isFirstAttempt Boolean  @map("is_first_attempt")
   timeSpent      Int      @map("time_spent")
@@ -202,7 +206,8 @@ model Attempt {
 
   // Relations
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  challenge Challenge  @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
 
   @@index([userId, challengeId, isFirstAttempt], name: "idx_attempts_first")
   @@index([userId, submittedAt], name: "idx_attempts_history")
