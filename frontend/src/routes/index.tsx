@@ -163,7 +163,7 @@ const router = createBrowserRouter([
         element: <LevelDetailPage />,
       },
       {
-        path: '/challenge/:challengeId',
+        path: '/challenge',
         element: <ChallengePage />,
       },
     ],

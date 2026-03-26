@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { GripVertical, Code2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { DragItem } from '@/mocks/levelMockData';
+import type { DragItem } from '@/types';
 
 interface DragDropEditorProps {
   sourceItems: DragItem[];

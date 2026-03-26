@@ -1,18 +1,51 @@
-import { useState, useMemo, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useMemo, useRef, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Lock, BookOpen, ChevronLeft, X, CircleHelp } from 'lucide-react';
+import { Lock, BookOpen, ChevronLeft, X, CircleHelp, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import MaterialModal from './MaterialModal';
-import { getLevelData } from '@/mocks/levelMockData';
+import { useAuth } from "@/contexts/AuthContext";
+import { getNodeChallenge } from '@/services/user/ChallengeService';
 
 export default function LevelMapPage() {
+  const { user } = useAuth();
   const { levelId } = useParams();
+  const navigate = useNavigate();
   const [isMaterialOpen, setIsMaterialOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [loadingNodeSlot, setLoadingNodeSlot] = useState<number | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Handler saat node diklik — ambil soal dari backend, lalu navigasi ke ChallengePage
+  const handleNodeClick = useCallback(async (nodeSlot: number) => {
+    if (!user?.id || loadingNodeSlot !== null) return;
+
+    setLoadingNodeSlot(nodeSlot);
+    try {
+      const parsedLevelId = parseInt(levelId || '1', 10);
+      const result = await getNodeChallenge(user.id, parsedLevelId, nodeSlot);
+
+      if (!result.success || !result.data) {
+        alert(result.message || 'Gagal memuat soal. Coba lagi.');
+        return;
+      }
+
+      // Navigasi ke ChallengePage dan kirim data soal via router state
+      navigate('/challenge', {
+        state: {
+          assignmentId: result.data.assignmentId,
+          isCompleted: result.data.isCompleted,
+          challenge: result.data.challenge,
+          levelId: parsedLevelId,
+          nodeSlot,
+        },
+      });
+    } finally {
+      setLoadingNodeSlot(null);
+    }
+  }, [user, levelId, loadingNodeSlot, navigate]);
   
   // Drag to scroll state
   const [isDragging, setIsDragging] = useState(false);
@@ -43,34 +76,72 @@ export default function LevelMapPage() {
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
-  // Get level data
-  const levelData = getLevelData(levelId || '1');
+  // ─── Konfigurasi jumlah node per difficulty ─────────────────────────────
+  // Sesuaikan angka ini dengan jumlah soal per difficulty yang ada di database
+  const NODE_CONFIG = {
+    easy:   5,
+    medium: 10,
+    hard:   3,
+  };
 
-  // Flatten all nodes into a single sequence with difficulty markers
+  // Bangun daftar node dari konfigurasi statis (tidak butuh mock data)
   const mapNodes = useMemo(() => {
-    const nodes = [];
-    
-    // 1. Materi Node (Start)
+    const nodes: Array<{
+      id: string;
+      type: string;
+      title: string;
+      status: 'unlocked' | 'locked' | 'completed';
+      difficulty: string;
+      displayNumber?: number;
+    }> = [];
+
+    // Node Materi (selalu di awal)
     nodes.push({
       id: 'materi',
       type: 'materi',
       title: 'Materi Utama',
-      status: 'unlocked', 
-      xp: 0,
-      difficulty: 'intro'
+      status: 'unlocked',
+      difficulty: 'intro',
     });
 
-    // 2. Easy Challenges
-    levelData.challenges.easy.forEach((c, idx) => nodes.push({ ...c, difficulty: 'easy', displayNumber: idx + 1 }));
-    
-    // 3. Medium Challenges
-    levelData.challenges.medium.forEach((c, idx) => nodes.push({ ...c, difficulty: 'medium', displayNumber: idx + 1 }));
-    
-    // 4. Hard Challenges
-    levelData.challenges.hard.forEach((c, idx) => nodes.push({ ...c, difficulty: 'hard', displayNumber: idx + 1 }));
+    // Node Easy
+    Array.from({ length: NODE_CONFIG.easy }).forEach((_, idx) => {
+      nodes.push({
+        id: `easy-${idx}`,
+        type: 'challenge',
+        title: `Challenge Easy ${idx + 1}`,
+        status: 'unlocked', // TODO: ambil dari API progress user
+        difficulty: 'easy',
+        displayNumber: idx + 1,
+      });
+    });
+
+    // Node Medium
+    Array.from({ length: NODE_CONFIG.medium }).forEach((_, idx) => {
+      nodes.push({
+        id: `medium-${idx}`,
+        type: 'challenge',
+        title: `Challenge Medium ${idx + 1}`,
+        status: 'unlocked',
+        difficulty: 'medium',
+        displayNumber: idx + 1,
+      });
+    });
+
+    // Node Hard
+    Array.from({ length: NODE_CONFIG.hard }).forEach((_, idx) => {
+      nodes.push({
+        id: `hard-${idx}`,
+        type: 'challenge',
+        title: `Challenge Hard ${idx + 1}`,
+        status: 'unlocked',
+        difficulty: 'hard',
+        displayNumber: idx + 1,
+      });
+    });
 
     return nodes;
-  }, [levelData]);
+  }, []);
 
   // Calculate Positions (Grouped Horizontal with Gaps)
   const { points, pathD, width, height, zones } = useMemo(() => {
@@ -338,6 +409,8 @@ export default function LevelMapPage() {
                     node={node} 
                     index={index} 
                     position={pos}
+                    isLoading={loadingNodeSlot === index}
+                    onNodeClick={() => handleNodeClick(index)}
                 />
             );
             })}
@@ -391,7 +464,19 @@ export default function LevelMapPage() {
   );
 }
 
-function MapNode({ node, index, position }: { node: any, index: number, position: { x: number, y: number } }) {
+function MapNode({
+    node,
+    index,
+    position,
+    isLoading,
+    onNodeClick,
+}: {
+    node: any;
+    index: number;
+    position: { x: number; y: number };
+    isLoading: boolean;
+    onNodeClick: () => void;
+}) {
     
     // Determine Style based on Difficulty & Status
     const styles = useMemo(() => {
@@ -468,8 +553,10 @@ function MapNode({ node, index, position }: { node: any, index: number, position
                 styles.shadow,
             )}
         >
-             {/* Show Number instead of Icon */}
-             {node.status === 'unlocked' ? (
+             {/* Show Number / Loading / Lock Icon */}
+             {isLoading ? (
+                <Loader2 className={cn("h-6 w-6 animate-spin", styles.textColor)} />
+             ) : node.status === 'unlocked' ? (
                 <span className={cn("text-xl font-bold font-mono", styles.textColor)}>
                     {node.displayNumber}
                 </span>
@@ -480,7 +567,7 @@ function MapNode({ node, index, position }: { node: any, index: number, position
              )}
             
             {/* Status Indicator Pulse */}
-            {node.status === 'unlocked' && (
+            {node.status === 'unlocked' && !isLoading && (
                 <div className="absolute -inset-1 rounded-full animate-ping opacity-75 bg-current text-white/20" />
             )}
         </div>
@@ -495,9 +582,13 @@ function MapNode({ node, index, position }: { node: any, index: number, position
                 <Tooltip>
                     <TooltipTrigger asChild>
                          {node.status !== 'locked' ? (
-                            <Link to={`/challenge/${node.id}`} className="group outline-none">
+                            <button
+                                onClick={onNodeClick}
+                                disabled={isLoading}
+                                className="group outline-none disabled:cursor-wait"
+                            >
                                 {content}
-                            </Link>
+                            </button>
                         ) : (
                             <div className="group cursor-not-allowed">
                                 {content}

@@ -6,7 +6,7 @@ import type * as Monaco from 'monaco-editor';
 interface MonacoCodeEditorProps {
   code: string;
   onChange: (value: string) => void;
-  language?: 'html' | 'css' | 'javascript';
+  language?: 'html' | 'css' | 'javascript' | 'php' | 'sql';
   readOnly?: boolean;
 }
 

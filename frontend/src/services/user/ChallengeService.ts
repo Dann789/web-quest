@@ -1,4 +1,4 @@
-import type { ApiResponse, Challenge} from '@/types';
+import type { ApiResponse, ChallengeNodeData } from '@/types';
 
 // Base API URL
 const API_BASE = 'http://localhost:3000';
@@ -10,15 +10,18 @@ function getAuthHeaders(): HeadersInit {
   return headers;
 }
 
-export async function getRandomChallenges(userId: number, levelId: number, nodeSlot: number): Promise<ApiResponse<Challenge[]>> {
+export async function getNodeChallenge(
+  userId: number,
+  levelId: number,
+  nodeSlot: number
+): Promise<ApiResponse<ChallengeNodeData>> {
   try {
-    const response = await fetch(`${API_BASE}/api/user/challenges/${userId}/${levelId}/${nodeSlot}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
-    const data = await response.json();
-    return data;
+    const response = await fetch(
+      `${API_BASE}/api/user/challenges/${userId}/${levelId}/${nodeSlot}`,
+      { method: 'GET', headers: getAuthHeaders() }
+    );
+    return await response.json();
   } catch (error) {
-    return { success: false, message: 'Failed to get random challenges' };
+    return { success: false, message: 'Failed to get challenge for this node' };
   }
 }
