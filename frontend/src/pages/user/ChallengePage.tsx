@@ -236,14 +236,29 @@ function ChallengeView({
   const [isTutorialActive, setIsTutorialActive] = useState(true);
   const { formatted: timer } = useTimer(!isTutorialActive);
 
-  // ─── Parse drag & drop content dari JSON ─────────────────────────────────
+  // ─── Parse drag & drop content dari kolom `content` ──────────────────────
+  // Prisma mengembalikan kolom Json sebagai JavaScript object langsung,
+  // tapi ada safeguard jika datanya masih berupa string JSON.
   const dragDropData = useMemo<DragDropContent | null>(() => {
     if (challenge.method !== "DRAG_AND_DROP") return null;
     try {
-      const parsed = JSON.parse(challenge.content ?? "{}");
-      if (parsed.blocks && parsed.expectedOrder) return parsed as DragDropContent;
+      let parsed = challenge.content;
+
+      // Jika masih berupa string, coba parse dulu
+      if (typeof parsed === "string") {
+        parsed = JSON.parse(parsed);
+      }
+
+      if (
+        parsed &&
+        Array.isArray(parsed.blocks) &&
+        Array.isArray(parsed.expectedOrder)
+      ) {
+        return parsed as DragDropContent;
+      }
       return null;
     } catch {
+      console.error("Gagal mem-parse content drag & drop:", challenge.content);
       return null;
     }
   }, [challenge]);
@@ -328,6 +343,17 @@ function ChallengeView({
     return JSON.stringify(currentOrder) === JSON.stringify(dragDropData.expectedOrder);
   };
 
+  // ─── Normalisasi kode untuk perbandingan yang toleran terhadap whitespace ──
+  const normalizeCode = (code: string): string =>
+    code
+      .trim()
+      .toLowerCase()
+      .replace(/\r\n/g, "\n")       // CRLF → LF
+      .replace(/\s+/g, " ")         // multi-whitespace → spasi tunggal
+      .replace(/\s*=\s*/g, "=")     // spasi di sekitar = dihapus
+      .replace(/\s*\/>/g, "/>")     // spasi sebelum /> dihapus
+      .replace(/>\s+</g, "><");     // spasi antar tag dihapus
+
   const handleSubmit = () => {
     if (!hasRunPreview && challenge.method !== "DRAG_AND_DROP") {
       handleRun();
@@ -338,31 +364,41 @@ function ChallengeView({
 
       if (challenge.method === "DRAG_AND_DROP") {
         isCorrect = checkDragDropAnswer();
+
       } else if (challenge.method === "CODING_MANUAL" || challenge.method === "FIX_THE_BUG") {
-        // Validasi menggunakan testCases jika ada, fallback ke perbandingan string sederhana
         try {
-          const testCases = challenge.testCases ? JSON.parse(challenge.testCases) : null;
-          if (testCases && Array.isArray(testCases.requiredElements)) {
-            // Cek apakah semua elemen wajib ada di jawaban user
-            isCorrect = testCases.requiredElements.every((el: string) =>
-              userCode.toLowerCase().includes(el.toLowerCase())
-            );
-          } else {
-            // Fallback: normalisasi dan bandingkan
-            const normalize = (s: string) =>
-              s.toLowerCase().replace(/\s+/g, "").replace(/\r/g, "");
-            isCorrect = normalize(userCode) === normalize(challenge.starterCode ?? "ERROR");
+          // Prisma mengembalikan Json column sebagai object, bukan string
+          // Jadi kita cek tipe datanya terlebih dahulu
+          let testCases = challenge.testCases;
+          if (typeof testCases === "string") {
+            testCases = JSON.parse(testCases);
           }
-        } catch {
-          const normalize = (s: string) =>
-            s.toLowerCase().replace(/\s+/g, "").replace(/\r/g, "");
-          isCorrect = normalize(userCode).includes(normalize(""));
+
+          // Format: [{ input, weight, isHidden, expectedOutput }]
+          if (Array.isArray(testCases) && testCases.length > 0) {
+            // Jawaban benar jika cocok dengan SEMUA test case yang tidak tersembunyi
+            // Jika semua hidden, cek semua test case
+            const visibleTests = testCases.filter((tc: any) => !tc.isHidden);
+            const testsToCheck = visibleTests.length > 0 ? visibleTests : testCases;
+
+            isCorrect = testsToCheck.every((tc: any) => {
+              const expected = tc.expectedOutput ?? "";
+              return normalizeCode(userCode) === normalizeCode(expected);
+            });
+          } else {
+            // Tidak ada testCases → tolak semua jawaban (agar tidak ada false positive)
+            isCorrect = false;
+          }
+        } catch (e) {
+          console.error("Gagal mem-parse testCases:", e);
+          isCorrect = false;
         }
       }
 
       setSubmitStatus(isCorrect ? "success" : "error");
       setShowResultDialog(true);
     }, 500);
+
   };
 
   const handleBackToMap = () => navigate(-1);
@@ -451,7 +487,7 @@ function ChallengeView({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-2">
-            <Badge className={cn("text-[10px] uppercase font-bold px-2 py-0.5", methodInfo.color)}>
+            <Badge variant="default" className={cn("text-[10px] uppercase font-bold px-2 py-0.5", methodInfo.color)}>
               {methodInfo.label}
             </Badge>
             <Badge

@@ -96,9 +96,29 @@ export class ChallengeAttemptController {
 
       // ─── Node baru: lakukan randomisasi challenge ─────────────────────────
 
-      // Ambil semua challenge aktif di level ini
+      // Tentukan difficulty berdasarkan nodeSlot
+      // nodeSlot 1–5   → EASY
+      // nodeSlot 6–15  → MEDIUM
+      // nodeSlot 16–18 → HARD
+      type DifficultyType = "EASY" | "MEDIUM" | "HARD";
+      let targetDifficulty: DifficultyType;
+
+      if (nodeSlot >= 1 && nodeSlot <= 5) {
+        targetDifficulty = "EASY";
+      } else if (nodeSlot >= 6 && nodeSlot <= 15) {
+        targetDifficulty = "MEDIUM";
+      } else if (nodeSlot >= 16 && nodeSlot <= 18) {
+        targetDifficulty = "HARD";
+      } else {
+        return {
+          success: false,
+          message: `nodeSlot ${nodeSlot} tidak valid. Rentang yang diizinkan: 1–18.`,
+        };
+      }
+
+      // Ambil challenge aktif di level ini sesuai difficulty yang ditentukan
       const allChallenges = await prisma.challenge.findMany({
-        where: { levelId, isActive: true },
+        where: { levelId, isActive: true, difficulty: targetDifficulty },
         select: {
           id: true,
           title: true,

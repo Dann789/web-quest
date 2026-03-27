@@ -96,11 +96,22 @@ export interface Challenge {
   method: ChallengeMethod;
   idealTime: number;
   xpBase: number;
-  content: string;
-  starterCode: string;
-  testCases: string;
-  hint: string;
+  content: any;        // Prisma Json column → bisa object atau null
+  starterCode: string | null;
+  testCases: any;      // Prisma Json column → bisa object atau null
+  hint: string | null;
   isActive: boolean;
+}
+
+export interface ChallengeNodeData {
+  assignmentId: number;
+  isCompleted: boolean;
+  challenge: Challenge;
+}
+
+export interface DragItem {
+  id: string;
+  content: string;
 }
 
 export interface Attempt {

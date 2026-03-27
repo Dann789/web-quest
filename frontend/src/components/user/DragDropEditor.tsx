@@ -66,20 +66,6 @@ export default function DragDropEditor({
 
   return (
     <div className="flex flex-col h-full bg-slate-950 p-6 overflow-y-auto">
-      
-      {/* Alert Error */}
-      {/* {errorMessage && (
-        <div className="mb-6 p-4 bg-red-950/50 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-200 animate-in fade-in slide-in-from-top-2">
-           <div className="p-2 bg-red-900/50 rounded-full shrink-0">
-             <Lightbulb className="h-4 w-4 text-red-400" />
-           </div>
-           <div>
-             <h4 className="font-semibold text-sm">Urutan Belum Tepat</h4>
-             <p className="text-xs text-red-300/80 mt-0.5">Silakan periksa kembali susunan kode Anda.</p>
-           </div>
-        </div>
-      )} */}
-
       {/* Main Drag Drop Area */}
       <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 flex-1 min-h-0">
         
@@ -151,7 +137,7 @@ export default function DragDropEditor({
                <span className="text-[10px] text-slate-400 font-mono">solution.html</span>
              </div>
 
-             <div className="flex-1 p-2 overflow-y-auto max-h-[15rem] relative [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#1e1e1e] [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-[#1e1e1e] hover:[&::-webkit-scrollbar-thumb]:bg-slate-600">
+             <div className="flex-1 p-2 overflow-y-auto max-h-[30rem] relative [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#1e1e1e] [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-[#1e1e1e] hover:[&::-webkit-scrollbar-thumb]:bg-slate-600">
                 <div className="flex flex-col gap-0.5 min-h-full">
                   {targetItems.length === 0 && !draggedItem && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600 pointer-events-none select-none p-4 text-center">
