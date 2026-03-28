@@ -1,6 +1,5 @@
-import type { ApiResponse, ChallengeNodeData } from '@/types';
+import type { ApiResponse, ChallengeNodeData, SubmitAnswerResult, SubmitAnswerPayload } from '@/types';
 
-// Base API URL
 const API_BASE = 'http://localhost:3000';
 
 function getAuthHeaders(): HeadersInit {
@@ -23,5 +22,24 @@ export async function getNodeChallenge(
     return await response.json();
   } catch (error) {
     return { success: false, message: 'Failed to get challenge for this node' };
+  }
+}
+
+export async function submitAnswer(
+  userId: number,
+  payload: SubmitAnswerPayload
+): Promise<ApiResponse<SubmitAnswerResult>> {
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/user/challenges/submit/${userId}`,
+      {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      }
+    );
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Gagal terhubung ke server. Coba lagi.' };
   }
 }

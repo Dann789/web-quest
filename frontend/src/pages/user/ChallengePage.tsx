@@ -28,6 +28,7 @@ import {
   MapPin,
   Zap,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MonacoCodeEditor from "@/components/user/MonacoCodeEditor";
@@ -36,6 +37,8 @@ import ChallengeTutorial, {
   type TutorialStep,
 } from "@/components/user/ChallengeTutorial";
 import type { Challenge, DragItem } from "@/types";
+import { submitAnswer } from "@/services/user/ChallengeService";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Tipe state yang dikirim dari LevelMapPage ────────────────────────────────
 interface ChallengePageState {
@@ -92,6 +95,7 @@ function useTimer(isActive: boolean) {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Kembalikan formatted string DAN raw seconds untuk dikirim ke API
   return { formatted: formatTime(seconds), raw: seconds };
 }
 
@@ -223,6 +227,7 @@ export default function ChallengePage() {
 // ─── ChallengeView (dipisah agar hooks tidak dipanggil secara kondisional) ───
 function ChallengeView({
   challenge,
+  assignmentId,
   alreadyCompleted,
   language,
   navigate,
@@ -233,8 +238,13 @@ function ChallengeView({
   language: Language;
   navigate: ReturnType<typeof useNavigate>;
 }) {
+  const { user, updateUser } = useAuth();
   const [isTutorialActive, setIsTutorialActive] = useState(true);
-  const { formatted: timer } = useTimer(!isTutorialActive);
+  const { formatted: timer, raw: timerSeconds } = useTimer(!isTutorialActive);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [xpEarned, setXpEarned] = useState(0);
+  // Info: node sudah pernah diselesaikan (hanya untuk tampilan banner, bukan kunci pengerjaan)
+  const wasAlreadyCompleted = alreadyCompleted;
 
   // ─── Parse drag & drop content dari kolom `content` ──────────────────────
   // Prisma mengembalikan kolom Json sebagai JavaScript object langsung,
@@ -283,12 +293,8 @@ function ChallengeView({
   const [isRunning, setIsRunning] = useState(false);
   const [showResultDialog, setShowResultDialog] = useState(false);
 
-  // Tandai langsung selesai jika node sudah pernah diselesaikan
-  useEffect(() => {
-    if (alreadyCompleted) {
-      setSubmitStatus("success");
-    }
-  }, [alreadyCompleted]);
+  // Challenge yang sudah diselesaikan tetap bisa dikerjakan kembali.
+  // XP tidak akan bertambah lagi (backend handle via isCompleted check).
 
   // Auto-preview Drag & Drop
   useEffect(() => {
@@ -343,62 +349,50 @@ function ChallengeView({
     return JSON.stringify(currentOrder) === JSON.stringify(dragDropData.expectedOrder);
   };
 
-  // ─── Normalisasi kode untuk perbandingan yang toleran terhadap whitespace ──
-  const normalizeCode = (code: string): string =>
-    code
-      .trim()
-      .toLowerCase()
-      .replace(/\r\n/g, "\n")       // CRLF → LF
-      .replace(/\s+/g, " ")         // multi-whitespace → spasi tunggal
-      .replace(/\s*=\s*/g, "=")     // spasi di sekitar = dihapus
-      .replace(/\s*\/>/g, "/>")     // spasi sebelum /> dihapus
-      .replace(/>\s+</g, "><");     // spasi antar tag dihapus
-
-  const handleSubmit = () => {
+  // ─── Submit (panggil API backend) ────────────────────────────────────────
+  const handleSubmit = async () => {
+    if (!user?.id) {
+      alert("User tidak ditemukan. Silakan login ulang.");
+      return;
+    }
     if (!hasRunPreview && challenge.method !== "DRAG_AND_DROP") {
       handleRun();
     }
-    setSubmitStatus("idle");
-    setTimeout(() => {
-      let isCorrect = false;
 
-      if (challenge.method === "DRAG_AND_DROP") {
-        isCorrect = checkDragDropAnswer();
+    // Siapkan answerCode berdasarkan metode
+    const answerCode =
+      challenge.method === "DRAG_AND_DROP"
+        ? JSON.stringify(dragItems.map((i) => i.content))
+        : userCode;
 
-      } else if (challenge.method === "CODING_MANUAL" || challenge.method === "FIX_THE_BUG") {
-        try {
-          // Prisma mengembalikan Json column sebagai object, bukan string
-          // Jadi kita cek tipe datanya terlebih dahulu
-          let testCases = challenge.testCases;
-          if (typeof testCases === "string") {
-            testCases = JSON.parse(testCases);
-          }
+    setIsSubmitting(true);
+    try {
+      const result = await submitAnswer(user.id, {
+        assignmentId,
+        challengeId: challenge.id,
+        method: challenge.method,
+        answerCode,
+        timeSpent: timerSeconds,
+      });
 
-          // Format: [{ input, weight, isHidden, expectedOutput }]
-          if (Array.isArray(testCases) && testCases.length > 0) {
-            // Jawaban benar jika cocok dengan SEMUA test case yang tidak tersembunyi
-            // Jika semua hidden, cek semua test case
-            const visibleTests = testCases.filter((tc: any) => !tc.isHidden);
-            const testsToCheck = visibleTests.length > 0 ? visibleTests : testCases;
-
-            isCorrect = testsToCheck.every((tc: any) => {
-              const expected = tc.expectedOutput ?? "";
-              return normalizeCode(userCode) === normalizeCode(expected);
-            });
-          } else {
-            // Tidak ada testCases → tolak semua jawaban (agar tidak ada false positive)
-            isCorrect = false;
-          }
-        } catch (e) {
-          console.error("Gagal mem-parse testCases:", e);
-          isCorrect = false;
-        }
+      if (!result.success) {
+        alert(result.message || "Terjadi kesalahan. Coba lagi.");
+        return;
       }
 
+      const isCorrect = result.data?.isCorrect ?? false;
+      const earnedXp = result.data?.xpEarned ?? 0;
+      setXpEarned(earnedXp);
       setSubmitStatus(isCorrect ? "success" : "error");
       setShowResultDialog(true);
-    }, 500);
 
+      // Update XP di context & localStorage agar langsung terlihat tanpa re-login
+      if (isCorrect && earnedXp > 0 && user) {
+        updateUser({ ...user, totalXp: user.totalXp + earnedXp });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBackToMap = () => navigate(-1);
@@ -552,6 +546,19 @@ function ChallengeView({
               </div>
             </div>
 
+            {/* Banner: sudah pernah diselesaikan */}
+            {wasAlreadyCompleted && (
+              <div className="mb-4 p-3 bg-emerald-950/40 border border-emerald-800/50 rounded-lg flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-emerald-300 font-semibold">Challenge Sudah Diselesaikan</p>
+                  <p className="text-xs text-emerald-500 mt-0.5">
+                    Kamu bisa mengerjakan kembali, namun XP tidak akan bertambah.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Hint */}
             {challenge.hint && (
               <div className="mb-4">
@@ -626,11 +633,12 @@ function ChallengeView({
                     : "bg-indigo-600 hover:bg-indigo-700"
               )}
               onClick={handleSubmit}
-              disabled={submitStatus === "success"}
+              disabled={submitStatus === "success" || isSubmitting}
             >
-              {submitStatus === "idle" && <><Send className="mr-2 h-3 w-3" /> Kirim Jawaban</>}
-              {submitStatus === "success" && <><CheckCircle2 className="mr-2 h-3 w-3" /> Benar! Selesai</>}
-              {submitStatus === "error" && <><AlertCircle className="mr-2 h-3 w-3" /> Coba Lagi</>}
+              {isSubmitting && <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Memeriksa...</>}
+              {!isSubmitting && submitStatus === "idle" && <><Send className="mr-2 h-3 w-3" /> Kirim Jawaban</>}
+              {!isSubmitting && submitStatus === "success" && <><CheckCircle2 className="mr-2 h-3 w-3" /> Benar! Selesai</>}
+              {!isSubmitting && submitStatus === "error" && <><AlertCircle className="mr-2 h-3 w-3" /> Coba Lagi</>}
             </Button>
           </div>
         </div>
@@ -752,7 +760,7 @@ function ChallengeView({
                 <div>
                   <p>Selamat! Kamu berhasil menyelesaikan challenge ini.</p>
                   <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30 font-medium mt-6 w-fit mx-auto">
-                    <span>+{challenge.xpBase} XP</span>
+                    <span>+{xpEarned} XP</span>
                     <Zap className="h-5 w-5 text-yellow-400" />
                   </div>
                 </div>

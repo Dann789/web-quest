@@ -124,6 +124,22 @@ export interface Attempt {
   xpEarned: number;
 }
 
+export interface SubmitAnswerPayload {
+  assignmentId: number;
+  challengeId: number;
+  method: ChallengeMethod;
+  answerCode: string;
+  timeSpent: number;
+}
+
+export interface SubmitAnswerResult {
+  isCorrect: boolean;
+  xpEarned: number;
+  attemptId: number;
+  isFirstAttempt: boolean;
+  overTime: boolean;
+}
+
 // ============================================
 // MATERIAL TYPES
 // ============================================

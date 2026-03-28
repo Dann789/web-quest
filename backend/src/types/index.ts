@@ -162,8 +162,9 @@ export interface UpdateChallengeRequest {
 
 // // CHALLENGE ATTEMPT TYPES
 export interface SubmitAnswerRequest {
+    assignmentId: number;
     challengeId: number;
     method: ChallengeMethod;
-    answerCode: string;
-    timeSpent: number;
+    answerCode: string;   // Untuk CODING_MANUAL & FIX_THE_BUG: kode user. Untuk DRAG_AND_DROP: JSON array urutan blok
+    timeSpent: number;    // detik, dari timer di frontend
 }

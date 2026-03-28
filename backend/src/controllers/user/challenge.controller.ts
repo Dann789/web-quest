@@ -208,6 +208,158 @@ export class ChallengeAttemptController {
   }
 
   /**
+   * Submit & validate answer — supports CODING_MANUAL, FIX_THE_BUG, DRAG_AND_DROP
+   */
+  static async submitAnswer(userId: number, body: SubmitAnswerRequest) {
+    const { assignmentId, challengeId, method, answerCode, timeSpent } = body;
+
+    try {
+      // ─── 1. Ambil data assignment & challenge ──────────────────────────────
+      const assignment = await prisma.assignment.findUnique({
+        where: { id: assignmentId },
+        include: {
+          challenge: {
+            select: {
+              id: true,
+              idealTime: true,
+              xpBase: true,
+              testCases: true,
+              content: true,
+              method: true,
+            },
+          },
+        },
+      });
+
+      if (!assignment) {
+        return { success: false, message: "Assignment tidak ditemukan." };
+      }
+
+      if (assignment.userId !== userId) {
+        return { success: false, message: "Anda tidak berhak mengakses assignment ini." };
+      }
+
+      const challenge = assignment.challenge;
+
+      // ─── 2. Validasi jawaban berdasarkan metode ────────────────────────────
+      const normalizeCode = (code: string): string =>
+        code
+          .trim()
+          .toLowerCase()
+          .replace(/\r\n/g, "\n")
+          .replace(/\s+/g, " ")
+          .replace(/\s*=\s*/g, "=")
+          .replace(/\s*\/>/g, "/>")
+          .replace(/>\s+</g, "><");
+
+      let isCorrect = false;
+
+      if (method === "DRAG_AND_DROP") {
+        // answerCode berisi JSON array urutan string (konten blok)
+        const content = challenge.content as { blocks: string[]; expectedOrder: string[] } | null;
+        if (!content?.expectedOrder) {
+          return { success: false, message: "Data soal drag & drop tidak valid." };
+        }
+        try {
+          const userOrder: string[] = JSON.parse(answerCode);
+          isCorrect =
+            JSON.stringify(userOrder) === JSON.stringify(content.expectedOrder);
+        } catch {
+          return { success: false, message: "Format jawaban drag & drop tidak valid." };
+        }
+      } else {
+        // CODING_MANUAL & FIX_THE_BUG — validasi via testCases
+        const testCases = challenge.testCases as Array<{
+          input: string | null;
+          weight: number;
+          isHidden: boolean;
+          expectedOutput: string;
+        }> | null;
+
+        if (!testCases || testCases.length === 0) {
+          return { success: false, message: "Tidak ada test case untuk soal ini." };
+        }
+
+        const visible = testCases.filter((tc) => !tc.isHidden);
+        const toCheck = visible.length > 0 ? visible : testCases;
+
+        isCorrect = toCheck.every((tc) =>
+          normalizeCode(answerCode) === normalizeCode(tc.expectedOutput ?? "")
+        );
+      }
+
+      // ─── 3. Cek apakah ini percobaan pertama ──────────────────────────────
+      // isFirstAttempt = true  → belum pernah mencoba sama sekali sebelumnya
+      // isFirstAttempt = false → sudah pernah mencoba (salah atau benar sebelumnya)
+      const previousAttempt = await prisma.attempt.findFirst({
+        where: { userId, challengeId },
+      });
+      const isFirstAttempt = previousAttempt === null;
+
+      // ─── 4. Hitung XP ──────────────────────────────────────────────────────
+      // XP hanya diberikan jika: jawaban benar AND ini adalah attempt pertama
+      const idealTimeSec = challenge.idealTime ?? 0;
+      const overTime = timeSpent > idealTimeSec;
+      const xpEarned = (isCorrect && isFirstAttempt)
+        ? Math.max(0, challenge.xpBase - (overTime ? 5 : 0))
+        : 0;
+
+      // ─── 5. Insert Attempt ─────────────────────────────────────────────────
+      const attempt = await prisma.attempt.create({
+        data: {
+          userId,
+          assignmentId,
+          challengeId,
+          isFirstAttempt,
+          timeSpent,
+          xpEarned, // 0 jika bukan attempt pertama atau jawaban salah
+        },
+      });
+
+      // ─── 6. Jika benar: update Assignment & User.totalXp ──────────────────
+      if (isCorrect) {
+        // Update isCompleted & completedAt pada Assignment jika belum selesai
+        if (!assignment.isCompleted) {
+          await prisma.assignment.update({
+            where: { id: assignmentId },
+            data: {
+              isCompleted: true,
+              completedAt: new Date(),
+            },
+          });
+        }
+
+        // Tambahkan XP ke user HANYA jika ini adalah attempt pertama (is_first_attempt = true)
+        if (isFirstAttempt && xpEarned > 0) {
+          await prisma.user.update({
+            where: { id: userId },
+            data: { totalXp: { increment: xpEarned } },
+          });
+        }
+      }
+
+      return {
+        success: true,
+        message: isCorrect ? "Jawaban benar!" : "Jawaban salah. Coba lagi.",
+        data: {
+          isCorrect,
+          xpEarned,           // 0 jika bukan attempt pertama atau salah
+          attemptId: attempt.id,
+          isFirstAttempt,
+          overTime,
+        },
+      };
+    } catch (e: unknown) {
+      console.error("Error submitting answer:", e);
+      return {
+        success: false,
+        message: `Gagal memproses jawaban: ${e instanceof Error ? e.message : String(e)}`,
+      };
+    }
+  }
+
+  /**
+
    * Submit answer for a challenge
    */
   // static async submitAnswer(userId: number, data: SubmitAnswerRequest) {
