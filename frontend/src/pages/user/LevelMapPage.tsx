@@ -1,13 +1,14 @@
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Lock, BookOpen, ChevronLeft, X, CircleHelp, Loader2 } from 'lucide-react';
+import { BookOpen, ChevronLeft, X, CircleHelp, Loader2, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import MaterialModal from './MaterialModal';
 import { useAuth } from "@/contexts/AuthContext";
 import { getNodeChallenge } from '@/services/user/ChallengeService';
+import { getCompleteNodes, getMaterialProgress } from '@/services/user/ProgressService';
 
 export default function LevelMapPage() {
   const { user } = useAuth();
@@ -16,7 +17,37 @@ export default function LevelMapPage() {
   const [isMaterialOpen, setIsMaterialOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [loadingNodeSlot, setLoadingNodeSlot] = useState<number | null>(null);
+  
+  // State untuk menyimpan data progress
+  const [completedChallengeNodes, setCompletedChallengeNodes] = useState<number[]>([]);
+  const [isMaterialCompleted, setIsMaterialCompleted] = useState<boolean>(false);
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Ambil data progres (materi & tantangan) saat komponen dimuat
+  useEffect(() => {
+    async function loadProgress() {
+      if (!user?.id || !levelId) return;
+      const parsedLevelId = parseInt(levelId, 10);
+      
+      try {
+        const [nodeRes, materialRes] = await Promise.all([
+          getCompleteNodes(user.id, parsedLevelId),
+          getMaterialProgress(user.id, parsedLevelId)
+        ]);
+
+        if (nodeRes.success && nodeRes.data) {
+          setCompletedChallengeNodes(nodeRes.data.completedNodes || []);
+        }
+        if (materialRes.success && materialRes.data) {
+          setIsMaterialCompleted((materialRes.data.completedMaterials || []).length > 0);
+        }
+      } catch (error) {
+        console.error("Gagal memuat progres:", error);
+      }
+    }
+    loadProgress();
+  }, [user?.id, levelId]);
 
   // Handler saat node diklik — ambil soal dari backend, lalu navigasi ke ChallengePage
   const handleNodeClick = useCallback(async (nodeSlot: number) => {
@@ -78,11 +109,11 @@ export default function LevelMapPage() {
 
   // ─── Konfigurasi jumlah node per difficulty ─────────────────────────────
   // Sesuaikan angka ini dengan jumlah soal per difficulty yang ada di database
-  const NODE_CONFIG = {
+  const NODE_CONFIG = useMemo(() => ({
     easy:   5,
     medium: 10,
     hard:   3,
-  };
+  }), []);
 
   // Bangun daftar node dari konfigurasi statis (tidak butuh mock data)
   const mapNodes = useMemo(() => {
@@ -100,9 +131,11 @@ export default function LevelMapPage() {
       id: 'materi',
       type: 'materi',
       title: 'Materi Utama',
-      status: 'unlocked',
+      status: isMaterialCompleted ? 'completed' : 'unlocked',
       difficulty: 'intro',
     });
+
+    let currentSlot = 1; // Mulai dari 1, sesuai standar nodeSlot yang Anda setel di backend
 
     // Node Easy
     Array.from({ length: NODE_CONFIG.easy }).forEach((_, idx) => {
@@ -110,10 +143,11 @@ export default function LevelMapPage() {
         id: `easy-${idx}`,
         type: 'challenge',
         title: `Challenge Easy ${idx + 1}`,
-        status: 'unlocked', // TODO: ambil dari API progress user
+        status: completedChallengeNodes.includes(currentSlot) ? 'completed' : 'unlocked',
         difficulty: 'easy',
         displayNumber: idx + 1,
       });
+      currentSlot++;
     });
 
     // Node Medium
@@ -122,10 +156,11 @@ export default function LevelMapPage() {
         id: `medium-${idx}`,
         type: 'challenge',
         title: `Challenge Medium ${idx + 1}`,
-        status: 'unlocked',
+        status: completedChallengeNodes.includes(currentSlot) ? 'completed' : 'unlocked',
         difficulty: 'medium',
         displayNumber: idx + 1,
       });
+      currentSlot++;
     });
 
     // Node Hard
@@ -134,14 +169,15 @@ export default function LevelMapPage() {
         id: `hard-${idx}`,
         type: 'challenge',
         title: `Challenge Hard ${idx + 1}`,
-        status: 'unlocked',
+        status: completedChallengeNodes.includes(currentSlot) ? 'completed' : 'unlocked',
         difficulty: 'hard',
         displayNumber: idx + 1,
       });
+      currentSlot++;
     });
 
     return nodes;
-  }, []);
+  }, [isMaterialCompleted, completedChallengeNodes, NODE_CONFIG]);
 
   // Calculate Positions (Grouped Horizontal with Gaps)
   const { points, pathD, width, height, zones } = useMemo(() => {
@@ -562,7 +598,7 @@ function MapNode({
                 </span>
              ) : (
                 <span className={cn("text-xl font-bold font-mono", styles.textColor)}>
-                    <Lock/>
+                    <CheckCheck/>
                 </span>
              )}
             
