@@ -8,11 +8,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { Level } from '@/types/index';
 import { useEffect, useState } from 'react';
 import { getLevels } from '@/services/dosen/LevelService';
+import { getProgressLevel } from '@/services/user/ProgressService';
 
 export default function LevelPage() {
   const { user } = useAuth();
 
   const [level, setLevels] = useState<Level[]>([]);
+  const [levelProgress, setLevelProgress] = useState<Record<number, number>>({});
+  const [animatedProgress, setAnimatedProgress] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -47,12 +50,31 @@ export default function LevelPage() {
   ]
 
   useEffect(() => {
-    const fetchLevels = async () => {
+    if (!user?.id) return;
+
+    const fetchLevelsAndProgress = async () => {
       try {
         setLoading(true);
         const result = await getLevels();
         if (result.success && result.data) {
           setLevels(result.data);
+
+          // Get progress untuk semua level sekaligus
+          const progressPromises = result.data.map(async (l: Level) => {
+            const prog = await getProgressLevel(user.id, l.id);
+            return {
+              id: l.id,
+              percentage: prog.success ? (prog.data?.progressPercentage || 0) : 0
+            };
+          });
+
+          const progressArray = await Promise.all(progressPromises);
+          const newProgressMap: Record<number, number> = {};
+          progressArray.forEach(item => {
+            newProgressMap[item.id] = item.percentage;
+          });
+          
+          setLevelProgress(newProgressMap);
         } else {
           setError(result.message || 'Failed to fetch levels');
         }
@@ -63,9 +85,18 @@ export default function LevelPage() {
         setLoading(false);
       }
     };
-    fetchLevels();
-  }, []);
+    
+    fetchLevelsAndProgress();
+  }, [user?.id]);
 
+  useEffect(() => {
+    // Delay sedikit sebelum mengisi bar supaya transisi animasinya terlihat mulus bergerak dari kiri
+    const timer = setTimeout(() => {
+      setAnimatedProgress(levelProgress);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [levelProgress]);
+  
   return loading ? (
     <div className="flex items-center justify-center h-64">
       <Loader2 className="h-8 w-8 animate-spin" />
@@ -86,7 +117,8 @@ export default function LevelPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {level.map((level) => {
           const isLocked = currentXP < level.xpRequired;
-          const progress = isLocked ? 0 : currentXP > level.xpRequired + 250 ? 100 : 45; 
+          const actualProgress = isLocked ? 0 : (levelProgress[level.id] || 0); 
+          const displayedProgress = isLocked ? 0 : (animatedProgress[level.id] || 0); 
 
           return (
             <Card key={level.id} className={`flex flex-col h-full transition-all duration-300 ${isLocked ? 'opacity-75 bg-muted/30' : 'hover:border-primary/50 hover:shadow-lg'}`}>
@@ -113,9 +145,9 @@ export default function LevelPage() {
                    <div className="space-y-2 mt-2">
                      <div className="flex justify-between text-xs font-medium">
                        <span>Progress</span>
-                       <span>{progress}%</span>
+                       <span>{actualProgress}%</span>
                      </div>
-                     <Progress value={progress} className="h-2" />
+                     <Progress value={displayedProgress} className="h-2" />
                    </div>
                  ) : (
                    <div className="h-full flex items-center justify-center text-sm text-muted-foreground bg-muted/20 rounded-lg p-4 border border-dashed text-center">
@@ -131,7 +163,7 @@ export default function LevelPage() {
                 ) : (
                   <Button className="w-full gap-2 group" asChild>
                     <Link to={`/level/${level.id}`}>
-                      {progress === 100 ? 'Review Level' : 'Mulai Belajar'} 
+                      {actualProgress === 100 ? 'Review Level' : 'Mulai Belajar'} 
                       <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </Button>

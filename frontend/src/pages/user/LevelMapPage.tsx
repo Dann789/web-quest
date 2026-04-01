@@ -40,7 +40,7 @@ export default function LevelMapPage() {
           setCompletedChallengeNodes(nodeRes.data.completedNodes || []);
         }
         if (materialRes.success && materialRes.data) {
-          setIsMaterialCompleted((materialRes.data.completedMaterials || []).length > 0);
+          setIsMaterialCompleted(materialRes.data.isAllCompleted);
         }
       } catch (error) {
         console.error("Gagal memuat progres:", error);
@@ -417,22 +417,37 @@ export default function LevelMapPage() {
             const pos = points[index];
             
             if (node.type === 'materi') {
+                const isCompleted = node.status === 'completed';
+
                 return (
                 <div 
                     key="materi"
                     className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20"
                     style={{ left: pos.x, top: pos.y }}
                 >
-                    <div className="absolute inset-0 bg-indigo-500 blur-xl opacity-30 animate-pulse rounded-full" />
+                    <div className={cn(
+                        "absolute inset-0 blur-xl opacity-30 animate-pulse rounded-full",
+                        isCompleted ? "bg-emerald-500" : "bg-indigo-500"
+                    )} />
                     <div 
                         onClick={() => setIsMaterialOpen(true)}
                         className="relative group cursor-pointer transition-all hover:scale-110"
                     >
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg border-4 border-slate-900 ring-2 ring-indigo-500/50">
-                            <BookOpen className="h-8 w-8 text-white" />
+                        <div className={cn(
+                            "w-20 h-20 rounded-full flex items-center justify-center shadow-lg border-4 border-slate-900 ring-2 bg-gradient-to-br",
+                            isCompleted 
+                                ? "from-emerald-400 to-emerald-600 ring-emerald-500/50 shadow-emerald-500/30"
+                                : "from-indigo-500 to-purple-600 ring-indigo-500/50"
+                        )}>
+                            <BookOpen className="h-8 w-8 text-white drop-shadow-md" />
                         </div>
-                        <Badge className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-indigo-500 border-indigo-400 whitespace-nowrap z-30 pointer-events-none">
-                            Mulai Belajar
+                        <Badge className={cn(
+                            "absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap z-30 pointer-events-none border text-white",
+                             isCompleted
+                                ? "bg-emerald-600/90 border-emerald-400"
+                                : "bg-indigo-500 border-indigo-400"
+                        )}>
+                            {isCompleted ? "Materi Selesai" : "Mulai Belajar"}
                         </Badge>
                     </div>
                 </div>

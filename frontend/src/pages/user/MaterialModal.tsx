@@ -8,7 +8,9 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { Material } from '@/types';
+import { useAuth } from "@/contexts/AuthContext";
 import { getMaterialsByLevelId } from '@/services/dosen/MaterialService';
+import { addProgressMaterial, updateStatusMaterial } from '@/services/user/ProgressService';
 
 interface MaterialModalProps {
   isOpen: boolean;
@@ -17,10 +19,12 @@ interface MaterialModalProps {
 }
 
 export default function MaterialModal({ isOpen, onClose, levelId }: MaterialModalProps) {
+  const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewedMaterial, setViewedMaterial] = useState<number[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -49,13 +53,46 @@ export default function MaterialModal({ isOpen, onClose, levelId }: MaterialModa
 
   const handleClose = () => {
     setCurrentIndex(0);
+    setViewedMaterial([]);
     onClose();
   };
 
-  if (!isOpen) return null;
-
   const currentMaterial = materials[currentIndex];
   const totalMaterials = materials.length;
+
+  useEffect(() => {
+    const recordProgress = async () => {
+      if (isOpen && currentMaterial && user?.id) {
+        try {
+          addProgressMaterial(user.id, currentMaterial.id);
+          setViewedMaterial((prev) => Array.from(new Set([...prev, currentMaterial.id])));
+        } catch (err) {
+          console.error("Gagal menyimpan progres materi", err);
+        }
+      }
+    };
+    recordProgress();
+  }, [isOpen, currentMaterial, user?.id]);
+
+  const handleFinishLearning = async () => {
+    if (!user?.id || viewedMaterial.length === 0) {
+      handleClose();
+      return;
+    }
+
+    try {
+      await Promise.all(
+        viewedMaterial.map((materialId) =>
+          updateStatusMaterial(user.id, materialId)
+        )
+      );
+      handleClose();
+    } catch (err) {
+      console.error("Gagal mengupdate progres materi", err);
+    }
+  }
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
@@ -183,7 +220,7 @@ export default function MaterialModal({ isOpen, onClose, levelId }: MaterialModa
             ) : (
               <Button
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                onClick={handleClose}
+                onClick={handleFinishLearning}
               >
                 Selesai Belajar <CheckCircle className="ml-2 h-4 w-4" />
               </Button>
