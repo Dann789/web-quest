@@ -30,3 +30,39 @@ export async function getMaterialProgress(userId: number, levelId: number) {
     return { success: false, message: 'Failed to get material progress' };
   }
 }
+
+export async function addProgressMaterial(userId: number, materialId: number) {
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/progress/${userId}/${materialId}/add-progress`,
+      { method: 'POST', headers: getAuthHeaders() }
+    );
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Failed to add material progress' };
+  }
+}
+
+export async function updateStatusMaterial(userId: number, materialId: number) {
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/progress/${userId}/${materialId}/update-status`,
+      { method: 'PUT', headers: getAuthHeaders() }
+    );
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Failed to update material status' };
+  }
+}
+
+export async function getProgressLevel(userId: number, levelId: number) {
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/progress/${userId}/${levelId}/progress-percentage`,
+      { method: 'GET', headers: getAuthHeaders() }
+    );
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Failed to get progress percentage' };
+  }
+}
