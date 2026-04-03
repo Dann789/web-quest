@@ -172,9 +172,9 @@ export class UserProgressController {
           levelId: levelId
         }
       });
-      const totalNodes = totalChallenges + (completedMaterials.data?.totalMaterials ? 1 : 0);
+      // const totalNodes = totalChallenges + (completedMaterials.data?.totalMaterials ? 1 : 0);
       const totalCompleted = (completedNodes.data?.completedNodes?.length || 0) + (completedMaterials.data?.isAllCompleted ? 1 : 0);
-      const progressPercentage = totalNodes ? Math.round((totalCompleted / totalNodes) * 100) : 0;
+      const progressPercentage = Math.round((totalCompleted / 19) * 100);
 
       return {
         success: true,
@@ -184,7 +184,7 @@ export class UserProgressController {
           completedMaterials: completedMaterials.data?.completedMaterials,
           totalMaterials: completedMaterials.data?.totalMaterials,
           isAllCompleted: completedMaterials.data?.isAllCompleted,
-          totalNodes: totalNodes,
+          // totalNodes: totalNodes,
           totalCompleted: totalCompleted,
           progressPercentage: progressPercentage,
         },

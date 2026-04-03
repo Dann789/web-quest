@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { corsPlugin } from "./plugins/cors.plugin";
-import { authRoutes } from "./routes/auth.routes";
+import { authRoutes } from "./routes/auth/auth.routes";
 import { userRoutes } from "./routes/admin/user.routes";
 import { materialRoutes } from "./routes/dosen/material.routes";
 import { levelRoutes } from "./routes/dosen/level.routes";
@@ -8,7 +8,7 @@ import { challengeRoutes } from "./routes/dosen/challenge.routes";
 import { progressRoutes } from "./routes/user/progress.routes";
 import { challengeAttemptRoutes } from "./routes/user/challenge.routes";
 import { badgeRoutes } from "./routes/user/badge.routes";
-import { leaderboardRoutes } from "./routes/user/leaderboard.routes";
+import { leaderboardRoutes } from "./routes/public/leaderboard.routes";
 
 const app = new Elysia()
   .use(corsPlugin)

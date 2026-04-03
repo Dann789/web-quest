@@ -1,12 +1,12 @@
-import type { ApiResponse, Material } from '@/types';
+import type { ApiResponse, Material } from "@/types";
 
 // Base API URL
-const API_BASE = 'http://localhost:3000';
+const API_BASE = "http://localhost:3000";
 
 function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('web_quest_token');
-  const headers: HeadersInit = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const token = localStorage.getItem("web_quest_token");
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
   return headers;
 }
 
@@ -17,23 +17,31 @@ export async function getMaterials(): Promise<ApiResponse<Material[]>> {
     const data = await response.json();
     return data;
   } catch (error) {
-    return { success: false, message: 'Failed to fetch materials' };
+    return { success: false, message: "Failed to fetch materials" + error };
   }
 }
 
-export async function getMaterialsById(id: number): Promise<ApiResponse<Material>> {
+export async function getMaterialsById(
+  id: number,
+): Promise<ApiResponse<Material>> {
   try {
     const response = await fetch(`${API_BASE}/api/materials/${id}`);
     const data = await response.json();
     return data;
   } catch (error) {
-    return { success: false, message: 'Failed to fetch material' };
+    return { success: false, message: "Failed to fetch material" + error };
   }
 }
 
 export async function getMaterialsByLevelId(
-  levelId: number
-): Promise<ApiResponse<{ level: { id: number; name: string }; materials: Material[]; totalMaterials: number }>> {
+  levelId: number,
+): Promise<
+  ApiResponse<{
+    level: { id: number; name: string };
+    materials: Material[];
+    totalMaterials: number;
+  }>
+> {
   try {
     const response = await fetch(`${API_BASE}/api/materials/level/${levelId}`, {
       headers: getAuthHeaders(),
@@ -41,15 +49,20 @@ export async function getMaterialsByLevelId(
     const data = await response.json();
     return data;
   } catch (error) {
-    return { success: false, message: 'Failed to fetch material' };
+    return { success: false, message: "Failed to fetch material" };
   }
 }
 
 // Create a new material
-export async function createMaterial(materialData: { levelId: number; title: string; content: string; order: number }): Promise<ApiResponse<Material>> {
+export async function createMaterial(materialData: {
+  levelId: number;
+  title: string;
+  content: string;
+  order: number;
+}): Promise<ApiResponse<Material>> {
   try {
     const response = await fetch(`${API_BASE}/api/materials`, {
-      method: 'POST',
+      method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({
         levelId: materialData.levelId,
@@ -61,22 +74,25 @@ export async function createMaterial(materialData: { levelId: number; title: str
     const data = await response.json();
     return data;
   } catch (error) {
-    return { success: false, message: 'Failed to create material' };
+    return { success: false, message: "Failed to create material" };
   }
 }
 
 // Update a material
-export async function updateMaterial(id: number, materialData: Partial<Material>): Promise<ApiResponse<Material>> {
+export async function updateMaterial(
+  id: number,
+  materialData: Partial<Material>,
+): Promise<ApiResponse<Material>> {
   try {
     const response = await fetch(`${API_BASE}/api/materials/${id}`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(materialData),
     });
     const data = await response.json();
     return data;
   } catch (error) {
-    return { success: false, message: 'Failed to update material' };
+    return { success: false, message: "Failed to update material" };
   }
 }
 
@@ -84,12 +100,12 @@ export async function updateMaterial(id: number, materialData: Partial<Material>
 export async function deleteMaterial(id: number): Promise<ApiResponse<void>> {
   try {
     const response = await fetch(`${API_BASE}/api/materials/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: getAuthHeaders(),
     });
     const data = await response.json();
     return data;
   } catch (error) {
-    return { success: false, message: 'Failed to delete materials' };
+    return { success: false, message: "Failed to delete materials" };
   }
 }
