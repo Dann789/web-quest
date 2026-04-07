@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { jwtPlugin } from "../../plugins/jwt.plugin";
 import { AuthController } from "../../controllers/auth/auth.controller";
-import type { JWTPayload } from "../../types";
+import type { JWTPayload, RegisterRequest } from "../../types";
 
 export const authRoutes = new Elysia({ prefix: "/api/auth" })
   .use(jwtPlugin)
@@ -26,6 +26,46 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
       detail: {
         summary: "User login",
         description: "Login with email and password to get JWT token",
+        tags: ["Authentication"],
+      },
+    },
+  )
+
+  .post(
+    "/register",
+    async ({ body, set }) => {
+      const result = await AuthController.register(body as RegisterRequest);
+
+      if (!result.success) {
+        set.status = 400;
+      }
+
+      return result;
+    },
+    {
+      body: t.Object({
+        username: t.String({
+          minLength: 10,
+          maxLength: 30,
+        }),
+        name: t.String({
+          minLength: 5,
+          maxLength: 100,
+        }),
+        email: t.String({
+          format: "email",
+          minLength: 6,
+          maxLength: 100,
+        }),
+        password: t.String({
+          minLength: 6,
+          maxLength: 10,
+        }),
+      }),
+      detail: {
+        summary: "User registration",
+        description:
+          "Register a new user with name, username, email and password",
         tags: ["Authentication"],
       },
     },

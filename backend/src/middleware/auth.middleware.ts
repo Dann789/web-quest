@@ -38,11 +38,21 @@ export const adminOnly = new Elysia()
         return { user };
     });
 
-// Middleware to check if user is USER role
-export const userOnly = new Elysia()
+export const dosenOnly = new Elysia()
     .use(authMiddleware)
     .derive(({ user, set }) => {
-        if (user.role !== UserRole.USER) {
+        if (user.role !== UserRole.DOSEN) {
+            set.status = 403;
+            throw new Error("Forbidden: Dosen access required");
+        }
+        return { user };
+    });
+
+// Middleware to check if user is USER role
+export const mahasiswaOnly = new Elysia()
+    .use(authMiddleware)
+    .derive(({ user, set }) => {
+        if (user.role !== UserRole.MAHASISWA) {
             set.status = 403;
             throw new Error("Forbidden: User access required");
         }

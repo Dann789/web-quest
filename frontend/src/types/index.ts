@@ -13,7 +13,7 @@ export interface User {
   updatedAt: string;
 }
 
-export type UserRole = 'ADMIN' | 'DOSEN' | 'MAHASISWA';
+export type UserRole = "ADMIN" | "DOSEN" | "MAHASISWA";
 
 // ============================================
 // AUTH TYPES
@@ -31,6 +31,13 @@ export interface LoginResponse {
     user: User;
     token: string;
   };
+}
+
+export interface RegisterRequest {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
 }
 
 export interface AuthState {
@@ -80,12 +87,9 @@ export interface Assignment {
 // CHALLENGE TYPES
 // ============================================
 
-export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD';
+export type Difficulty = "EASY" | "MEDIUM" | "HARD";
 
-export type ChallengeMethod = 
-  | 'DRAG_AND_DROP' 
-  | 'CODING_MANUAL' 
-  | 'FIX_THE_BUG' 
+export type ChallengeMethod = "DRAG_AND_DROP" | "CODING_MANUAL" | "FIX_THE_BUG";
 
 export interface Challenge {
   id: number;
@@ -96,9 +100,9 @@ export interface Challenge {
   method: ChallengeMethod;
   idealTime: number;
   xpBase: number;
-  content: any;        // Prisma Json column → bisa object atau null
+  content: any; // Prisma Json column → bisa object atau null
   starterCode: string | null;
-  testCases: any;      // Prisma Json column → bisa object atau null
+  testCases: any; // Prisma Json column → bisa object atau null
   hint: string | null;
   isActive: boolean;
 }
@@ -156,7 +160,7 @@ export interface Material {
 // BADGE TYPES
 // ============================================
 
-export type BadgeRarity = 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+export type BadgeRarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
 
 export interface Badge {
   id: number;

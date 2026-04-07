@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Loader2, Eye, EyeOff, User, Lock, ArrowRight } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Eye, EyeOff, User, Lock, ArrowRight } from "lucide-react";
+import { login as loginService } from "@/services/auth/AuthService";
 
 /**
  * Login Page - Split layout with branding and form
@@ -12,45 +13,37 @@ import { Loader2, Eye, EyeOff, User, Lock, ArrowRight } from 'lucide-react';
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  
+
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await loginService(formData);
 
-      const data = await response.json();
+      if (response.success && response.data) {
+        login(response.data.token, response.data.user);
 
-      if (data.success) {
-        login(data.data.token, data.data.user);
-        
-        if (data.data.user.role === 'ADMIN') {
-          navigate('/admin');
+        if (response.data.user.role === "ADMIN") {
+          navigate("/admin");
         } else {
-          navigate('/dashboard');
+          navigate("/dashboard");
         }
       } else {
-        setError(data.message || 'Login failed');
+        setError(response.message || "Login failed");
       }
     } catch (err) {
-      setError('Network error. Please try again.');
-      console.error('Login error:', err);
+      setError("Network error. Please try again.");
+      console.error("Login error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -58,18 +51,36 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-background">
-      
       {/* LEFT SIDE - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         {/* Animated Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20">
           {/* Geometric mesh pattern using primary color */}
-          <svg className="absolute inset-0 w-full h-full opacity-30" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            className="absolute inset-0 w-full h-full opacity-30"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <defs>
-              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="hsl(var(--primary) / 0.15)" strokeWidth="1"/>
+              <pattern
+                id="grid"
+                width="60"
+                height="60"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 60 0 L 0 0 0 60"
+                  fill="none"
+                  stroke="hsl(var(--primary) / 0.15)"
+                  strokeWidth="1"
+                />
               </pattern>
-              <linearGradient id="meshGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient
+                id="meshGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="hsl(var(--primary) / 0.3)" />
                 <stop offset="50%" stopColor="hsl(var(--primary) / 0.2)" />
                 <stop offset="100%" stopColor="hsl(var(--primary) / 0.1)" />
@@ -77,62 +88,113 @@ export default function LoginPage() {
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
             {/* Animated polygons */}
-            <polygon 
-              points="200,100 350,50 400,200 300,250 180,180" 
-              fill="none" 
-              stroke="url(#meshGradient)" 
+            <polygon
+              points="200,100 350,50 400,200 300,250 180,180"
+              fill="none"
+              stroke="url(#meshGradient)"
               strokeWidth="1"
               className="animate-pulse"
             />
-            <polygon 
-              points="100,300 250,280 280,400 150,450 80,380" 
-              fill="none" 
-              stroke="url(#meshGradient)" 
+            <polygon
+              points="100,300 250,280 280,400 150,450 80,380"
+              fill="none"
+              stroke="url(#meshGradient)"
               strokeWidth="1"
-              style={{ animationDelay: '0.5s' }}
+              style={{ animationDelay: "0.5s" }}
               className="animate-pulse"
             />
-            <polygon 
-              points="350,350 480,320 520,450 420,500 330,430" 
-              fill="none" 
-              stroke="url(#meshGradient)" 
+            <polygon
+              points="350,350 480,320 520,450 420,500 330,430"
+              fill="none"
+              stroke="url(#meshGradient)"
               strokeWidth="1"
-              style={{ animationDelay: '1s' }}
+              style={{ animationDelay: "1s" }}
               className="animate-pulse"
             />
             {/* Connection lines */}
-            <line x1="200" y1="100" x2="100" y2="300" stroke="hsl(var(--primary) / 0.2)" strokeWidth="1" />
-            <line x1="350" y1="50" x2="350" y2="350" stroke="hsl(var(--primary) / 0.15)" strokeWidth="1" />
-            <line x1="400" y1="200" x2="480" y2="320" stroke="hsl(var(--primary) / 0.2)" strokeWidth="1" />
-            <line x1="250" y1="280" x2="350" y2="350" stroke="hsl(var(--primary) / 0.15)" strokeWidth="1" />
+            <line
+              x1="200"
+              y1="100"
+              x2="100"
+              y2="300"
+              stroke="hsl(var(--primary) / 0.2)"
+              strokeWidth="1"
+            />
+            <line
+              x1="350"
+              y1="50"
+              x2="350"
+              y2="350"
+              stroke="hsl(var(--primary) / 0.15)"
+              strokeWidth="1"
+            />
+            <line
+              x1="400"
+              y1="200"
+              x2="480"
+              y2="320"
+              stroke="hsl(var(--primary) / 0.2)"
+              strokeWidth="1"
+            />
+            <line
+              x1="250"
+              y1="280"
+              x2="350"
+              y2="350"
+              stroke="hsl(var(--primary) / 0.15)"
+              strokeWidth="1"
+            />
             {/* Glowing dots */}
-            <circle cx="200" cy="100" r="3" fill="hsl(var(--primary) / 0.8)" className="animate-pulse" />
+            <circle
+              cx="200"
+              cy="100"
+              r="3"
+              fill="hsl(var(--primary) / 0.8)"
+              className="animate-pulse"
+            />
             <circle cx="350" cy="50" r="2" fill="hsl(var(--primary) / 0.6)" />
-            <circle cx="400" cy="200" r="3" fill="hsl(var(--primary) / 0.7)" className="animate-pulse" />
+            <circle
+              cx="400"
+              cy="200"
+              r="3"
+              fill="hsl(var(--primary) / 0.7)"
+              className="animate-pulse"
+            />
             <circle cx="100" cy="300" r="2" fill="hsl(var(--primary) / 0.5)" />
-            <circle cx="350" cy="350" r="3" fill="hsl(var(--primary) / 0.8)" className="animate-pulse" />
+            <circle
+              cx="350"
+              cy="350"
+              r="3"
+              fill="hsl(var(--primary) / 0.8)"
+              className="animate-pulse"
+            />
             <circle cx="480" cy="320" r="2" fill="hsl(var(--primary) / 0.6)" />
           </svg>
-          
+
           {/* Glow effect using primary color */}
           <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
         </div>
-        
+
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center items-center xl:px-20 gap-4">
           {/* Logo */}
           <div>
-            <img src="/src/assets/logo/logo-tab.png" alt="Logo Web Quest" width={120} height={120}/>
+            <img
+              src="/src/assets/logo/logo-tab.png"
+              alt="Logo Web Quest"
+              width={120}
+              height={120}
+            />
           </div>
           {/* Headline */}
           <h1 className="text-4xl xl:text-5xl font-bold text-foreground leading-tight">
-            Web 
+            Web
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">
               Quest
             </span>
           </h1>
-          
+
           <p className="text-muted-foreground text-lg mb-12 max-w-md text-center">
             Platform Pembelajaran Pemrograman Web Berbasis Gamifikasi
           </p>
@@ -162,7 +224,10 @@ export default function LoginPage() {
 
               {/* Username/Email */}
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="email"
+                  className="text-sm font-medium text-foreground"
+                >
                   Email
                 </label>
                 <div className="relative">
@@ -172,7 +237,9 @@ export default function LoginPage() {
                     type="email"
                     placeholder="email@gmail.com"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     required
                     disabled={isLoading}
                     className="pl-10 h-12 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
@@ -182,17 +249,22 @@ export default function LoginPage() {
 
               {/* Password */}
               <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-medium text-foreground"
+                >
                   Password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
                     required
                     disabled={isLoading}
                     className="pl-10 pr-10 h-12 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
@@ -213,7 +285,10 @@ export default function LoginPage() {
 
               {/* Remember & Forgot */}
               <div className="flex items-end justify-end">
-                <button type="button" className="text-sm text-primary hover:text-primary/80 transition-colors">
+                <button
+                  type="button"
+                  className="text-sm text-primary hover:text-primary/80 transition-colors"
+                >
                   Lupa Password?
                 </button>
               </div>
@@ -240,10 +315,13 @@ export default function LoginPage() {
 
             {/* Footer */}
             <p className="mt-6 text-center text-sm text-muted-foreground">
-              Belum Punya Akun?{' '}
-              <button type="button" className="text-primary hover:text-primary/80 font-medium transition-colors">
-                Hubungi Admin
-              </button>
+              Belum Punya Akun?{" "}
+              <a
+                href="/register"
+                className="text-primary hover:text-primary/80 font-medium transition-colors"
+              >
+                Buat Akun
+              </a>
             </p>
           </div>
 

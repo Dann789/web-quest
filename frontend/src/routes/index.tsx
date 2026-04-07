@@ -1,48 +1,53 @@
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 
 // Layouts
-import MainLayout from '@/layouts/MainLayout';
-import AuthLayout from '@/layouts/AuthLayout';
-import FullscreenLayout from '@/layouts/FullscreenLayout';
+import MainLayout from "@/layouts/MainLayout";
+import AuthLayout from "@/layouts/AuthLayout";
+import FullscreenLayout from "@/layouts/FullscreenLayout";
 
 // Public Pages
-import LoginPage from '@/pages/public/LoginPage';
-import LeaderboardPage from '@/pages/public/LeaderboardPage';
+import LoginPage from "@/pages/public/LoginPage";
+import RegisterPage from "@/pages/public/RegisterPage";
+import LeaderboardPage from "@/pages/public/LeaderboardPage";
 
 // User Pages
-import DashboardPage from '@/pages/user/DashboardPage';
-import LevelPage from '@/pages/user/LevelPage';
-import LevelDetailPage from '@/pages/user/LevelMapPage';
-import ChallengePage from '@/pages/user/ChallengePage';
-import ProfilePage from '@/pages/user/ProfilePage';
+import DashboardPage from "@/pages/user/DashboardPage";
+import LevelPage from "@/pages/user/LevelPage";
+import LevelDetailPage from "@/pages/user/LevelMapPage";
+import ChallengePage from "@/pages/user/ChallengePage";
+import ProfilePage from "@/pages/user/ProfilePage";
 
 // Dosen Pages
-import DosenDashboard from '@/pages/dosen/DosenDashboard';
-import LevelsManagement from '@/pages/dosen/LevelsManagement';
-import MaterialsManagement from '@/pages/dosen/MaterialsManagement';
-import ChallengeManagement from '@/pages/dosen/ChallengeManagement';
-import DosenLogsPage from '@/pages/dosen/DosenLogsPage';
-import DosenProfilePage from '@/pages/dosen/DosenProfilePage';
+import DosenDashboard from "@/pages/dosen/DosenDashboard";
+import LevelsManagement from "@/pages/dosen/LevelsManagement";
+import MaterialsManagement from "@/pages/dosen/MaterialsManagement";
+import ChallengeManagement from "@/pages/dosen/ChallengeManagement";
+import DosenLogsPage from "@/pages/dosen/DosenLogsPage";
+import DosenProfilePage from "@/pages/dosen/DosenProfilePage";
 
 // Admin Pages
-import AdminDashboard from '@/pages/admin/AdminDashboard';
-import AdminUsersPage from '@/pages/admin/AdminUsersPage';
-import AdminLevelsPage from '@/pages/dosen/LevelsManagement';
-import AdminMaterialsPage from '@/pages/dosen/MaterialsManagement';
-import AdminChallengesPage from '@/pages/dosen/ChallengeManagement';
-import AdminLogsPage from '@/pages/admin/AdminLogsPage';
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminUsersPage from "@/pages/admin/AdminUsersPage";
+import AdminLevelsPage from "@/pages/dosen/LevelsManagement";
+import AdminMaterialsPage from "@/pages/dosen/MaterialsManagement";
+import AdminChallengesPage from "@/pages/dosen/ChallengeManagement";
+import AdminLogsPage from "@/pages/admin/AdminLogsPage";
 
 /**
  * Route Configuration
- * 
+ *
  * Struktur:
  * /                    → Landing Page (Public)
  * /login               → Login Page (Auth Layout)
- * 
+ *
  * /dashboard           → User Dashboard (Main Layout)
  * /leaderboard         → Leaderboard (Main Layout)
  * /profile             → Profile (Main Layout)
- * 
+ *
  * /admin               → Admin Dashboard (Admin Layout)
  * /admin/users         → User Management (Admin Layout)
  * /admin/levels        → Level Management (Admin Layout)
@@ -55,8 +60,8 @@ import AdminLogsPage from '@/pages/admin/AdminLogsPage';
 const router = createBrowserRouter([
   // ===== PUBLIC ROUTES =====
   {
-    path: '/',
-    element: <Navigate to={'/login'} replace/>,
+    path: "/",
+    element: <Navigate to={"/login"} replace />,
   },
 
   // ===== AUTH ROUTES =====
@@ -64,8 +69,12 @@ const router = createBrowserRouter([
     element: <AuthLayout />,
     children: [
       {
-        path: '/login',
+        path: "/login",
         element: <LoginPage />,
+      },
+      {
+        path: "/register",
+        element: <RegisterPage />,
       },
     ],
   },
@@ -75,76 +84,76 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       {
-        path: '/dashboard',
+        path: "/dashboard",
         element: <DashboardPage />,
       },
       {
-        path: '/level',
+        path: "/level",
         element: <LevelPage />,
       },
       {
-        path: '/leaderboard',
+        path: "/leaderboard",
         element: <LeaderboardPage />,
       },
       {
-        path: '/profile',
+        path: "/profile",
         element: <ProfilePage />,
       },
       {
-        path: '/dosen',
+        path: "/dosen",
         element: <DosenDashboard />,
       },
       {
-        path: '/dosen/levels',
+        path: "/dosen/levels",
         element: <LevelsManagement />,
       },
       {
-        path: '/dosen/materials',
+        path: "/dosen/materials",
         element: <MaterialsManagement />,
       },
       {
-        path: '/dosen/challenges',
+        path: "/dosen/challenges",
         element: <ChallengeManagement />,
       },
       {
-        path: '/dosen/logs',
+        path: "/dosen/logs",
         element: <DosenLogsPage />,
       },
       {
-        path: '/dosen/leaderboard',
+        path: "/dosen/leaderboard",
         element: <LeaderboardPage />,
       },
       {
-        path: '/dosen/profile',
+        path: "/dosen/profile",
         element: <DosenProfilePage />,
       },
       {
-        path: '/admin',
+        path: "/admin",
         element: <AdminDashboard />,
       },
       {
-        path: '/admin/users',
+        path: "/admin/users",
         element: <AdminUsersPage />,
       },
       // Admin Content Routes (Optional/Legacy)
       {
-        path: '/admin/levels',
+        path: "/admin/levels",
         element: <AdminLevelsPage />,
       },
       {
-        path: '/admin/materials',
+        path: "/admin/materials",
         element: <AdminMaterialsPage />,
       },
       {
-        path: '/admin/challenges',
+        path: "/admin/challenges",
         element: <AdminChallengesPage />,
       },
       {
-        path: '/admin/logs',
+        path: "/admin/logs",
         element: <AdminLogsPage />,
       },
       {
-        path: '/admin/leaderboard',
+        path: "/admin/leaderboard",
         element: <LeaderboardPage />,
       },
       // TODO: Add more user routes
@@ -153,17 +162,17 @@ const router = createBrowserRouter([
       // /levels/:levelId/challenges/:id → Challenge Workspace
     ],
   },
-  
+
   // ===== FULLSCREEN ROUTES (Protected) =====
   {
     element: <FullscreenLayout />,
     children: [
       {
-        path: '/level/:levelId',
+        path: "/level/:levelId",
         element: <LevelDetailPage />,
       },
       {
-        path: '/challenge',
+        path: "/challenge",
         element: <ChallengePage />,
       },
     ],

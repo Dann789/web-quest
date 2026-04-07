@@ -1,8 +1,10 @@
 import prisma from "../../config/database";
+import { UserRole } from "@prisma/client";
 import {
   type LoginRequest,
   type LoginResponse,
   type JWTPayload,
+  type RegisterRequest,
 } from "../../types";
 
 export class AuthController {
@@ -145,6 +147,64 @@ export class AuthController {
       return {
         success: false,
         message: "An error occurred during logout",
+      };
+    }
+  }
+
+  static async register(credentials: RegisterRequest) {
+    const { name, username, email, password } = credentials;
+    if (!username || !name || !email || !password) {
+        return {
+          success: false,
+          message: "Username, name, email, and password are required",
+        };
+     }
+
+     const existingUser = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (existingUser) {
+        return {
+          success: false,
+          message: "Email already exists",
+        };
+      }
+
+      // Check username uniqueness
+      const existingUsername = await prisma.user.findUnique({
+        where: { username },
+      });
+      if (existingUsername) {
+        return {
+          success: false,
+          message: "NIM/NIP sudah digunakan oleh user lain",
+        };
+      }
+
+    const hashedPassword = await Bun.password.hash(password);
+
+    try {
+      const user = await prisma.user.create({
+        data: {
+          name,
+          username,
+          email,
+          password: hashedPassword,
+          role: UserRole.MAHASISWA,
+          totalXp: 0,
+        },
+      });
+
+      return {
+        success: true,
+        message: "Registration successful",
+        data: { user },
+      };
+    } catch (error) {
+      console.error("Registration error:", error);
+      return {
+        success: false,
+        message: "An error occurred during registration",
       };
     }
   }
