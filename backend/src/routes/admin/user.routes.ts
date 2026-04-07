@@ -4,16 +4,18 @@ import { type CreateUserRequest, type UpdateUserRequest } from "../../types";
 import { UserRole } from "@prisma/client";
 
 export const userRoutes = new Elysia({ prefix: "/api/users" })
+    .get('/active-today', () => UserController.getActiveStudentsToday())
+    .get('/new-user', () => UserController.getNewUserThisWeek())
     .get('/', () => UserController.getAllUsers())
 
     .post('/', ({ body }) => UserController.createUser(body as CreateUserRequest), {
         body: t.Object({
             username: t.String({
-                minLength: 3,
+                minLength: 10,
                 maxLength: 30
             }),
             name: t.String({
-                minLength: 2,
+                minLength: 5,
                 maxLength: 100
             }),
             email: t.String({

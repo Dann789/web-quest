@@ -69,3 +69,14 @@ export async function deleteLevel(id: number): Promise<ApiResponse<void>> {
     return { success: false, message: 'Failed to delete level' };
   }
 }
+
+// Get popular level
+export async function getPopularLevel(): Promise<ApiResponse<Level>> {
+  try {
+    const response = await fetch(`${API_BASE}/api/levels/popular`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    return { success: false, message: 'Failed to get popular level' };
+  }
+}

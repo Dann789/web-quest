@@ -54,4 +54,6 @@ export const levelRoutes = new Elysia({ prefix: "/api/levels" })
         params: t.Object({
             id: t.Numeric()
         })
-    }); 
+    })
+    
+    .get("/popular", () => LevelController.getPopularLevel());

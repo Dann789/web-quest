@@ -238,4 +238,70 @@ export class LevelController {
       };
     }
   }
+
+  static async getPopularLevel() {
+    try {
+      const startWeek = new Date();
+      startWeek.setDate(startWeek.getDate() - startWeek.getDay());
+      startWeek.setHours(0, 0, 0, 0);
+
+      const level = await prisma.level.findMany({
+        select: {
+          id: true,
+          name: true,
+          iconName: true,
+          _count: {
+            select: {
+              assignments: {
+                where: {
+                  assignedAt: {
+                    gte: startWeek
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const sortedLevel = level.sort((a, b) => 
+        (b._count?.assignments || 0) - (a._count?.assignments || 0)
+      );
+
+      const topLevel = sortedLevel[0];
+      let popularLevel = null;
+
+      if (topLevel && topLevel._count && topLevel._count.assignments > 0) {
+        // Hitung jumlah user unik (berbeda) yang mempelajari level ini minggu ini
+        const uniqueUsers = await prisma.assignment.findMany({
+          where: {
+            levelId: topLevel.id,
+            assignedAt: { gte: startWeek }
+          },
+          select: { userId: true },
+          distinct: ['userId']
+        });
+
+        popularLevel = {
+          id: topLevel.id,
+          name: topLevel.name,
+          iconName: topLevel.iconName,
+          activityCount: topLevel._count.assignments,
+          userCount: uniqueUsers.length // Total user dari array distinct
+        };
+      }
+
+      return {
+        success: true,
+        message: "Popular Level",
+        data: popularLevel,
+      }
+    } catch (e: unknown) {
+      console.error(`Error getting popular level:`, e);
+      return {
+        success: false,
+        message: `Failed to get popular level: ${e instanceof Error ? e.message : String(e)}`,
+      };
+    }
+  }
 }

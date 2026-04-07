@@ -66,6 +66,53 @@ export async function getUsers(): Promise<ApiResponse<User[]>> {
   }
 }
 
+export interface ActiveStudentData {
+  todayCount: number;
+  weeklyChart: { day: string; users: number }[];
+}
+
+/**
+ * Get active students today
+ */
+export async function getActiveStudentsToday(): Promise<ApiResponse<ActiveStudentData>> {
+  try {
+    const response = await fetch(`${API_BASE}/api/users/active-today`, {
+      method: 'GET',
+      headers: createHeaders(),
+    });
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching active students:', error);
+    return {
+      success: false,
+      message: 'Network error. Please try again.',
+      data: {
+        todayCount: 0,
+        weeklyChart: []
+      }
+    };
+  }
+}
+
+export async function getNewStudentThisWeek(): Promise<ApiResponse<number>> {
+  try {
+    const response = await fetch(`${API_BASE}/api/users/new-user`, {
+      method: 'GET',
+      headers: createHeaders(),
+    });
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching new students:', error);
+    return {
+      success: false,
+      message: 'Network error. Please try again.',
+      data: 0
+    };
+  }
+}
+
 /**
  * Get user by ID
  */

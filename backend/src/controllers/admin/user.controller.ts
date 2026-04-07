@@ -255,5 +255,111 @@ export class UserController {
       };
     }
   }
+
+  static async getActiveStudentsToday() {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Generate the last 7 days timestamps (from 6 days ago up to today)
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        d.setHours(0, 0, 0, 0);
+        days.push(d);
+      }
+      
+      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      
+      // We run 7 queries in parallel to be as fast as possible
+      const activityPromises = days.map(async (dayStart) => {
+        const dayEnd = new Date(dayStart);
+        dayEnd.setDate(dayEnd.getDate() + 1); // midnight of the next day
+        
+        const count = await prisma.user.count({
+          where: {
+            role: UserRole.MAHASISWA,
+            OR: [
+              {
+                attempts: {
+                  some: {
+                    submittedAt: { gte: dayStart, lt: dayEnd },
+                  },
+                },
+              },
+              {
+                materialProgress: {
+                  some: {
+                    OR: [
+                      { startedAt: { gte: dayStart, lt: dayEnd } },
+                      { completedAt: { gte: dayStart, lt: dayEnd } },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        });
+        
+        return {
+          day: dayNames[dayStart.getDay()],
+          users: count
+        };
+      });
+
+      const weeklyChart = await Promise.all(activityPromises);
+      
+      // The last element in the array represents 'today'
+      const activeCount = weeklyChart[weeklyChart.length - 1]?.users || 0;
+
+      return {
+        success: true,
+        message: "Active students counted successfully",
+        data: {
+          todayCount: activeCount,
+          weeklyChart: weeklyChart
+        },
+      };
+    } catch (e: unknown) {
+      console.error(`Error getting active students today: ${e}`);
+      return {
+        success: false,
+        message: "Failed to count active students",
+        data: {
+          todayCount: 0,
+          weeklyChart: []
+        },
+      };
+    }
+  }
+
+  static async getNewUserThisWeek() {
+    try {
+      const startOfWeek = new Date();
+      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      const newUserCount = await prisma.user.count({
+        where: {
+          role: UserRole.MAHASISWA,
+          createdAt: { gte: startOfWeek },
+        },
+      });
+
+      return {
+        success: true,
+        message: "New users counted successfully",
+        data: newUserCount,
+      };
+    } catch (e: unknown) {
+      console.error(`Error getting new users this week: ${e}`);
+      return {
+        success: false,
+        message: "Failed to count new users",
+        data: 0,
+      };
+    }
+  }
 }
 
