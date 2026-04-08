@@ -85,12 +85,22 @@ export class UserProgressController {
             materialId: materialId,
           },
         },
+        include: {
+          material: { select: { levelId: true } }
+        }
       });
 
       if (!materialProgress) {
         return {
           success: false,
           message: "Material progress tidak ditemukan",
+        };
+      }
+
+      if (materialProgress.isCompleted) {
+        return {
+          success: true,
+          message: "Material sudah selesai sebelumnya",
         };
       }
 
@@ -107,9 +117,41 @@ export class UserProgressController {
         },
       });
 
+      const levelId = materialProgress.material.levelId;
+
+      const totalMaterialsInLevel = await prisma.material.count({
+        where: { levelId: levelId }
+      });
+
+      const completedMaterialsInLevel = await prisma.materialProgress.count({
+        where: {
+          userId: userId,
+          isCompleted: true,
+          material: { levelId: levelId }
+        }
+      });
+
+      if (totalMaterialsInLevel > 0 && completedMaterialsInLevel === totalMaterialsInLevel) {
+        await prisma.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            totalXp: {
+              increment: 15
+            },
+          },
+        });
+        return {
+          success: true,
+          message: "Selamat! Semua materi di level ini tuntas. +15 XP didapatkan!",
+          data: { xpAwarded: 15 }
+        };
+      }
+
       return {
         success: true,
-        message: "Status materi berhasil diupdate",
+        message: "Status materi berhasil diupdate, lanjutkan materi selanjutnya",
       };
     } catch (error) {
       console.error("Error updating material status:", error);

@@ -473,6 +473,7 @@ export default function LevelMapPage() {
         isOpen={isMaterialOpen}
         onClose={() => setIsMaterialOpen(false)}
         levelId={parseInt(levelId || '1', 10)}
+        onMaterialComplete={() => setIsMaterialCompleted(true)}
       />
 
       {/* Guide Floating Action Button */}

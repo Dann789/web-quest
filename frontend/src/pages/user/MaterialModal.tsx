@@ -16,10 +16,11 @@ interface MaterialModalProps {
   isOpen: boolean;
   onClose: () => void;
   levelId: number;
+  onMaterialComplete?: () => void;
 }
 
-export default function MaterialModal({ isOpen, onClose, levelId }: MaterialModalProps) {
-  const { user } = useAuth();
+export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComplete }: MaterialModalProps) {
+  const { user, updateUser } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(false);
@@ -81,11 +82,22 @@ export default function MaterialModal({ isOpen, onClose, levelId }: MaterialModa
     }
 
     try {
-      await Promise.all(
-        viewedMaterial.map((materialId) =>
-          updateStatusMaterial(user.id, materialId)
-        )
-      );
+      let earnedXp = 0;
+      for (const materialId of viewedMaterial) {
+        const res = await updateStatusMaterial(user.id, materialId);
+        if (res.data?.xpAwarded) {
+          earnedXp += res.data.xpAwarded;
+        }
+      }
+      
+      if (earnedXp > 0) {
+         updateUser({ ...user, totalXp: user.totalXp + earnedXp });
+      }
+
+      if (onMaterialComplete) {
+         onMaterialComplete();
+      }
+
       handleClose();
     } catch (err) {
       console.error("Gagal mengupdate progres materi", err);
