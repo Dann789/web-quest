@@ -55,17 +55,18 @@ export class LeaderboardController {
 
       const leaderboardWithAggregate = leaderboard
         .map((user) => {
-          const totalXp = user.attempts.reduce(
-            (acc, a) => acc + (a.xpEarned || 0),
-            0,
-          );
           const totalTimeSpent = user.attempts.reduce(
             (acc, a) => acc + (a.timeSpent || 0),
             0,
           );
+
+          const displayXp =
+            startDate && endDate
+              ? user.attempts.reduce((acc, a) => acc + (a.xpEarned || 0), 0)
+              : user.totalXp;
           return {
             ...user,
-            totalXp,
+            totalXp: displayXp,
             totalTimeSpent,
           };
         })
@@ -84,46 +85,4 @@ export class LeaderboardController {
       };
     }
   }
-
-  // static async getLeaderboardData() {
-  //   try {
-  //     const leaderboard = await prisma.user.findMany({
-  //       where: { role: UserRole.MAHASISWA },
-  //       select: {
-  //         id: true,
-  //         username: true,
-  //         name: true,
-  //         email: true,
-  //         role: true,
-  //         totalXp: true,
-  //         attempts: {
-  //           select: {
-  //             timeSpent: true,
-  //           },
-  //         },
-  //       },
-  //       orderBy: { totalXp: "desc" },
-  //     });
-
-  //     const leaderboardWithTime = leaderboard.map((user) => ({
-  //       ...user,
-  //       totalTimeSpent: user.attempts.reduce(
-  //         (acc, curr) => acc + (curr.timeSpent || 0),
-  //         0,
-  //       ),
-  //     }));
-
-  //     return {
-  //       success: true,
-  //       message: "Leaderboard retrieved successfully",
-  //       data: leaderboardWithTime,
-  //     };
-  //   } catch (error) {
-  //     console.error(error);
-  //     return {
-  //       success: false,
-  //       message: "Failed to retrieve leaderboard: " + error,
-  //     };
-  //   }
-  // }
 }
