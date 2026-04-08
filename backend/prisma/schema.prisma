@@ -142,7 +142,7 @@ model Progress {
   isUnlocked Boolean @default(false) @map("is_unlocked")
   unlockedAt  DateTime? @map("unlocked_at") @db.Timestamptz(3)
   completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   // Relations
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)

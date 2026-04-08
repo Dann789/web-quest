@@ -71,6 +71,7 @@ export class UserController {
       }
 
       const hashedPassword = await Bun.password.hash(password);
+      const resolvedRole = role ?? UserRole.MAHASISWA;
 
       const user = await prisma.user.create({
         data: {
@@ -78,8 +79,17 @@ export class UserController {
           name,
           email,
           password: hashedPassword,
-          role: role ?? UserRole.MAHASISWA,
+          role: resolvedRole,
           totalXp: 0,
+          ...(resolvedRole === UserRole.MAHASISWA && {
+            progress: {
+              create: {
+                levelId: 1,
+                isUnlocked: true,
+                unlockedAt: new Date(),
+              },
+            },
+          }),
         },
         select: {
           id: true,

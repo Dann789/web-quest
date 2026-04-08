@@ -49,6 +49,23 @@ export class LeaderboardController {
               xpEarned: true,
             },
           },
+          materialProgress: {
+            where:
+              startDate && endDate
+                ? {
+                    isCompleted: true,
+                    completedAt: {
+                      gte: startDate,
+                      lt: endDate,
+                    },
+                  }
+                : { isCompleted: true },
+            select: {
+              material: {
+                select: { levelId: true },
+              },
+            },
+          },
         },
         orderBy: { totalXp: "desc" },
       });
@@ -60,10 +77,19 @@ export class LeaderboardController {
             0,
           );
 
+          // Jumlah level yg materinya sudah selesai
+          const completedLevelIds = new Set(
+            user.materialProgress.map((mp) => mp.material.levelId),
+          );
+
           const displayXp =
             startDate && endDate
-              ? user.attempts.reduce((acc, a) => acc + (a.xpEarned || 0), 0)
+              // Harian / Mingguan
+              ? user.attempts.reduce((acc, a) => acc + (a.xpEarned || 0), 0) +
+                completedLevelIds.size * 15
+              // Semua waktu
               : user.totalXp;
+
           return {
             ...user,
             totalXp: displayXp,
