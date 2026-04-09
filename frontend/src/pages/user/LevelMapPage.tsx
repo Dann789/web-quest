@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { BookOpen, ChevronLeft, X, CircleHelp, Loader2, CheckCheck } from 'lucide-react';
+import { BookOpen, ChevronLeft, X, CircleHelp, Loader2, CheckCheck, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import MaterialModal from './MaterialModal';
 import { useAuth } from "@/contexts/AuthContext";
@@ -103,19 +103,36 @@ export default function LevelMapPage() {
     if (!isDragging || !scrollContainerRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5; // Scroll speed multiplier
+    const walk = (x - startX) * 1.5;
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
-  // ─── Konfigurasi jumlah node per difficulty ─────────────────────────────
-  // Sesuaikan angka ini dengan jumlah soal per difficulty yang ada di database
   const NODE_CONFIG = useMemo(() => ({
     easy:   5,
-    medium: 10,
-    hard:   3,
+    medium: 8,
+    hard:   4,
   }), []);
 
-  // Bangun daftar node dari konfigurasi statis (tidak butuh mock data)
+  const unlockState = useMemo(() => {
+    const easyStart  = 1;
+    const easyEnd    = NODE_CONFIG.easy;
+    const mediumEnd  = NODE_CONFIG.easy + NODE_CONFIG.medium;
+
+    const completedEasy = completedChallengeNodes.filter(
+      (slot) => slot >= easyStart && slot <= easyEnd
+    ).length;
+
+    const completedMedium = completedChallengeNodes.filter(
+      (slot) => slot > easyEnd && slot <= mediumEnd
+    ).length;
+
+    return {
+      isEasyUnlocked:   isMaterialCompleted,
+      isMediumUnlocked: completedEasy   >= 3,
+      isHardUnlocked:   completedMedium >= 4,
+    };
+  }, [isMaterialCompleted, completedChallengeNodes, NODE_CONFIG]);
+
   const mapNodes = useMemo(() => {
     const nodes: Array<{
       id: string;
@@ -126,7 +143,7 @@ export default function LevelMapPage() {
       displayNumber?: number;
     }> = [];
 
-    // Node Materi (selalu di awal)
+    // Node Materi (selalu di awal, selalu terbuka)
     nodes.push({
       id: 'materi',
       type: 'materi',
@@ -135,41 +152,56 @@ export default function LevelMapPage() {
       difficulty: 'intro',
     });
 
-    let currentSlot = 1; // Mulai dari 1, sesuai standar nodeSlot yang Anda setel di backend
+    let currentSlot = 1;
 
-    // Node Easy
+    // ── Node Easy ──
     Array.from({ length: NODE_CONFIG.easy }).forEach((_, idx) => {
+      const isDone = completedChallengeNodes.includes(currentSlot);
       nodes.push({
         id: `easy-${idx}`,
         type: 'challenge',
         title: `Challenge Easy ${idx + 1}`,
-        status: completedChallengeNodes.includes(currentSlot) ? 'completed' : 'unlocked',
+        status: isDone
+          ? 'completed'
+          : unlockState.isEasyUnlocked
+          ? 'unlocked'
+          : 'locked',
         difficulty: 'easy',
         displayNumber: idx + 1,
       });
       currentSlot++;
     });
 
-    // Node Medium
+    // ── Node Medium ──
     Array.from({ length: NODE_CONFIG.medium }).forEach((_, idx) => {
+      const isDone = completedChallengeNodes.includes(currentSlot);
       nodes.push({
         id: `medium-${idx}`,
         type: 'challenge',
         title: `Challenge Medium ${idx + 1}`,
-        status: completedChallengeNodes.includes(currentSlot) ? 'completed' : 'unlocked',
+        status: isDone
+          ? 'completed'
+          : unlockState.isMediumUnlocked
+          ? 'unlocked'
+          : 'locked',
         difficulty: 'medium',
         displayNumber: idx + 1,
       });
       currentSlot++;
     });
 
-    // Node Hard
+    // ── Node Hard ──
     Array.from({ length: NODE_CONFIG.hard }).forEach((_, idx) => {
+      const isDone = completedChallengeNodes.includes(currentSlot);
       nodes.push({
         id: `hard-${idx}`,
         type: 'challenge',
         title: `Challenge Hard ${idx + 1}`,
-        status: completedChallengeNodes.includes(currentSlot) ? 'completed' : 'unlocked',
+        status: isDone
+          ? 'completed'
+          : unlockState.isHardUnlocked
+          ? 'unlocked'
+          : 'locked',
         difficulty: 'hard',
         displayNumber: idx + 1,
       });
@@ -177,13 +209,13 @@ export default function LevelMapPage() {
     });
 
     return nodes;
-  }, [isMaterialCompleted, completedChallengeNodes, NODE_CONFIG]);
+  }, [isMaterialCompleted, completedChallengeNodes, NODE_CONFIG, unlockState]);
 
   // Calculate Positions (Grouped Horizontal with Gaps)
   const { points, pathD, width, height, zones } = useMemo(() => {
     const startPadding = 100;
     const nodeSpacing = 160;
-    const groupGap = 300; // Large gap between difficulty groups
+    const groupGap = 300;
     const amplitude = 80;   
     const frequency = 0.8; 
     const containerHeight = 600;
@@ -490,10 +522,11 @@ export default function LevelMapPage() {
                     </Button>
                 </div>
                 <ol className="text-sm text-slate-300 space-y-2 list-decimal list-outside pl-4 marker:text-indigo-500">
-                    <li>Baca dan pelajari materi terlebih dahulu</li>
-                    <li>Kerjakan Challenge yang sudah terbuka</li>
-                    <li>Pastikan untuk menyelesaikan setiap challenge dengan tepat waktu dan jawaban yang benar</li>
-                    <li>Anda akan mendapatkan XP setelah mempelajari materi dan mengerjakan setiap challenge</li>
+                    <li>Baca dan pelajari <strong className="text-indigo-400">Materi Utama</strong> terlebih dahulu untuk membuka soal Easy</li>
+                    <li>Selesaikan minimal <strong className="text-emerald-400">3 soal Easy</strong> untuk membuka soal Medium</li>
+                    <li>Selesaikan minimal <strong className="text-amber-400">4 soal Medium</strong> untuk membuka soal Hard</li>
+                    <li>Node yang terkunci (🔒) belum dapat dikerjakan sampai syarat terpenuhi</li>
+                    <li>Anda akan mendapatkan XP setelah menyelesaikan setiap tantangan</li>
                 </ol>
             </div>
         )}
@@ -605,16 +638,16 @@ function MapNode({
                 styles.shadow,
             )}
         >
-             {/* Show Number / Loading / Lock Icon */}
+             {/* Show Number / Loading / Lock / Check Icon */}
              {isLoading ? (
                 <Loader2 className={cn("h-6 w-6 animate-spin", styles.textColor)} />
-             ) : node.status === 'unlocked' ? (
-                <span className={cn("text-xl font-bold font-mono", styles.textColor)}>
-                    {node.displayNumber}
-                </span>
+             ) : node.status === 'completed' ? (
+                <CheckCheck className={cn("h-6 w-6", styles.textColor)} />
+             ) : node.status === 'locked' ? (
+                <Lock className="h-5 w-5 text-slate-600" />
              ) : (
                 <span className={cn("text-xl font-bold font-mono", styles.textColor)}>
-                    <CheckCheck/>
+                    {node.displayNumber}
                 </span>
              )}
             
@@ -664,7 +697,7 @@ function MapNode({
 
              {/* Updated Level Label floating below */}
              <div className={cn(
-                "absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-mono font-bold transition-opacity whitespace-nowrap",
+                "absolute -bottom-8 left-1/2 -translate-x-1/2 text-[13px] font-mono font-bold transition-opacity whitespace-nowrap",
                 node.status === 'locked' ? 'text-slate-800' : 'text-slate-500'
             )}>
                  Challenge {node.displayNumber}

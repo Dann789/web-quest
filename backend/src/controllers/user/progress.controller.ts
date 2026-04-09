@@ -216,7 +216,7 @@ export class UserProgressController {
       });
       // const totalNodes = totalChallenges + (completedMaterials.data?.totalMaterials ? 1 : 0);
       const totalCompleted = (completedNodes.data?.completedNodes?.length || 0) + (completedMaterials.data?.isAllCompleted ? 1 : 0);
-      const progressPercentage = Math.round((totalCompleted / 19) * 100);
+      const progressPercentage = Math.round((totalCompleted / 18) * 100);
 
       return {
         success: true,
