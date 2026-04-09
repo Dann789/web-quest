@@ -192,6 +192,13 @@ export class AuthController {
           password: hashedPassword,
           role: UserRole.MAHASISWA,
           totalXp: 0,
+          progress: {
+            create: {
+              levelId: 1,
+              isUnlocked: true,
+              unlockedAt: new Date(),
+            },
+          }
         },
       });
 
