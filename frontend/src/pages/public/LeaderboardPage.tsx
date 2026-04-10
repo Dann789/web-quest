@@ -12,16 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Trophy, Crown, Clock } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getLeaderboardData } from "@/services/public/LeaderboardService";
-import type { User } from "@/types";
-
-type LeaderboardItem = User & {
-  rank: number;
-  name: string;
-  avatar: string;
-  xp: number;
-  time: number;
-  isMe: boolean;
-};
+import type { LeaderboardItem } from "@/types";
 
 export default function LeaderboardPage() {
   const { user } = useAuth();
@@ -31,7 +22,6 @@ export default function LeaderboardPage() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       const result = await getLeaderboardData(filterTime);
-      console.log(result);
       if (result.success && result.data) {
         const mapped = result.data.map((item, idx) => ({
           ...item,
@@ -42,7 +32,6 @@ export default function LeaderboardPage() {
           time: item.totalTimeSpent ?? 0,
           isMe: Boolean(user && item.id === user.id),
         }));
-        console.log("Mapped: ", mapped);
         setLeaderboard(mapped);
       }
     };
@@ -138,14 +127,16 @@ export default function LeaderboardPage() {
                 <h3 className="text-lg font-bold truncate">
                   {topThree[1].name}
                 </h3>
-                <p className="font-bold text-slate-300">{topThree[1].xp} XP</p>
+                <p className="font-bold text-slate-300">
+                  {topThree[1].totalXp} XP
+                </p>
                 <div className="flex items-center justify-center mt-1">
                   <Clock className="inline-flex h-4 w-4 mr-2" />
                   <p
                     className="text-sm text-muted-foreground max-w-[100px] truncate"
                     title="Total Waktu"
                   >
-                    {formatTime(topThree[1].time)}
+                    {formatTime(topThree[1].totalTimeSpent)}
                   </p>
                 </div>
               </CardContent>
@@ -180,7 +171,7 @@ export default function LeaderboardPage() {
                   Top Earner
                 </Badge>
                 <p className="mt-2 text-2xl font-black text-amber-500">
-                  {topThree[0].xp} XP
+                  {topThree[0].totalXp} XP
                 </p>
                 <div className="flex items-center justify-center mt-1">
                   <Clock className="inline-flex h-4 w-4 mr-2" />
@@ -188,7 +179,7 @@ export default function LeaderboardPage() {
                     className="text-sm text-muted-foreground max-w-[100px] truncate"
                     title="Total Waktu"
                   >
-                    {formatTime(topThree[0].time)}
+                    {formatTime(topThree[0].totalTimeSpent)}
                   </p>
                 </div>
               </CardContent>
@@ -215,14 +206,16 @@ export default function LeaderboardPage() {
                 <h3 className="text-lg font-bold truncate">
                   {topThree[2].name}
                 </h3>
-                <p className="font-bold text-amber-600">{topThree[2].xp} XP</p>
+                <p className="font-bold text-amber-600">
+                  {topThree[2].totalXp} XP
+                </p>
                 <div className="flex items-center justify-center mt-1">
                   <Clock className="inline-flex h-4 w-4 mr-2" />
                   <p
                     className="text-sm text-muted-foreground max-w-[100px] truncate"
                     title="Total Waktu"
                   >
-                    {formatTime(topThree[2].time)}
+                    {formatTime(topThree[2].totalTimeSpent)}
                   </p>
                 </div>
               </CardContent>
@@ -258,10 +251,12 @@ export default function LeaderboardPage() {
             </div>
             <div className="mr-6 text-right">
               <p className="text-xs font-medium text-muted-foreground">Waktu</p>
-              <p className="text-sm font-medium">{formatTime(player.time)}</p>
+              <p className="text-sm font-medium">
+                {formatTime(player.totalTimeSpent)}
+              </p>
             </div>
             <div className="w-20 font-mono text-lg font-bold text-right">
-              {player.xp} XP
+              {player.totalXp} XP
             </div>
           </div>
         ))}

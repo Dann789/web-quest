@@ -1,4 +1,4 @@
-import type { ApiResponse, User } from "@/types";
+import type { ApiResponse, User, LeaderboardItem } from "@/types";
 
 const API_BASE = "http://localhost:3000";
 
@@ -11,7 +11,7 @@ function getAuthHeaders(): HeadersInit {
 
 export async function getLeaderboardData(
   timeframe: string,
-): Promise<ApiResponse<{ leaderboard: User[] }>> {
+): Promise<ApiResponse<LeaderboardItem[]>> {
   const response = await fetch(`${API_BASE}/api/leaderboard/${timeframe}`, {
     headers: getAuthHeaders(),
   });

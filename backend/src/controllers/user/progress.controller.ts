@@ -1,3 +1,4 @@
+import { isNotEmpty } from "elysia/utils";
 import prisma from "../../config/database";
 
 export class UserProgressController {
@@ -86,8 +87,8 @@ export class UserProgressController {
           },
         },
         include: {
-          material: { select: { levelId: true } }
-        }
+          material: { select: { levelId: true } },
+        },
       });
 
       if (!materialProgress) {
@@ -120,38 +121,43 @@ export class UserProgressController {
       const levelId = materialProgress.material.levelId;
 
       const totalMaterialsInLevel = await prisma.material.count({
-        where: { levelId: levelId }
+        where: { levelId: levelId },
       });
 
       const completedMaterialsInLevel = await prisma.materialProgress.count({
         where: {
           userId: userId,
           isCompleted: true,
-          material: { levelId: levelId }
-        }
+          material: { levelId: levelId },
+        },
       });
 
-      if (totalMaterialsInLevel > 0 && completedMaterialsInLevel === totalMaterialsInLevel) {
+      if (
+        totalMaterialsInLevel > 0 &&
+        completedMaterialsInLevel === totalMaterialsInLevel
+      ) {
         await prisma.user.update({
           where: {
             id: userId,
           },
           data: {
             totalXp: {
-              increment: 15
+              increment: 15,
             },
           },
         });
         return {
           success: true,
-          message: "Selamat! Semua materi di level ini tuntas. +15 XP didapatkan!",
-          data: { xpAwarded: 15 }
+          message:
+            "Selamat! Semua materi di level ini tuntas. +15 XP didapatkan!",
+          data: { xpAwarded: 15 },
         };
       }
 
       return {
         success: true,
-        message: "Status materi berhasil diupdate, lanjutkan materi selanjutnya",
+        message:
+          "Status materi berhasil diupdate, lanjutkan materi selanjutnya",
       };
     } catch (error) {
       console.error("Error updating material status:", error);
@@ -184,13 +190,16 @@ export class UserProgressController {
       });
 
       const countCompleted = completedMaterials.length;
-      const isAllCompleted = totalMaterials > 0 && countCompleted === totalMaterials;
+      const isAllCompleted =
+        totalMaterials > 0 && countCompleted === totalMaterials;
 
       return {
         success: true,
         message: "Progres Materi yang sudah selesai berhasil diambil",
         data: {
-          completedMaterials: completedMaterials.map((material) => material.materialId),
+          completedMaterials: completedMaterials.map(
+            (material) => material.materialId,
+          ),
           totalMaterials: totalMaterials,
           isAllCompleted: isAllCompleted,
         },
@@ -207,15 +216,20 @@ export class UserProgressController {
   static async getProgressLevel(userId: number, levelId: number) {
     try {
       const completedNodes = await this.getCompleteNodes(userId, levelId);
-      const completedMaterials = await this.getMaterialProgress(userId, levelId);
+      const completedMaterials = await this.getMaterialProgress(
+        userId,
+        levelId,
+      );
 
       const totalChallenges = await prisma.challenge.count({
         where: {
-          levelId: levelId
-        }
+          levelId: levelId,
+        },
       });
       // const totalNodes = totalChallenges + (completedMaterials.data?.totalMaterials ? 1 : 0);
-      const totalCompleted = (completedNodes.data?.completedNodes?.length || 0) + (completedMaterials.data?.isAllCompleted ? 1 : 0);
+      const totalCompleted =
+        (completedNodes.data?.completedNodes?.length || 0) +
+        (completedMaterials.data?.isAllCompleted ? 1 : 0);
       const progressPercentage = Math.round((totalCompleted / 18) * 100);
 
       return {

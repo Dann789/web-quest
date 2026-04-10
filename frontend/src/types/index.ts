@@ -60,6 +60,12 @@ export interface Level {
   iconName: string;
 }
 
+export type LevelCompletionItem = {
+  levelId: number;
+  levelName: string;
+  completedCount: number;
+};
+
 export interface Progress {
   id: number;
   userId: number;
@@ -180,12 +186,34 @@ export interface UserBadge {
 // LEADERBOARD TYPES
 // ============================================
 
-export interface LeaderboardEntry {
+export interface LeaderboardItem {
+  id: number;
   rank: number;
-  userId: number;
-  username: string;
+  name: string;
+  avatar: string;
   totalXp: number;
-  totalTime: number;
+  totalTimeSpent: number;
+  isMe: boolean;
+}
+
+export interface DashboardStats {
+  totalMahasiswa: number;
+  totalLevel: number;
+  totalChallenge: number;
+}
+
+export interface LeaderboardDisplayItem {
+  rank: number;
+  name: string;
+  avatar: string;
+  xp: number;
+}
+
+export interface LevelChartItem {
+  name: string;
+  value: number;
+  originalLevelName: string;
+  color: string;
 }
 
 // ============================================

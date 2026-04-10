@@ -1,7 +1,37 @@
 import prisma from "../../config/database";
+import { UserRole } from "@prisma/client";
 import { type CreateLevelRequest, type UpdateLevelRequest } from "../../types";
 
 export class LevelController {
+  /**
+   * Get stats for Dosen Dashboard (parallel count queries — fast & lightweight)
+   */
+  static async getDashboardStats() {
+    try {
+      const [mahasiswaCount, levelCount, challengeCount] = await Promise.all([
+        prisma.user.count({ where: { role: UserRole.MAHASISWA } }),
+        prisma.level.count(),
+        prisma.challenge.count({ where: { isActive: true } }),
+      ]);
+
+      return {
+        success: true,
+        message: "Dashboard stats retrieved successfully",
+        data: {
+          totalMahasiswa: mahasiswaCount,
+          totalLevel: levelCount,
+          totalChallenge: challengeCount,
+        },
+      };
+    } catch (e: unknown) {
+      console.error(`Error getting dashboard stats:`, e);
+      return {
+        success: false,
+        message: `Failed to get dashboard stats: ${e instanceof Error ? e.message : String(e)}`,
+      };
+    }
+  }
+
   /**
    * Get all levels with statistics
    */
@@ -23,12 +53,12 @@ export class LevelController {
           },
         },
         orderBy: {
-          xpRequired: 'asc',
+          xpRequired: "asc",
         },
       });
 
       // Transform _count to more readable format
-      const formattedLevels = levels.map(level => ({
+      const formattedLevels = levels.map((level) => ({
         ...level,
         totalMaterials: level._count.materials,
         totalChallenges: level._count.challenges,
@@ -49,54 +79,53 @@ export class LevelController {
     }
   }
 
-  
- static async createLevel(options: CreateLevelRequest) {
-  try {
-    const { name, xpRequired, description, iconName } = options;
+  static async createLevel(options: CreateLevelRequest) {
+    try {
+      const { name, xpRequired, description, iconName } = options;
 
-    // Check if level already exists
-    const existingLevel = await prisma.level.findFirst({
-      where: { name },
-    });
+      // Check if level already exists
+      const existingLevel = await prisma.level.findFirst({
+        where: { name },
+      });
 
-    if (existingLevel) {
+      if (existingLevel) {
+        return {
+          success: false,
+          message: "Level already exists",
+        };
+      }
+
+      // Create level
+      const level = await prisma.level.create({
+        data: {
+          name,
+          xpRequired,
+          description,
+          iconName,
+        },
+        select: {
+          id: true,
+          name: true,
+          xpRequired: true,
+          description: true,
+          iconName: true,
+          createdAt: true,
+        },
+      });
+
+      return {
+        success: true,
+        message: "Level created successfully!",
+        data: level,
+      };
+    } catch (e: unknown) {
+      console.error(`Error creating level:`, e);
       return {
         success: false,
-        message: "Level already exists",
+        message: `Failed to create level: ${e instanceof Error ? e.message : String(e)}`,
       };
     }
-
-    // Create level
-    const level = await prisma.level.create({
-      data: {
-        name,
-        xpRequired,
-        description,
-        iconName,
-      },
-      select: {
-        id: true,
-        name: true,
-        xpRequired: true,
-        description: true,
-        iconName: true,
-        createdAt: true,
-      },
-    });
-
-    return {
-      success: true,
-      message: "Level created successfully!",
-      data: level,
-    };
-  } catch (e: unknown) {
-    console.error(`Error creating level:`, e);
-    return {
-      success: false,
-      message: `Failed to create level: ${e instanceof Error ? e.message : String(e)}`,
-    };
   }
- }
 
   /**
    * Update level
@@ -200,7 +229,7 @@ export class LevelController {
               title: true,
               order: true,
             },
-            orderBy: { order: 'asc' },
+            orderBy: { order: "asc" },
           },
           _count: {
             select: {
@@ -255,17 +284,17 @@ export class LevelController {
               assignments: {
                 where: {
                   assignedAt: {
-                    gte: startWeek
-                  }
-                }
-              }
-            }
-          }
-        }
+                    gte: startWeek,
+                  },
+                },
+              },
+            },
+          },
+        },
       });
 
-      const sortedLevel = level.sort((a, b) => 
-        (b._count?.assignments || 0) - (a._count?.assignments || 0)
+      const sortedLevel = level.sort(
+        (a, b) => (b._count?.assignments || 0) - (a._count?.assignments || 0),
       );
 
       const topLevel = sortedLevel[0];
@@ -276,10 +305,10 @@ export class LevelController {
         const uniqueUsers = await prisma.assignment.findMany({
           where: {
             levelId: topLevel.id,
-            assignedAt: { gte: startWeek }
+            assignedAt: { gte: startWeek },
           },
           select: { userId: true },
-          distinct: ['userId']
+          distinct: ["userId"],
         });
 
         popularLevel = {
@@ -287,7 +316,7 @@ export class LevelController {
           name: topLevel.name,
           iconName: topLevel.iconName,
           activityCount: topLevel._count.assignments,
-          userCount: uniqueUsers.length // Total user dari array distinct
+          userCount: uniqueUsers.length, // Total user dari array distinct
         };
       }
 
@@ -295,12 +324,70 @@ export class LevelController {
         success: true,
         message: "Popular Level",
         data: popularLevel,
-      }
+      };
     } catch (e: unknown) {
       console.error(`Error getting popular level:`, e);
       return {
         success: false,
         message: `Failed to get popular level: ${e instanceof Error ? e.message : String(e)}`,
+      };
+    }
+  }
+
+  static async getLevelCompletion() {
+    try {
+      const [levels, totalMahasiswa] = await Promise.all([
+        prisma.level.findMany({
+          select: {
+            id: true,
+            name: true,
+          },
+          orderBy: {
+            id: "asc",
+          },
+        }),
+        prisma.user.count({
+          where: { role: UserRole.MAHASISWA },
+        }),
+      ]);
+
+      const completionData = await Promise.all(
+        levels.map(async (level) => {
+          const completedCount = await prisma.progress.count({
+            where: {
+              levelId: level.id,
+              completedAt: { not: null },
+              user: {
+                role: UserRole.MAHASISWA,
+              },
+            },
+          });
+
+          // const completionPercentage =
+          //   totalMahasiswa > 0
+          //     ? Math.round((completedCount / totalMahasiswa) * 100)
+          //     : 0;
+
+          return {
+            levelId: level.id,
+            levelName: level.name,
+            completedCount,
+            // totalMahasiswa,
+            // completionPercentage,
+          };
+        }),
+      );
+
+      return {
+        success: true,
+        message: "Level completion summary retrieved successfully",
+        data: completionData,
+      };
+    } catch (error) {
+      console.error("Error fetching level completion:", error);
+      return {
+        success: false,
+        message: "Failed to fetch level completion",
       };
     }
   }

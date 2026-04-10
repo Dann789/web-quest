@@ -8,8 +8,8 @@ export class UserController {
       const users = await prisma.user.findMany({
         where: {
           role: {
-            in: [UserRole.DOSEN, UserRole.MAHASISWA]
-          }
+            in: [UserRole.DOSEN, UserRole.MAHASISWA],
+          },
         },
         select: {
           id: true,
@@ -21,8 +21,8 @@ export class UserController {
           createdAt: true,
         },
         orderBy: {
-          createdAt: "asc"
-        }
+          createdAt: "asc",
+        },
       });
       return {
         success: true,
@@ -279,14 +279,14 @@ export class UserController {
         d.setHours(0, 0, 0, 0);
         days.push(d);
       }
-      
+
       const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      
+
       // We run 7 queries in parallel to be as fast as possible
       const activityPromises = days.map(async (dayStart) => {
         const dayEnd = new Date(dayStart);
         dayEnd.setDate(dayEnd.getDate() + 1); // midnight of the next day
-        
+
         const count = await prisma.user.count({
           where: {
             role: UserRole.MAHASISWA,
@@ -311,15 +311,15 @@ export class UserController {
             ],
           },
         });
-        
+
         return {
           day: dayNames[dayStart.getDay()],
-          users: count
+          users: count,
         };
       });
 
       const weeklyChart = await Promise.all(activityPromises);
-      
+
       // The last element in the array represents 'today'
       const activeCount = weeklyChart[weeklyChart.length - 1]?.users || 0;
 
@@ -328,7 +328,7 @@ export class UserController {
         message: "Active students counted successfully",
         data: {
           todayCount: activeCount,
-          weeklyChart: weeklyChart
+          weeklyChart: weeklyChart,
         },
       };
     } catch (e: unknown) {
@@ -338,7 +338,7 @@ export class UserController {
         message: "Failed to count active students",
         data: {
           todayCount: 0,
-          weeklyChart: []
+          weeklyChart: [],
         },
       };
     }
@@ -372,4 +372,3 @@ export class UserController {
     }
   }
 }
-
