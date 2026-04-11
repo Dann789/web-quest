@@ -23,9 +23,8 @@ import {
 import { getLeaderboardData } from "@/services/public/LeaderboardService";
 import type {
   DashboardStats,
-  User,
   LevelCompletionItem,
-  LeaderboardDisplayItem,
+  LeaderboardItem,
   LevelChartItem,
 } from "@/types";
 
@@ -37,7 +36,7 @@ export default function DosenDashboard() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [leaderboard, setLeaderboard] = useState<User[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
   const [levelCompletions, setLevelCompletions] = useState<
     LevelCompletionItem[]
   >([]);
@@ -97,11 +96,10 @@ export default function DosenDashboard() {
     },
   ];
 
-  const topStudents = useMemo<LeaderboardDisplayItem[]>(() => {
+  const topStudents = useMemo<LeaderboardItem[]>(() => {
     return leaderboard.slice(0, 5).map((student, index) => {
       const candidateName =
-        (student as User & { name?: string }).name ||
-        student.username ||
+        student.name ||
         "Unknown";
       const words = candidateName.trim().split(/\s+/).filter(Boolean);
       const avatar =
@@ -110,9 +108,9 @@ export default function DosenDashboard() {
           : (candidateName.slice(0, 2) || "U").toUpperCase();
 
       return {
+        ...student,
         rank: index + 1,
         name: candidateName,
-        xp: student.totalXp ?? 0,
         avatar,
       };
     });
@@ -301,7 +299,7 @@ export default function DosenDashboard() {
                       </p>
                     </div>
                     <Badge variant="secondary" className="font-mono text-xs">
-                      {student.xp} XP
+                      {student.totalXp} XP
                     </Badge>
                   </div>
                 ))
