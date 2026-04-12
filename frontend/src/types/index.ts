@@ -168,17 +168,17 @@ export interface Material {
 
 export type BadgeRarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
 
-export interface Badge {
+export interface BadgeItem {
   id: number;
   name: string;
   description: string;
-  iconUrl: string;
+  iconPath: string;
   rarity: BadgeRarity;
 }
 
 export interface UserBadge {
   id: number;
-  badge: Badge;
+  badge: BadgeItem;
   earnedAt: string;
 }
 

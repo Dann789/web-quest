@@ -1,33 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Zap, Award, Calendar, Edit, Lock } from 'lucide-react';
+import { User, Zap, Award, Calendar, Edit, Lock, Loader2 } from 'lucide-react';
 import { EditProfileDialog } from '@/components/user/EditProfileDialog';
+import { getUserBadges } from '@/services/user/BadgeService';
+import type { BadgeItem, UserBadge } from '@/types';
 
-/**
- * Profile Page - Menampilkan profil dan badges user
- */
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [badges, setBadges] = useState<(BadgeItem & { isEarned: boolean, earnedAt: string | null })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchBadges = async () => {
+      try {
+        setLoading(true);
+        const result = await getUserBadges(user.id);
+        if (result.success && result.data) {
+          setBadges(result.data.all);
+        } else {
+          setError(result.message || 'Failed to fetch badges');
+        }
+      } catch (error) {
+        console.error('Error fetching badges:', error);
+        setError('Failed to fetch badges');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchBadges();
+  }, [user?.id]);
 
   const handleEditProfile = (updatedUser: any) => {
-    // Update user in AuthContext + localStorage so all components update instantly
     updateUser(updatedUser);
   };
-
-  // Placeholder badges data
-  const badges = [
-    { id: 1, name: 'Web Beginner', description: 'Menyelesaikan Level 1', earned: true, rarity: 'COMMON' },
-    { id: 2, name: 'Web Explorer', description: 'Membuka 3 level', earned: false, rarity: 'COMMON' },
-    { id: 3, name: 'Web Adventurer', description: 'Membuka seluruh level', earned: false, rarity: 'RARE' },
-    { id: 4, name: 'Brave Coder', description: 'Menyelesaikan 1 challenge hard', earned: true, rarity: 'COMMON' },
-    { id: 5, name: 'Hard Challenger', description: 'Menyelesaikan 3 challenge hard', earned: false, rarity: 'RARE' },
-    { id: 6, name: 'Dedicated Learner', description: 'Menyelesaikan seluruh materi pada 1 level', earned: true, rarity: 'COMMON' },
-    { id: 7, name: 'Top Performer', description: 'Masuk Top 3 leaderboard', earned: false, rarity: 'EPIC' },
-  ];
 
   const getRarityStyles = (rarity: string) => {
     switch (rarity) {
@@ -85,12 +98,10 @@ export default function ProfilePage() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-            {/* Avatar */}
             <div className="h-24 w-24 rounded-full bg-primary/20 flex items-center justify-center">
               <User className="h-12 w-12 text-primary" />
             </div>
 
-            {/* User Info */}
             <div className="flex-1 space-y-2">
               <div>
                 <h2 className="text-2xl font-bold mb-1">{user?.name}</h2>
@@ -119,7 +130,16 @@ export default function ProfilePage() {
       />
 
       {/* Badges Section */}
-      <Card>
+      {loading ? (
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      ) : error ? (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-red-500">{error}</p>
+        </div>
+      ) : (
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5" />
@@ -134,37 +154,35 @@ export default function ProfilePage() {
                 <div
                   key={badge.id}
                   className={`group relative flex flex-col items-center p-5 rounded-xl border transition-all duration-300 ${
-                    badge.earned
+                    badge.isEarned
                       ? `bg-card ${styles.border}`
                       : 'bg-muted/40 border-dashed border-muted opacity-70'
                   }`}
                 >
-                  {/* Rarity Badge */}
                   <div className="absolute top-3 right-3">
                      <Badge variant="outline" className={`text-[10px] px-2 py-0 border-0 ${styles.badge}`}>
                       {badge.rarity}
                     </Badge>
                   </div>
 
-                  {/* Icon */}
-                  <div className={`h-14 w-14 rounded-full flex items-center justify-center mb-4 transition-transform ${
-                    badge.earned ? styles.iconBg : 'bg-muted'
-                  }`}>
-                    {badge.earned ? (
-                      <Award className={`h-7 w-7 ${styles.iconColor}`} />
+                    {badge.isEarned ? (
+                      <img src={badge.iconPath} alt={badge.name} className="h-30 w-30 grayscale-0" />
                     ) : (
-                      <Lock className="h-6 w-6 text-muted-foreground" />
+                      <img src={badge.iconPath} alt={badge.name} className="h-30 w-30 grayscale hover:grayscale-0" />
                     )}
-                  </div>
 
-                  {/* Text Content */}
                   <div className="text-center space-y-1 w-full">
-                    <p className={`font-semibold truncate ${!badge.earned && 'text-muted-foreground'}`}>
+                    <p className={`font-semibold truncate ${!badge.isEarned && 'text-muted-foreground'}`}>
                       {badge.name}
                     </p>
                     <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2.5em]">
                       {badge.description}
                     </p>
+                    {badge.isEarned && badge.earnedAt && (
+                      <div className="text-[10px] text-emerald-500 font-medium pt-1">
+                        Didapat pada {new Date(badge.earnedAt).toLocaleDateString('id-ID')}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -172,6 +190,7 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+          )}
     </div>
   );
 }
