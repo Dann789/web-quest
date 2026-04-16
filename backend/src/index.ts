@@ -9,6 +9,7 @@ import { progressRoutes } from "./routes/user/progress.routes";
 import { challengeAttemptRoutes } from "./routes/user/challenge.routes";
 import { badgeRoutes } from "./routes/user/badge.routes";
 import { leaderboardRoutes } from "./routes/public/leaderboard.routes";
+import { mrcRoutes } from "./routes/user/mrc.routes";
 
 const app = new Elysia()
   .use(corsPlugin)
@@ -21,8 +22,9 @@ const app = new Elysia()
   .use(challengeAttemptRoutes)
   .use(badgeRoutes)
   .use(leaderboardRoutes)
+  .use(mrcRoutes)
   .get("/", () => ({
-    message: "🚀 Web Quest API - Gamification Learning Platform",
+    message: "Web Quest API - Gamification Learning Platform",
     version: "1.0.0",
   }))
   .onError(({ code, error, set }) => {
@@ -53,5 +55,5 @@ const app = new Elysia()
   })
   .listen(3000);
 
-console.log(`🚀 Web Quest API running at http://localhost:3000`);
-console.log(`📚 Environment: ${process.env.NODE_ENV || "development"}`);
+console.log(` Web Quest API running at http://localhost:3000`);
+console.log(` Environment: ${process.env.NODE_ENV || "development"}`);

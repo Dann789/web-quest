@@ -66,3 +66,15 @@ export async function getProgressLevel(userId: number, levelId: number) {
     return { success: false, message: 'Failed to get progress percentage' };
   }
 }
+
+export async function getUserSummary(userId: number) {
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/progress/${userId}/summary`,
+      { method: 'GET', headers: getAuthHeaders() }
+    );
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Failed to get user summary' };
+  }
+}

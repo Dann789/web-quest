@@ -1,16 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { 
   ChevronRight,
   Flame,
@@ -21,118 +10,104 @@ import {
   Medal,
   BookOpenText,
   ClipboardCheck,
-  Send,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-
-import { useState } from 'react';
-
-const evaluationWords = [
-  { id: 1, word: "Clear", indo: "(Jelas)", desc: "Materi atau instruksi mudah dipahami." },
-  { id: 2, word: "Clean", indo: "(Bersih/Rapi)", desc: "Tampilan antarmuka tidak semrawut." },
-  { id: 3, word: "Easy to use", indo: "(Mudah digunakan)", desc: "Navigasi sistem lancar." },
-  { id: 4, word: "Helpful", indo: "(Membantu)", desc: "Sistem efektif membantu user belajar." },
-  { id: 5, word: "Organized", indo: "(Terorganisir)", desc: "Struktur materi atau level tertata rapi." },
-  { id: 6, word: "Responsive", indo: "(Responsif)", desc: "Sistem cepat merespons input (tidak lag)." },
-  { id: 7, word: "Simple", indo: "(Sederhana)", desc: "Tidak berbelit-belit." },
-  { id: 8, word: "Usable", indo: "(Dapat digunakan)", desc: "Fungsionalitas berjalan normal." },
-  { id: 9, word: "Confusing", indo: "(Membingungkan)", desc: "User tersesat atau tidak paham instruksi." },
-  { id: 10, word: "Complex", indo: "(Rumit)", desc: "Alur belajar terlalu sulit dipahami." },
-  { id: 11, word: "Distracting", indo: "(Mengganggu)", desc: "Elemen visual mengganggu fokus belajar." },
-  { id: 12, word: "Hard to use", indo: "(Sulit digunakan)", desc: "Kontrol game atau navigasi susah." },
-  { id: 13, word: "Overwhelming", indo: "(Berlebihan)", desc: "Terlalu banyak informasi sekaligus." },
-  { id: 14, word: "Slow", indo: "(Lambat)", desc: "Masalah performa/loading." },
-  { id: 15, word: "Frustrating", indo: "(Membuat frustrasi)", desc: "Sistem error atau terlalu susah dikendalikan." },
-  { id: 16, word: "Attractive", indo: "(Menarik)", desc: "Visual game memanjakan mata." },
-  { id: 17, word: "Creative", indo: "(Kreatif)", desc: "Konsep Space Shooter terasa unik untuk materi ini." },
-  { id: 18, word: "Engaging", indo: "(Melibatkan)", desc: "User merasa \"tenggelam\" dalam permainan." },
-  { id: 19, word: "Fresh", indo: "(Segar)", desc: "Tampilan baru, tidak seperti e-learning kaku." },
-  { id: 20, word: "Friendly", indo: "(Ramah)", desc: "Suasana/tone aplikasi menyenangkan." },
-  { id: 21, word: "Fun", indo: "(Menyenangkan)", desc: "Unsur hiburan berhasil." },
-  { id: 22, word: "Innovative", indo: "(Inovatif)", desc: "Terasa ada kebaruan teknologi." },
-  { id: 23, word: "Motivating", indo: "(Memotivasi)", desc: "Mendorong user untuk lanjut ke level berikutnya." },
-  { id: 24, word: "Satisfying", indo: "(Memuaskan)", desc: "Perasaan puas saat menyelesaikan tantangan." },
-  { id: 25, word: "Stimulating", indo: "(Menstimulasi)", desc: "Memicu rasa ingin tahu dan semangat." },
-  { id: 26, word: "Annoying", indo: "(Menyebalkan)", desc: "Musik atau notifikasi mengganggu emosi." },
-  { id: 27, word: "Boring", indo: "(Membosankan)", desc: "Gamifikasi gagal membuat seru." },
-  { id: 28, word: "Dull", indo: "(Tumpul/Hambar)", desc: "Kurang variasi, terasa datar." },
-  { id: 29, word: "Old", indo: "(Kuno)", desc: "Desain terasa ketinggalan zaman." },
-  { id: 30, word: "Unattractive", indo: "(Tidak menarik)", desc: "Visual tidak menggugah selera." }
-];
+import { useState, useEffect, useCallback } from 'react';
+import { getUserSummary } from '@/services/user/ProgressService';
+import type { LeaderboardItem } from '@/types';
+import { getLeaderboardData } from '@/services/public/LeaderboardService';
+import EvaluationModal from '@/components/user/EvaluationModal';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const hasCompletedEvaluation = false;
-  const [selectedWords, setSelectedWords] = useState<number[]>([]);
-  const [evaluationReason, setEvaluationReason] = useState("");
   const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
-  const [isSuccessAlertOpen, setIsSuccessAlertOpen] = useState(false);
+  const [summary, setSummary] = useState<any>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([])
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const handleDialogOpenChange = (open: boolean) => {
-    setIsEvaluationOpen(open);
-    if (!open) {
-      // Reset state ketika dialog tertutup
-      setSelectedWords([]);
-      setEvaluationReason("");
-    }
-  };
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError("")
+      const [summaryRes, leaderboardRes ] = await Promise.all([
+        getUserSummary(user?.id ?? 0),
+        getLeaderboardData("all_time")
+      ]);
 
-  const toggleWord = (id: number) => {
-    if (selectedWords.includes(id)) {
-      setSelectedWords(selectedWords.filter(w => w !== id));
-    } else {
-      if (selectedWords.length < 5) {
-        setSelectedWords([...selectedWords, id]);
+      if (summaryRes.success && summaryRes.data) {
+        setSummary(summaryRes.data);
       }
+
+      if (leaderboardRes.success && leaderboardRes.data) {
+        setLeaderboard(leaderboardRes.data);
+      }
+
+    } catch (error) {
+      setError("Failed to load data");
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [user]);
 
-  // Mock Data
-  const currentLevel = {
-    id: 2,
-    name: 'CSS Styling',
-    totalXp: 500,
-    currentXp: 350,
-    lastLesson: 'CSS Styling'
-  };
+  useEffect(() => {
+    loadData()
+  }, [loadData]);
 
-  const studyData = [
-    { day: 'Sen', minutes: 45 },
-    { day: 'Sel', minutes: 30 },
-    { day: 'Rab', minutes: 60 },
-    { day: 'Kam', minutes: 15 },
-    { day: 'Jum', minutes: 90 },
-    { day: 'Sab', minutes: 120 },
-    { day: 'Min', minutes: 45 },
+
+
+  const studyData = summary?.studyActivity ?? [
+    { day: 'Sen', minutes: 0 },
+    { day: 'Sel', minutes: 0 },
+    { day: 'Rab', minutes: 0 },
+    { day: 'Kam', minutes: 0 },
+    { day: 'Jum', minutes: 0 },
+    { day: 'Sab', minutes: 0 },
+    { day: 'Min', minutes: 0 },
   ];
 
   const stats = [
     { 
       label: 'Challenge Selesai', 
-      value: 24, 
+      value: summary?.completedChallenges ?? 0, 
       icon: <Code className="w-5 h-5 text-blue-500" />,
       bg: 'bg-blue-500/10',
       border: 'hover:border-blue-500/50'
     },
     { 
       label: 'Level Selesai', 
-      value: '1 / 5', 
+      value: `${summary?.completedLevels ?? 0} / ${summary?.totalLevels ?? 0}`, 
       icon: <BookOpen className="w-5 h-5 text-purple-500" />,
       bg: 'bg-purple-500/10',
       border: 'hover:border-purple-500/50'
     },
     { 
       label: 'Badge Didapat', 
-      value: 3, 
+      value: summary?.earnedBadges ?? 0, 
       icon: <Medal className="w-5 h-5 text-amber-500" />,
       bg: 'bg-amber-500/10',
       border: 'hover:border-amber-500/50'
     },
   ];
+
+  const nextLevelInfo = summary?.nextLevel;
+
+  // Calculate percentage XP to next level or overall progress
+  const totalXp = summary?.totalXp ?? 0;
+  const currentLevelTitle = summary?.currentLevel?.name ?? 'Loading...';
+  const currentLevelId = summary?.currentLevel?.id ?? 1;
+  const xpInCurrentLevel = totalXp - (summary?.currentLevel?.xpRequired ?? 0);
+  const xpNeededForNext = nextLevelInfo 
+    ? (nextLevelInfo.xpRequired - (summary?.currentLevel?.xpRequired ?? 0))
+    : 100; // Default if no next level
+  
+  const xpProgressPercentage = nextLevelInfo 
+    ? Math.min(100, Math.round((xpInCurrentLevel / xpNeededForNext) * 100))
+    : 100;
 
   return (
     <div className=" space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -176,18 +151,22 @@ export default function DashboardPage() {
                       Lanjutkan Belajar
                     </p>
                     <p className="font-bold text-white group-hover:text-blue-200 transition-colors">
-                      {currentLevel.lastLesson}
+                      {currentLevelTitle}
                     </p>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-white/50 group-hover:translate-x-1 transition-transform" />
+                  <Link to="/level">
+                    <ChevronRight className="w-5 h-5 text-white/50 group-hover:translate-x-1 transition-transform" />
+                  </Link>
                 </div>
                 {/* Daily Streak Badge */}
-                <div className="flex items-center w-fit gap-2 px-3 py-1.5 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md">
-                  <Flame className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
-                  <span className="text-xs font-bold text-orange-200">
-                    3 Days Streak
-                  </span>
-                </div>
+                {(summary?.streakCount ?? 0) > 0 && (
+                  <div className="flex items-center w-fit gap-2 px-3 py-1.5 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md">
+                    <Flame className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
+                    <span className="text-xs font-bold text-orange-200">
+                      {summary.streakCount} Day{summary.streakCount > 1 ? 's' : ''} Streak
+                    </span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -206,32 +185,32 @@ export default function DashboardPage() {
               <div className="text-center mb-6">
                 <div className="mx-auto w-20 h-20 flex items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/20 group-hover:scale-110 group-hover:ring-primary/40 transition-all duration-500 mb-3">
                   <span className="text-3xl font-black text-primary">
-                    {currentLevel.id}
+                    {currentLevelId}
                   </span>
                 </div>
-                <h3 className="font-bold text-xl">{currentLevel.name}</h3>
+                <h3 className="font-bold text-xl">{currentLevelTitle}</h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Level Selanjutnya: Javascript Logic
+                  {nextLevelInfo ? `Level Selanjutnya: ${nextLevelInfo.name}` : `Level Maksimal Tercapai!`}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between text-xs font-medium">
+                  <div className="flex justify-between text-xs font-medium">
                   <span className="text-muted-foreground">XP Progress</span>
                   <span className="text-primary">
-                    {currentLevel.currentXp} / {currentLevel.totalXp}
+                    {totalXp} XP 
                   </span>
                 </div>
                 <div className="h-3 bg-secondary rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"
                     style={{
-                      width: `${(currentLevel.currentXp / currentLevel.totalXp) * 100}%`,
+                      width: `${xpProgressPercentage}%`,
                     }}
                   />
                 </div>
                 <p className="text-[10px] text-right text-muted-foreground">
-                  +150 XP to level up
+                  {nextLevelInfo ? `+${nextLevelInfo.xpRequired - totalXp} XP to level up` : `You are at the top!`}
                 </p>
               </div>
             </CardContent>
@@ -357,47 +336,56 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="flex-1 space-y-4">
-              {[
-                { name: "AlexCode", xp: 2500, avatar: "AC" },
-                { name: "SarahDev", xp: 2350, avatar: "SD" },
-                { name: "JohnDoe", xp: 1800, avatar: "JD" },
-                {
-                  name: "You",
-                  xp: user?.totalXp || 0,
-                  active: true,
-                  avatar: "ME",
-                },
-                { name: "ReactFan", xp: 1200, avatar: "RF" },
-              ].map((p, i) => (
-                <div
-                  key={i}
-                  className={`flex items-center gap-3 p-2 rounded-xl transition-colors ${p.active ? "bg-primary/10 border border-primary/20" : "hover:bg-secondary/50 border border-transparent"}`}
-                >
+              {leaderboard.slice(0, 5).map((p, i) => {
+                const isMe = p.id === user?.id;
+                const initials = p.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2) || "??";
+
+                return (
                   <div
-                    className={`font-bold w-6 text-center text-sm ${i < 3 ? "text-amber-500" : "text-muted-foreground"}`}
+                    key={p.id}
+                    className={`flex items-center gap-3 p-2 rounded-xl transition-colors ${
+                      isMe
+                        ? "bg-primary/10 border border-primary/20"
+                        : "hover:bg-secondary/50 border border-transparent"
+                    }`}
                   >
-                    {i < 3 ? ["🥇", "🥈", "🥉"][i] : `#${i + 1}`}
-                  </div>
-                  <Avatar className="w-8 h-8 border border-border">
-                    <AvatarFallback className="text-xs font-bold">
-                      {p.avatar}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-sm font-bold truncate ${p.active ? "text-primary" : ""}`}
+                    <div
+                      className={`font-bold w-6 text-center text-sm ${
+                        i < 3 ? "text-amber-500" : "text-muted-foreground"
+                      }`}
                     >
-                      {p.name}
-                    </p>
+                      {i < 3 ? ["🥇", "🥈", "🥉"][i] : `#${i + 1}`}
+                    </div>
+                    <Avatar className="w-8 h-8 border border-border">
+                      <AvatarFallback className="text-xs font-bold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`text-sm font-bold truncate ${
+                          isMe ? "text-primary" : ""
+                        }`}
+                      >
+                        {isMe ? "You" : p.name}
+                      </p>
+                    </div>
+                    <span className="font-mono text-xs font-bold">
+                      {p.totalXp} XP 
+                    </span>
                   </div>
-                  <span className="font-mono text-xs font-bold">{p.xp} XP</span>
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
           </Card>
         </div>
       </div>
-      {!hasCompletedEvaluation && currentLevel.id >= 1 && (
+      {!hasCompletedEvaluation && (
         <div className="w-full p-4 rounded-xl border border-primary/50 bg-primary/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/20 rounded-full">
@@ -411,121 +399,15 @@ export default function DashboardPage() {
               </p>
             </div>
           </div>
-          <Dialog open={isEvaluationOpen} onOpenChange={handleDialogOpenChange}>
-            <DialogTrigger asChild>
-              <Button>Mulai Penilaian</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto w-[95vw]">
-              <DialogHeader>
-                <DialogTitle>Evaluasi Sistem</DialogTitle>
-                <DialogDescription>
-                  Pilih <strong>tepat 5 kata</strong> yang paling menggambarkan pengalaman Anda menggunakan sistem ini ({selectedWords.length}/5)
-                </DialogDescription>
-              </DialogHeader>
-              <div className="py-4">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
-                  {evaluationWords.map((item) => {
-                    const isSelected = selectedWords.includes(item.id);
-                    const isDisabled = !isSelected && selectedWords.length >= 5;
-                    return (
-                      <div
-                        key={item.id}
-                        onClick={() => !isDisabled && toggleWord(item.id)}
-                        className={`p-3 rounded-xl border text-sm transition-all duration-200 flex flex-col justify-center gap-1 min-h-[80px] select-none shadow-sm ${
-                          isSelected 
-                            ? "bg-primary text-primary-foreground border-primary shadow-md scale-[1.02] cursor-pointer ring-2 ring-primary ring-offset-1" 
-                            : isDisabled
-                              ? "bg-secondary/30 text-muted-foreground/60 border-border/50 cursor-not-allowed opacity-60"
-                              : "bg-card text-card-foreground border-border hover:border-primary/50 hover:bg-secondary/50 cursor-pointer"
-                        }`}
-                        title={item.desc}
-                      >
-                        <span className="font-bold text-center leading-tight">{item.word}</span>
-                        <span className="text-[12px] text-center opacity-80 leading-tight">{item.indo}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                <div className="mt-6 flex flex-col space-y-2">
-                  <label htmlFor="reason" className="text-sm font-semibold">
-                    Alasan Pemilihan Kata
-                  </label>
-                  <textarea
-                    id="reason"
-                    value={evaluationReason}
-                    onChange={(e) => setEvaluationReason(e.target.value)}
-                    placeholder="Ceritakan mengapa Anda memilih kata-kata tersebut. Apa hal yang menurut Anda menarik atau perlu diperbaiki dari aplikasi ini?"
-                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
-                  />
-                </div>
-              </div>
-              
-              <div className="flex justify-end gap-3 mt-2">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button 
-                      disabled={selectedWords.length !== 5}
-                      className="w-full sm:w-auto flex items-center gap-2"
-                    >
-                      Kirim Penilaian <Send className='w-4 h-4'/>
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Kirim Penilaian?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Anda telah memilih 5 kata. Setelah dikirim, Anda tidak dapat mengubah penilaian ini lagi. Apakah Anda yakin ingin mengirimkannya sekarang?
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className='mt-3'>
-                      <AlertDialogCancel>Periksa Kembali</AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={() => {
-                          console.log({ words: selectedWords, reason: evaluationReason });
-                          // Add your API call to save the evaluation here
-                          setIsEvaluationOpen(false);
-                          handleDialogOpenChange(false);
-                          setIsSuccessAlertOpen(true);
-                          // Buka alert sukses (tidak langsung menutup dialog utama supaya bertumpuk rapi atau menutup bersamaan)
-                        }}
-                      >
-                        Ya, Kirim Sekarang
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          {/* SUCCESS ALERT - Di luar Dialog utama agar tidak ikut unmount */}
-          <AlertDialog open={isSuccessAlertOpen} onOpenChange={setIsSuccessAlertOpen}>
-            <AlertDialogContent className="border-emerald-500/50 bg-emerald-950">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="flex flex-col items-center gap-2 text-emerald-500">
-                  <ClipboardCheck className="w-10 h-10" />
-                  Penilaian Berhasil Dikirim
-                </AlertDialogTitle>
-                <AlertDialogDescription className='text-center'>
-                  Terima kasih atas penilaian Anda! Masukan yang Anda berikan sangat berarti untuk pengembangan sistem ini kedepannya
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogAction 
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={() => {
-                    setIsSuccessAlertOpen(false);
-                  }}
-                >
-                  Tutup
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button onClick={() => setIsEvaluationOpen(true)}>Mulai Penilaian</Button>
         </div>
       )}
+
+      <EvaluationModal
+        isOpen={isEvaluationOpen}
+        onClose={() => setIsEvaluationOpen(false)}
+      />
     </div>
+    
   );
 }

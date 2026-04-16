@@ -174,3 +174,8 @@ export interface SubmitAnswerRequest {
   answerCode: string; // Untuk CODING_MANUAL & FIX_THE_BUG: kode user. Untuk DRAG_AND_DROP: JSON array urutan blok
   timeSpent: number; // detik, dari timer di frontend
 }
+
+export interface SubmitEvaluationRequest {
+  mrcWordId: number[];
+  reason: string;
+}

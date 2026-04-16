@@ -32,3 +32,13 @@ export const progressRoutes = new Elysia({ prefix: "/api/progress" })
       levelId: t.Numeric()
     })
   })
+  .get("/:userId/complete-challenges", ({ params: { userId } }) => UserProgressController.getCompletedChallenge(userId), {
+    params: t.Object({
+      userId: t.Numeric()
+    })
+  })
+  .get("/:userId/summary", ({ params: { userId } }) => UserProgressController.getUserSummary(userId), {
+    params: t.Object({
+      userId: t.Numeric()
+    })
+  });

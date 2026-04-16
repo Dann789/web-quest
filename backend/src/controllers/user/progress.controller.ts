@@ -253,4 +253,208 @@ export class UserProgressController {
       };
     }
   }
+
+  static async getCompletedChallenge(userId: number) {
+    try {
+      const completedChallenges = await prisma.assignment.findMany({
+        where: {
+          userId: userId,
+          isCompleted: true,
+        },
+        select: {
+          challengeId: true,
+        },
+      });
+
+      return {
+        success: true,
+        message: "Challenge yang sudah selesai berhasil diambil",
+        data: {
+          completedChallenges: completedChallenges.map(
+            (challenge) => challenge.challengeId,
+          ),
+          totalCompleted: completedChallenges.length,
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching completed challenges:", error);
+      return {
+        success: false,
+        message: "Failed to fetch completed challenges",
+      };
+    }
+  }
+
+  static async getUserSummary(userId: number) {
+    try {
+      const now = new Date();
+      // Helper for local YYYY-MM-DD
+      const toLocalDateString = (date: Date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      };
+
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+      const [user, completedChallenges, completedLevels, totalLevels, earnedBadges, recentAttempts, attemptDates, materialDates] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { totalXp: true, name: true }
+        }),
+        prisma.assignment.count({
+          where: { userId, isCompleted: true }
+        }),
+        prisma.progress.count({
+          where: { userId, completedAt: { not: null } }
+        }),
+        prisma.level.count(),
+        prisma.userBadge.count({
+          where: { userId }
+        }),
+        prisma.attempt.findMany({
+          where: {
+            userId,
+            submittedAt: { gte: sevenDaysAgo }
+          },
+          select: {
+            timeSpent: true,
+            submittedAt: true,
+          }
+        }),
+        prisma.attempt.findMany({
+          where: { userId },
+          select: { submittedAt: true },
+          distinct: ['submittedAt'],
+        }),
+        prisma.materialProgress.findMany({
+          where: {
+            userId,
+            isCompleted: true,
+            completedAt: { not: null }
+          },
+          select: { completedAt: true },
+        }),
+      ]);
+
+      if (!user) {
+        return {
+          success: false,
+          message: "User not found",
+        };
+      }
+
+      const dayLabels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+      const dailySecondsMap = new Map<string, number>();
+      const orderedDays: { day: string; date: Date }[] = [];
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(sevenDaysAgo);
+        d.setDate(d.getDate() + i);
+        const key = toLocalDateString(d);
+        dailySecondsMap.set(key, 0);
+        orderedDays.push({ day: dayLabels[d.getDay()] ?? '', date: d });
+      }
+
+      for (const attempt of recentAttempts) {
+        const key = toLocalDateString(attempt.submittedAt);
+        if (dailySecondsMap.has(key)) {
+          dailySecondsMap.set(
+            key,
+            (dailySecondsMap.get(key) || 0) + attempt.timeSpent
+          );
+        }
+      }
+
+      const studyActivity = orderedDays.map(({ day, date }) => {
+        const key = toLocalDateString(date);
+        const totalSeconds = dailySecondsMap.get(key) || 0;
+        return { 
+          day, 
+          minutes: Math.round(totalSeconds / 60) || (totalSeconds > 0 ? 1 : 0) // Ensure at least 1 min if there's activity
+        };
+      });
+
+      const activityDateSet = new Set<string>();
+
+      for (const a of attemptDates) {
+        activityDateSet.add(toLocalDateString(a.submittedAt));
+      }
+      for (const m of materialDates) {
+        if (m.completedAt) {
+          activityDateSet.add(toLocalDateString(m.completedAt));
+        }
+      }
+
+      const todayStr = toLocalDateString(today);
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = toLocalDateString(yesterday);
+
+      let streakCount = 0;
+      let checkDate: Date;
+
+      if (activityDateSet.has(todayStr)) {
+        checkDate = new Date(today);
+      } else if (activityDateSet.has(yesterdayStr)) {
+        checkDate = new Date(yesterday);
+      } else {
+        checkDate = new Date(today);
+      }
+
+      if (activityDateSet.has(todayStr) || activityDateSet.has(yesterdayStr)) {
+        while (true) {
+          const checkStr = toLocalDateString(checkDate);
+          if (activityDateSet.has(checkStr)) {
+            streakCount++;
+            checkDate.setDate(checkDate.getDate() - 1);
+          } else {
+            break;
+          }
+        }
+      }
+
+      const currentLevelData = await prisma.level.findFirst({
+        where: {
+          xpRequired: { lte: user.totalXp }
+        },
+        orderBy: { xpRequired: "desc" },
+        select: { id: true, name: true, xpRequired: true }
+      });
+
+      const nextLevelData = await prisma.level.findFirst({
+        where: {
+          xpRequired: { gt: user.totalXp }
+        },
+        orderBy: { xpRequired: "asc" },
+        select: { id: true, name: true, xpRequired: true }
+      });
+
+      return {
+        success: true,
+        message: "User summary retrieved successfully",
+        data: {
+          userName: user.name,
+          totalXp: user.totalXp,
+          completedChallenges,
+          completedLevels,
+          totalLevels,
+          earnedBadges,
+          currentLevel: currentLevelData || { id: 1, name: "Newbie", xpRequired: 0 },
+          nextLevel: nextLevelData || null,
+          studyActivity,
+          streakCount,
+        }
+      };
+    } catch (error) {
+      console.error("Error fetching user summary:", error);
+      return {
+        success: false,
+        message: "Failed to fetch user summary",
+      };
+    }
+  }
 }

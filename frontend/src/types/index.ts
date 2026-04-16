@@ -216,6 +216,24 @@ export interface LevelChartItem {
   color: string;
 }
 
+export interface mrcWords {
+  id: number;
+  word: string;
+  translate: string;
+  description: string;
+}
+
+export interface reason {
+  id: number;
+  userId: number;
+  reason_text: string;
+}
+
+export interface SubmitEvaluation {
+  mrcWordId: number[];
+  reason: string;
+} 
+
 // ============================================
 // API RESPONSE TYPES
 // ============================================
