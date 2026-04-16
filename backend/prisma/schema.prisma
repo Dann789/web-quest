@@ -264,6 +264,7 @@ model UserBadge {
 model MrcWords {
   id          Int      @id @default(autoincrement())
   word        String   @db.VarChar(30)
+  translate   String   @db.VarChar(30)
   description String   @db.Text
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
