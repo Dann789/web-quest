@@ -1,59 +1,178 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* ===== SHADCN/UI CSS VARIABLES ===== */
+/*
+  Tailwind v4 + shadcn/ui Dark Mode Pattern
+  Key Pattern:
+  1. Define CSS variables at root level (NOT in @layer base)
+  2. Use .dark for dark mode overrides (NOT in @theme)
+  3. Use @theme inline to map variables to Tailwind utilities
+  4. All color values must use hsl() wrapper
+*/
 
-@layer base {
-  :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 263.4 70% 50.4%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 263.4 70% 50.4%;
-    --radius: 0.5rem;
+/* Light mode colors - Define at root level */
+/* :root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 263.4 70% 50.4%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 263.4 70% 50.4%;
+  --radius: 0.5rem;
 
-    /* Custom Web Quest Colors */
-    --xp-green: 160 84% 39%;
-    --easy: 160 84% 39%;
-    --medium: 38 92% 50%;
-    --hard: 0 84% 60%;
-    --chart-1: 263.4 70% 50.4%;
-    --chart-2: 160 84% 39%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 0 84% 60%;
-    --chart-5: 199 89% 48%;
-  }
+  --xp: 160 84% 39%;
+  --easy: 142.1 76.2% 36.3%;
+  --medium: 38 92% 50%;
+  --hard: 0 84.2% 60.2%;
+
+  --chart-1: 263.4 70% 50.4%;
+  --chart-2: 160 84% 39%;
+  --chart-3: 38 92% 50%;
+  --chart-4: 0 84.2% 60.2%;
+  --chart-5: 199 89% 48%;
+} */
+
+/* Dark mode colors - Plain CSS overrides (NOT in @theme) */
+:root {
+  /* Core Colors - Dark Mode */
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 263.4 70% 50.4%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 263.4 70% 50.4%;
+
+  /* Custom Web Quest Colors - Dark Mode */
+  --xp: 160 84% 39%;
+  --easy: 160 84% 39%;
+  --medium: 38 92% 50%;
+  --hard: 0 84% 60%;
+
+  /* Chart colors - Dark Mode */
+  --chart-1: 263.4 70% 50.4%;
+  --chart-2: 160 84% 39%;
+  --chart-3: 38 92% 50%;
+  --chart-4: 0 84% 60%;
+  --chart-5: 199 89% 48%;
 }
 
+/* Map CSS variables to Tailwind theme with @theme inline */
+@theme inline {
+  /* Core Colors */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* Custom Web Quest Colors */
+  --color-xp: hsl(var(--xp));
+  --color-easy: hsl(var(--easy));
+  --color-medium: hsl(var(--medium));
+  --color-hard: hsl(var(--hard));
+
+  /* Chart colors */
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  /* Border radius tokens */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+
+  /* Custom Animations */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-float: float 3s ease-in-out infinite;
+}
+
+/* Keyframes */
+@keyframes accordion-down {
+  from { height: 0 }
+  to { height: var(--radix-accordion-content-height) }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height) }
+  to { height: 0 }
+}
+
+@keyframes shimmer {
+  "0%" { background-position: "-200% 0" },
+  "100%" { background-position: "200% 0" }
+}
+
+@keyframes pulse-glow {
+  "0%, 100%" { box-shadow: 0 0 5px rgba(124, 58, 237, 0.5) },
+  "50%" { box-shadow: 0 0 20px rgba(124, 58, 237, 0.8) }
+}
+
+@keyframes float {
+  "0%, 100%" { transform: translateY(0) },
+  "50%" { transform: translateY(-10px) }
+}
+
+/* Base styles */
 @layer base {
   * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    margin: 0;
-    min-height: 100vh;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
+    border-color: var(--border);
   }
 
-  /* Custom Scrollbar for dark theme */
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    margin: 0;
+    min-height: 100vh;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom Scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -62,10 +181,12 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/30 rounded-full cursor-pointer;
+    background-color: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 9999px;
+    cursor: pointer;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground/50;
+    background-color: hsl(var(--muted-foreground) / 0.5);
   }
 
   /* Firefox Scrollbar */
@@ -75,27 +196,34 @@
   }
 }
 
-/* ===== CUSTOM UTILITIES ===== */
-
-@layer utilities {
-  /* Difficulty badges */
-  .badge-easy {
-    @apply bg-emerald-500/20 text-emerald-400 border-emerald-500/30;
-  }
-  .badge-medium {
-    @apply bg-amber-500/20 text-amber-400 border-amber-500/30;
-  }
-  .badge-hard {
-    @apply bg-red-500/20 text-red-400 border-red-500/30;
-  }
-
-  /* XP animation */
-  .xp-glow {
-    @apply shadow-[0_0_15px_rgba(16,185,129,0.5)];
-  }
-
-  /* Glass morphism effect */
-  .glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/10;
-  }
+/* Custom Utilities */
+@utility badge-easy {
+  background-color: hsl(var(--easy) / 0.15);
+  color: hsl(var(--easy));
+  border-color: hsl(var(--easy) / 0.3);
 }
+
+@utility badge-medium {
+  background-color: hsl(var(--medium) / 0.15);
+  color: hsl(var(--medium));
+  border-color: hsl(var(--medium) / 0.3);
+}
+
+@utility badge-hard {
+  background-color: hsl(var(--hard) / 0.15);
+  color: hsl(var(--hard));
+  border-color: hsl(var(--hard) / 0.3);
+}
+
+@utility xp-glow {
+  box-shadow: 0 0 15px hsl(var(--xp) / 0.5);
+}
+
+@utility glass {
+  background-color: hsl(var(--background) / 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--foreground) / 0.1);
+}
+
+/* Plugin */
+@plugin "@tailwindcss/typography";
