@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BookOpen, ChevronLeft, X, CircleHelp, Loader2, CheckCheck, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import MaterialModal from './MaterialModal';
+import MaterialModal from '../../components/user/MaterialModal';
 import { useAuth } from "@/contexts/AuthContext";
 import { getNodeChallenge } from '@/services/user/ChallengeService';
 import { getCompleteNodes, getMaterialProgress } from '@/services/user/ProgressService';

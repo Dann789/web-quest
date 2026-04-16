@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Zap, Award, Calendar, Edit, Lock, Loader2 } from 'lucide-react';
+import { User, Zap, Award, Calendar, Edit, Loader2 } from 'lucide-react';
 import { EditProfileDialog } from '@/components/user/EditProfileDialog';
 import { getUserBadges } from '@/services/user/BadgeService';
-import type { BadgeItem, UserBadge } from '@/types';
+import type { BadgeItem } from '@/types';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
@@ -155,8 +155,8 @@ export default function ProfilePage() {
                   key={badge.id}
                   className={`group relative flex flex-col items-center p-5 rounded-xl border transition-all duration-300 ${
                     badge.isEarned
-                      ? `bg-card ${styles.border}`
-                      : 'bg-muted/40 border-dashed border-muted opacity-70'
+                      ? `bg-card ${styles.border} scale-100 hover:scale-105`
+                      : 'bg-muted/40 border-dashed border-muted opacity-70 grayscale scale-100 hover:grayscale-0 hover:scale-105 hover:opacity-100'
                   }`}
                 >
                   <div className="absolute top-3 right-3">
@@ -165,11 +165,7 @@ export default function ProfilePage() {
                     </Badge>
                   </div>
 
-                    {badge.isEarned ? (
-                      <img src={badge.iconPath} alt={badge.name} className="h-30 w-30 grayscale-0" />
-                    ) : (
-                      <img src={badge.iconPath} alt={badge.name} className="h-30 w-30 grayscale hover:grayscale-0" />
-                    )}
+                  <img src={badge.iconPath} alt={badge.name} className="h-max w-max" />
 
                   <div className="text-center space-y-1 w-full">
                     <p className={`font-semibold truncate ${!badge.isEarned && 'text-muted-foreground'}`}>
