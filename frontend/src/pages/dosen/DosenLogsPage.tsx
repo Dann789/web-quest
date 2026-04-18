@@ -1,85 +1,83 @@
-import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Activity, Search, Filter } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useState, useEffect } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Activity, Search, Filter, Eye, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { getCurrentProgress } from "@/services/public/LogService";
+import { getLevels } from "@/services/dosen/LevelService";
+import { useAuth } from "@/contexts/AuthContext";
+import type { Level } from "@/types";
 
-/**
- * Admin Activity Logs Page (Monitoring Progress)
- * Menampilkan status materi, challenge, progress, dan XP user
- */
 export default function DosenLogsPage() {
-  const [levelFilter, setLevelFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [levels, setLevels] = useState<Level[]>([]);
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [userProgressData, setUserProgressData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock Data User Progress
-  // Rule: Easy Max 5, Medium Max 10, Hard Max 3
-  const userProgressData = [
-    { 
-      id: 1, 
-      username: 'AlexCode', 
-      avatar: 'AC',
-      materialStatus: 'completed', 
-      challenges: { easy: 5, medium: 3, hard: 1 },
-      progress: 100,
-      currentLevel: 'HTML Basics'
-    },
-    { 
-      id: 2, 
-      username: 'SarahDev', 
-      avatar: 'SD',
-      materialStatus: 'in-progress',
-      challenges: { easy: 4, medium: 2, hard: 0 },
-      progress: 75,
-      currentLevel: 'CSS Styling'
-    },
-    { 
-      id: 3, 
-      username: 'JohnDoe', 
-      avatar: 'JD',
-      materialStatus: 'in-progress',
-      challenges: { easy: 2, medium: 0, hard: 0 },
-      progress: 30,
-      currentLevel: 'HTML Basics'
-    },
-    { 
-      id: 4, 
-      username: 'NewbieUser', 
-      avatar: 'NU',
-      materialStatus: 'not-started',
-      challenges: { easy: 0, medium: 0, hard: 0 },
-      progress: 0,
-      currentLevel: 'HTML Basics'
-    },
-    { 
-      id: 5, 
-      username: 'ProCoder', 
-      avatar: 'PC',
-      materialStatus: 'completed',
-      challenges: { easy: 5, medium: 10, hard: 3 }, // Maxed out
-      progress: 100,
-      currentLevel: 'JavaScript Advanced'
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [progressRes, levelsRes] = await Promise.all([
+          getCurrentProgress(),
+          getLevels(),
+        ]);
+
+        if (progressRes.success && progressRes.data) {
+          setUserProgressData(progressRes.data);
+        }
+
+        if (levelsRes.success && levelsRes.data) {
+          setLevels(levelsRes.data);
+        }
+      } catch (error) {
+        console.error("Error fetching logs data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Filter Logic
-  const filteredData = userProgressData.filter(user => {
-    const matchesSearch = user.username.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLevel = levelFilter === 'all' || 
-      (levelFilter === 'html' && user.currentLevel.includes('HTML')) ||
-      (levelFilter === 'css' && user.currentLevel.includes('CSS')) ||
-      (levelFilter === 'js' && user.currentLevel.includes('JavaScript'));
-    
+  const filteredData = userProgressData.filter((user) => {
+    const nameToSearch = user.name || user.username || "";
+    const matchesSearch = nameToSearch
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesLevel =
+      levelFilter === "all" || user.currentLevel === levelFilter;
+
     return matchesSearch && matchesLevel;
   });
 
   return (
     <div className="space-y-6">
-      
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -88,121 +86,187 @@ export default function DosenLogsPage() {
             Log Aktivitas Mahasiswa
           </h1>
           <p className="text-muted-foreground mt-2">
-            Monitoring progress belajar dan pencapaian mahasiswa
+            Monitoring progress belajar dan pencapaian mahasiswa secara
+            real-time
           </p>
         </div>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4 flex flex-col sm:flex-row gap-4 items-center">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Cari user..."
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-            <Select value={levelFilter} onValueChange={setLevelFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter Level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Level</SelectItem>
-                <SelectItem value="html">HTML</SelectItem>
-                <SelectItem value="css">CSS</SelectItem>
-                <SelectItem value="js">JavaScript</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Main Data Table */}
       <Card>
         <CardHeader>
-           <CardTitle>Progress Monitoring</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg">
+              Progress Mahasiswa Saat Ini
+            </CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 w-fit">
+                <Search className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Cari nama mahasiswa..."
+                  className="pl-9"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Select value={levelFilter} onValueChange={setLevelFilter}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Semua Level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Level</SelectItem>
+                    {levels.map((lvl) => (
+                      <SelectItem key={lvl.id} value={lvl.name}>
+                        {lvl.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button className="gap-2 px-4" size="sm">
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
-            <TableHeader>
+            <TableHeader className="border-t">
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Level Saat Ini</TableHead>
-                <TableHead>Status Materi</TableHead>
-                <TableHead className="text-center">Challenges (E / M / H)</TableHead>
-                <TableHead>Progress Level</TableHead>
+                <TableHead className="w-12 text-center">No</TableHead>
+                <TableHead className="text-center">Nama Mahasiswa</TableHead>
+                <TableHead className="text-center">Level Aktif</TableHead>
+                <TableHead className="text-center">Materi</TableHead>
+                <TableHead className="text-center">Challenge (E/M/H)</TableHead>
+                <TableHead className="text-center">Progress</TableHead>
+                <TableHead className="text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredData.length > 0 ? (
-                filteredData.map((data) => (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-32 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                      <p className="text-muted-foreground text-sm font-medium">
+                        Memuat data...
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredData.length > 0 ? (
+                filteredData.map((data, index) => (
                   <TableRow key={data.id}>
-                    {/* User Info */}
+                    <TableCell className="text-center">{index + 1}</TableCell>
+
                     <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>{data.avatar}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium">{data.username}</span>
-                      </div>
+                      <div className="font-medium text-center">{data.name}</div>
                     </TableCell>
 
-                    {/* Current Level */}
                     <TableCell>
-                      <Badge variant="outline">{data.currentLevel}</Badge>
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-500/10 text-blue-600 border-blue-500/20"
+                      >
+                        {data.currentLevel}
+                      </Badge>
                     </TableCell>
 
-                    {/* Material Status */}
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {data.materialStatus === 'completed' ? (
-                          <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">Selesai</Badge>
+                        {data.materialStatus === "completed" ? (
+                          <Badge
+                            variant="default"
+                            className="bg-emerald-500 hover:bg-emerald-600"
+                          >
+                            Selesai
+                          </Badge>
                         ) : (
-                          <Badge variant="secondary" className="bg-slate-200 text-slate-600 hover:bg-slate-300">Belum</Badge>
+                          <Badge
+                            variant="secondary"
+                            className="bg-slate-200 text-slate-600 hover:bg-slate-300"
+                          >
+                            Belum
+                          </Badge>
                         )}
                       </div>
                     </TableCell>
 
-                    {/* Challenges Breakdown */}
                     <TableCell>
                       <div className="flex items-center justify-center gap-2">
-                        <div className="flex flex-col items-center px-2 py-1 bg-green-500/10 rounded border border-green-500/20 w-[60px]" title="Easy (Max 5)">
-                          <span className="text-[10px] text-muted-foreground font-bold">EZY</span>
-                          <span className="text-sm font-bold text-green-600">{data.challenges.easy}/5</span>
+                        <div
+                          className="flex flex-col items-center px-2 py-1 bg-green-500/10 rounded border border-green-500/20 w-[60px]"
+                          title="Easy (Max 5)"
+                        >
+                          <span className="text-[10px] text-muted-foreground font-bold">
+                            ESY
+                          </span>
+                          <span className="text-sm font-bold text-green-600">
+                            {data.challenges.easy}/5
+                          </span>
                         </div>
-                        <div className="flex flex-col items-center px-2 py-1 bg-amber-500/10 rounded border border-amber-500/20 w-[60px]" title="Medium (Max 10)">
-                          <span className="text-[10px] text-muted-foreground font-bold">MED</span>
-                          <span className="text-sm font-bold text-amber-600">{data.challenges.medium}/10</span>
+                        <div
+                          className="flex flex-col items-center px-2 py-1 bg-amber-500/10 rounded border border-amber-500/20 w-[60px]"
+                          title="Medium (Max 10)"
+                        >
+                          <span className="text-[10px] text-muted-foreground font-bold">
+                            MED
+                          </span>
+                          <span className="text-sm font-bold text-amber-600">
+                            {data.challenges.medium}/10
+                          </span>
                         </div>
-                        <div className="flex flex-col items-center px-2 py-1 bg-red-500/10 rounded border border-red-500/20 w-[60px]" title="Hard (Max 3)">
-                          <span className="text-[10px] text-muted-foreground font-bold">HRD</span>
-                          <span className="text-sm font-bold text-red-600">{data.challenges.hard}/3</span>
+                        <div
+                          className="flex flex-col items-center px-2 py-1 bg-red-500/10 rounded border border-red-500/20 w-[60px]"
+                          title="Hard (Max 3)"
+                        >
+                          <span className="text-[10px] text-muted-foreground font-bold">
+                            HRD
+                          </span>
+                          <span className="text-sm font-bold text-red-600">
+                            {data.challenges.hard}/3
+                          </span>
                         </div>
                       </div>
                     </TableCell>
 
-                    {/* Progress Bar */}
                     <TableCell className="w-[200px]">
                       <div className="flex items-center gap-2">
-                        <Progress value={data.progress} className="h-2 flex-1" />
-                        <span className="text-xs font-bold w-9 text-right">{data.progress}%</span>
+                        <Progress
+                          value={data.progress}
+                          className="h-2 flex-1"
+                        />
+                        <span className="text-xs font-bold w-9 text-right">
+                          {data.progress}%
+                        </span>
                       </div>
+                    </TableCell>
+
+                    <TableCell className="text-center">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Detail</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
-                 <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
-                            <p>Tidak ada data ditemukan</p>
-                        </div>
-                    </TableCell>
-                 </TableRow>
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    <div className="flex flex-col items-center justify-center text-muted-foreground">
+                      <p>Tidak ada data ditemukan</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
