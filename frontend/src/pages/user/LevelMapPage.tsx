@@ -9,6 +9,8 @@ import MaterialModal from '../../components/user/MaterialModal';
 import { useAuth } from "@/contexts/AuthContext";
 import { getNodeChallenge } from '@/services/user/ChallengeService';
 import { getCompleteNodes, getMaterialProgress } from '@/services/user/ProgressService';
+import { getLevels } from '@/services/dosen/LevelService';
+import type { Level } from '@/types';
 
 export default function LevelMapPage() {
   const { user } = useAuth();
@@ -21,19 +23,20 @@ export default function LevelMapPage() {
   // State untuk menyimpan data progress
   const [completedChallengeNodes, setCompletedChallengeNodes] = useState<number[]>([]);
   const [isMaterialCompleted, setIsMaterialCompleted] = useState<boolean>(false);
-
+  const [nextLevel, setNextLevel] = useState<Level | null>(null);
+  const [isLastLevel, setIsLastLevel] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Ambil data progres (materi & tantangan) saat komponen dimuat
+  // Ambil data progres & info level
   useEffect(() => {
-    async function loadProgress() {
+    async function loadData() {
       if (!user?.id || !levelId) return;
       const parsedLevelId = parseInt(levelId, 10);
       
       try {
-        const [nodeRes, materialRes] = await Promise.all([
+        const [nodeRes, materialRes, levelsRes] = await Promise.all([
           getCompleteNodes(user.id, parsedLevelId),
-          getMaterialProgress(user.id, parsedLevelId)
+          getMaterialProgress(user.id, parsedLevelId),
+          getLevels()
         ]);
 
         if (nodeRes.success && nodeRes.data) {
@@ -42,11 +45,23 @@ export default function LevelMapPage() {
         if (materialRes.success && materialRes.data) {
           setIsMaterialCompleted(materialRes.data.isAllCompleted);
         }
+        if (levelsRes.success && levelsRes.data) {
+          const sorted = [...levelsRes.data].sort((a, b) => a.order - b.order);
+          const currentIndex = sorted.findIndex(l => l.id === parsedLevelId);
+          if (currentIndex !== -1) {
+            if (currentIndex === sorted.length - 1) {
+              setIsLastLevel(true);
+            } else if (currentIndex < sorted.length - 1) {
+              setNextLevel(sorted[currentIndex + 1]);
+              setIsLastLevel(false);
+            }
+          }
+        }
       } catch (error) {
-        console.error("Gagal memuat progres:", error);
+        console.error("Gagal memuat data:", error);
       }
     }
-    loadProgress();
+    loadData();
   }, [user?.id, levelId]);
 
   // Handler saat node diklik — ambil soal dari backend, lalu navigasi ke ChallengePage
@@ -106,6 +121,12 @@ export default function LevelMapPage() {
     const walk = (x - startX) * 1.5;
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft += e.deltaY;
+    }
+  }
 
   const NODE_CONFIG = useMemo(() => ({
     easy:   5,
@@ -208,43 +229,50 @@ export default function LevelMapPage() {
       currentSlot++;
     });
 
+    // ── Node Next Level Gateway ──
+    const isHardCompleted = completedChallengeNodes.filter(
+      (slot) => slot > (NODE_CONFIG.easy + NODE_CONFIG.medium)
+    ).length >= NODE_CONFIG.hard;
+
+    nodes.push({
+      id: 'next-level',
+      type: 'next_level',
+      title: 'Next Level Portal',
+      status: isHardCompleted ? 'locked' : 'unlocked',
+      difficulty: 'final',
+    });
+
     return nodes;
   }, [isMaterialCompleted, completedChallengeNodes, NODE_CONFIG, unlockState]);
 
   // Calculate Positions (Grouped Horizontal with Gaps)
   const { points, pathD, width, height, zones } = useMemo(() => {
-    const startPadding = 100;
+    const leftPadding = 100;
+    const rightPadding = 150;
     const nodeSpacing = 160;
     const groupGap = 300;
     const amplitude = 80;   
     const frequency = 0.8; 
     const containerHeight = 600;
     
-    let currentX = startPadding;
+    let currentX = leftPadding;
     const resultPoints: any[] = [];
     const resultZones: any[] = [];
 
-    // Track when groups start to calculate label position
     let currentGroupStart = currentX;
     let lastDifficulty = 'intro';
 
     mapNodes.forEach((node, i) => {
-        // Detect Change in Group (ignore first node)
         if (i > 0 && node.difficulty !== lastDifficulty) {
-            // Add Gap
-            currentX += groupGap;
+            currentX += (node.type === 'next_level' ? 240 : groupGap);
             currentGroupStart = currentX;
         }
 
-        // Calculate Y Position (Sine Wave)
-        // usage of 'i' keeps the wave phase continuous even across gaps
         const y = (containerHeight / 2) + Math.sin(i * frequency) * amplitude;
         resultPoints.push({ x: currentX, y });
 
-        // Check if this is the last node of the group
         const nextNode = mapNodes[i+1];
         if (!nextNode || nextNode.difficulty !== node.difficulty) {
-            // End of current group, define the zone
             let label = '';
             let color = '';
             
@@ -253,12 +281,18 @@ export default function LevelMapPage() {
             else if (node.difficulty === 'hard') { label = 'HARD LEVEL'; color = 'text-red-500'; }
 
             if (label) {
+                // Tentukan offset X spesifik untuk tiap label agar tertata rapi sesuai keinginan user
+                let offsetX = '-40%'; 
+                if (label === 'EASY LEVEL') offsetX = '-65%';
+                if (label === 'HARD LEVEL') offsetX = '-15%';
+
                 resultZones.push({
                     label,
                     color,
                     x: currentGroupStart,
-                    width: currentX - currentGroupStart, // Width covered by nodes
-                    centerX: currentGroupStart + (currentX - currentGroupStart) / 2
+                    width: currentX - currentGroupStart,
+                    centerX: currentGroupStart + (currentX - currentGroupStart) / 2,
+                    offsetX
                 });
             }
         }
@@ -267,35 +301,41 @@ export default function LevelMapPage() {
         currentX += nodeSpacing;
     });
 
-    // Generate SVG Path
     let d = `M ${resultPoints[0].x} ${resultPoints[0].y}`;
     
     for (let i = 0; i < resultPoints.length - 1; i++) {
         const current = resultPoints[i];
         const next = resultPoints[i + 1];
-        const distX = next.x - current.x;
+        const isNextLevelNode = mapNodes[i + 1].type === 'next_level';
+
+        let targetX = next.x;
+        let targetY = next.y;
+
+        if (isNextLevelNode) {
+            targetX -= 40; 
+        }
+
+        const distX = targetX - current.x;
         
-        // If distance is large (group gap), adjust control points for a smooth long curve
-        const cpOffset = distX * 0.4; // 40% of distance
+        const cpOffset = distX * 0.4;
 
         const cp1x = current.x + cpOffset;
         const cp1y = current.y;
-        const cp2x = next.x - cpOffset;
-        const cp2y = next.y;
+        const cp2x = targetX - cpOffset;
+        const cp2y = targetY;
         
-        d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${next.x} ${next.y}`;
+        d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${targetX} ${targetY}`;
     }
 
     return {
       points: resultPoints,
       pathD: d,
-      width: currentX + 500, // Final width with extra padding for hard level
+      width: resultPoints.length > 0 ? (resultPoints[resultPoints.length - 1].x + rightPadding) : 1000,
       height: containerHeight,
       zones: resultZones
     };
   }, [mapNodes]);
 
-  // Generate random stars
   const stars = useMemo(() => {
     return Array.from({ length: 100 }).map((_, i) => ({
       id: i,
@@ -307,7 +347,6 @@ export default function LevelMapPage() {
     }));
   }, []);
 
-  // Generate background planets
   const planets = useMemo(() => {
      return [
         { id: 1, top: '15%', left: '10%', size: 120, gradient: 'from-purple-600/20 to-indigo-600/20', blur: 'blur-3xl' },
@@ -321,15 +360,10 @@ export default function LevelMapPage() {
   return (
     <div className="h-screen w-full bg-slate-950 flex flex-col relative overflow-hidden select-none">
       
-      {/* Background Elements */}
       <div className="fixed inset-0 z-0 bg-slate-950 pointer-events-none overflow-hidden">
-          {/* Base Gradient */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-950/40 via-slate-950 to-slate-950" />
-          
-          {/* Grid Overlay */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-indigo-950/40 via-slate-950 to-slate-950" />
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '50px 50px' }} />
 
-          {/* Stars */}
           {stars.map((star) => (
               <div 
                   key={star.id}
@@ -346,12 +380,11 @@ export default function LevelMapPage() {
               />
           ))}
 
-          {/* Planets/Nebulas */}
           {planets.map((planet) => (
               <div 
                   key={planet.id}
                   className={cn(
-                      "absolute rounded-full bg-gradient-to-br",
+                      "absolute rounded-full bg-linear-to-br",
                       planet.gradient,
                       planet.blur
                   )}
@@ -365,7 +398,6 @@ export default function LevelMapPage() {
           ))}
       </div>
 
-      {/* Header */}
       <div className="absolute top-0 left-0 right-0 p-6 z-50 flex justify-between items-start pointer-events-none">
         <div className="pointer-events-auto">
              <Button variant="secondary" size="sm" className="gap-2 shadow-lg bg-slate-900/80 backdrop-blur border border-slate-700 hover:bg-slate-800" asChild>
@@ -376,13 +408,13 @@ export default function LevelMapPage() {
         </div>
       </div>
 
-      {/* Scrollable Map Container */}
       <div 
         ref={scrollContainerRef}
         onMouseDown={handleMouseDown}
         onMouseLeave={handleMouseLeave}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
+        onWheel={handleWheel}
         className={cn(
           "flex-1 overflow-x-auto overflow-y-hidden relative flex items-center [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']",
           isDragging ? "cursor-grabbing" : "cursor-grab"
@@ -395,15 +427,14 @@ export default function LevelMapPage() {
                 <div 
                     key={idx}
                     className="absolute top-1/2 left-0 pointer-events-none select-none flex flex-col items-center justify-center"
-                    style={{ left: zone.centerX, transform: 'translate(-65%, -200px)' }}
+                    style={{ left: zone.centerX, transform: `translate(${zone.offsetX}, -200px)` }}
                 >
-                    <h2 className={`text-6xl md:text-8xl font-black opacity-[0.7] whitespace-nowrap tracking-tighter ${zone.color}`}>
+                    <h2 className={`text-6xl md:text-8xl font-black whitespace-nowrap tracking-tighter ${zone.color}`}>
                         {zone.label}
                     </h2>
                 </div>
             ))}
 
-            {/* Connection Line */}
             <svg className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-visible">
             <defs>
                 <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -421,7 +452,6 @@ export default function LevelMapPage() {
                 </filter>
             </defs>
             
-            {/* Main Path */}
             <path 
                 d={pathD} 
                 fill="none" 
@@ -431,7 +461,6 @@ export default function LevelMapPage() {
                 className="drop-shadow-[0_0_10px_rgba(139,92,246,0.3)] transition-all duration-500"
             />
             
-            {/* Animated Dash Overlay */}
             <path 
                 d={pathD} 
                 fill="none" 
@@ -444,7 +473,6 @@ export default function LevelMapPage() {
             />
             </svg>
 
-            {/* Nodes */}
             {mapNodes.map((node, index) => {
             const pos = points[index];
             
@@ -466,7 +494,7 @@ export default function LevelMapPage() {
                         className="relative group cursor-pointer transition-all hover:scale-110"
                     >
                         <div className={cn(
-                            "w-20 h-20 rounded-full flex items-center justify-center shadow-lg border-4 border-slate-900 ring-2 bg-gradient-to-br",
+                            "w-20 h-20 rounded-full flex items-center justify-center shadow-lg border-4 border-slate-900 ring-2 bg-linear-to-br",
                             isCompleted 
                                 ? "from-emerald-400 to-emerald-600 ring-emerald-500/50 shadow-emerald-500/30"
                                 : "from-indigo-500 to-purple-600 ring-indigo-500/50"
@@ -486,6 +514,93 @@ export default function LevelMapPage() {
                 );
             }
 
+            if (node.type === 'next_level') {
+                const isUnlocked = node.status === 'unlocked';
+
+                return (
+                    <div 
+                        key="next-level"
+                        className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20"
+                        style={{ left: pos.x, top: pos.y }}
+                    >
+                        {isUnlocked && (nextLevel || isLastLevel) && (
+                             <div className="absolute bottom-1/2 left-1/2 -translate-x-1/2 w-48 h-[250px] pointer-events-none flex flex-col items-center">
+                                <div className="absolute -top-12 animate-float">
+                                     <div className="relative">
+                                         <div className="absolute inset-0 blur-xl bg-indigo-400/40 rounded-full animate-pulse"></div>
+                                         <div className="w-20 h-20 rounded-2xl bg-indigo-600/20 backdrop-blur-md border-2 border-indigo-400 flex items-center justify-center rotate-45 shadow-[0_0_30px_rgba(129,140,248,0.5)]">
+                                             <div className="-rotate-45 text-4xl text-indigo-400 drop-shadow-[0_0_10px_rgba(129,140,248,0.8)]">
+                                                 {isLastLevel ? (
+                                                     <CircleHelp className="h-10 w-10 text-indigo-400" />
+                                                 ) : (
+                                                     <i className={`fa-brands ${nextLevel?.iconName}`}></i>
+                                                 )}
+                                             </div>
+                                         </div>
+                                     </div>
+                                </div>
+                                
+                                <div className="absolute inset-0 bg-linear-to-t from-indigo-500/60 via-indigo-500/20 to-transparent clip-path-beam opacity-80" />
+                                <div className="absolute inset-0 bg-linear-to-t from-white/20 via-transparent to-transparent blur-2xl" />
+                            </div>
+                        )}
+
+                        {/* Portal / Circular Container */}
+                        <div 
+                            onClick={() => isUnlocked && navigate(`/level/${nextLevel?.id}`)}
+                            className={cn(
+                                "relative group transition-all duration-500 flex flex-col items-center",
+                                isUnlocked ? "cursor-pointer hover:scale-110" : " cursor-not-allowed"
+                            )}
+                        >
+                            {/* Base Glow */}
+                            <div className={cn(
+                                "absolute inset-0 blur-3xl rounded-full transition-all duration-500",
+                                isUnlocked ? "bg-indigo-500/40 group-hover:bg-indigo-500/60" : "bg-slate-800"
+                            )} />
+
+                            {/* Circular Border & Name Content (Inside) */}
+                            <div className={cn(
+                                "w-25 h-25 rounded-full flex items-center justify-center border-4 shadow-2xl transition-all duration-500 bg-slate-900 backdrop-blur-sm z-10 p-4 text-center hover:scale-110",
+                                isUnlocked 
+                                    ? "border-indigo-400 shadow-indigo-500/50 ring-8 ring-indigo-500/10" 
+                                    : "border-slate-800 shadow-none ring-0"
+                            )}>
+                                {isUnlocked ? (
+                                    isLastLevel ? (
+                                        <div className="flex flex-col items-center leading-tight">
+                                            <span className="text-xs font-black text-white px-1">
+                                                COMING SOON
+                                            </span>
+                                        </div>
+                                    ) : nextLevel ? (
+                                        <div className="flex flex-col items-center leading-tight">
+                                            <span className="text-[10px] font-black text-indigo-400 tracking-widest uppercase mb-1">NEXT</span>
+                                            <span className="text-xs font-black text-white px-1">
+                                                {nextLevel.name}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <Lock className="h-10 w-10 text-slate-700" />
+                                    )
+                                ) : (
+                                    <Lock className="h-10 w-10 text-slate-700" />
+                                )}
+                            </div>
+
+                            {/* Unlock Prompt */}
+                            {!isUnlocked && (
+                                <div className="absolute -bottom-10 whitespace-nowrap opacity-60">
+                                     <Badge variant="outline" className="text-[12px] border-slate-700 text-slate-500">
+                                        Selesaikan semua challenge!
+                                     </Badge>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
             return (
                 <MapNode 
                     key={node.id} 
@@ -497,6 +612,15 @@ export default function LevelMapPage() {
                 />
             );
             })}
+
+            {/* Spacer untuk memastikan padding kanan muncul saat di-scroll */}
+            <div style={{ 
+                position: 'absolute', 
+                left: width - 1, 
+                width: '1px', 
+                height: '1px', 
+                pointerEvents: 'none' 
+            }} />
         </div>
       </div>
 
@@ -612,8 +736,8 @@ function MapNode({
                 bg: 'bg-slate-900',
                 border: `border-4 ${theme.active.split(' ')[1]}`, // Take border color
                 textColor: theme.text,
-                shadow: `${theme.glow} scale-110`,
-                scale: 'scale-110'
+                shadow: theme.glow,
+                scale: 'scale-100'
             };
         } else {
             return {
@@ -621,7 +745,7 @@ function MapNode({
                 border: 'border-slate-800',
                 textColor: 'text-slate-700',
                 shadow: '',
-                scale: 'scale-90 opacity-80'
+                scale: 'scale-100'
             };
         }
     }, [node]);
@@ -636,6 +760,7 @@ function MapNode({
                 styles.bg,
                 styles.border,
                 styles.shadow,
+                styles.scale
             )}
         >
              {/* Show Number / Loading / Lock / Check Icon */}
@@ -680,7 +805,7 @@ function MapNode({
                             </div>
                         )}
                     </TooltipTrigger>
-                    <TooltipContent side="bottom" className="bg-slate-900/95 backdrop-blur border-slate-700 max-w-[200px]">
+                    <TooltipContent side="bottom" className="bg-slate-900/95 backdrop-blur border-slate-700 max-w-[200px] mt-3">
                         <div className="text-center space-y-1">
                             {/* Updated Tooltip Title */}
                             <p className="font-bold text-sm text-slate-200">Challenge {node.displayNumber}</p>
@@ -688,7 +813,6 @@ function MapNode({
                                 <Badge variant="outline" className="text-[10px] px-1 h-5 capitalize border-slate-600 text-slate-400">
                                     {node.difficulty}
                                 </Badge>
-                                {node.xp > 0 && <span className="text-amber-400 font-bold">+{node.xp} XP</span>}
                             </div>
                         </div>
                     </TooltipContent>
