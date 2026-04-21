@@ -290,11 +290,55 @@ function ChallengeView({
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [showHint, setShowHint] = useState(false);
   const [activeTab, setActiveTab] = useState(language);
+  const [activePreviewTab, setActivePreviewTab] = useState("preview");
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [showResultDialog, setShowResultDialog] = useState(false);
 
   // Challenge yang sudah diselesaikan tetap bisa dikerjakan kembali.
   // XP tidak akan bertambah lagi (backend handle via isCompleted check).
+
+  // ─── Validasi Kode (Client-side) ──────────────────────────────────────────
+  const runValidation = useCallback((code: string) => {
+    const errors: string[] = [];
+    
+    // Pastikan testCases ada dan berupa array
+    if (!challenge.testCases) return [];
+    
+    let tests: any[] = [];
+    try {
+      tests = typeof challenge.testCases === 'string' 
+        ? JSON.parse(challenge.testCases) 
+        : challenge.testCases;
+    } catch {
+      return [];
+    }
+
+    if (!Array.isArray(tests)) return [];
+
+    tests.forEach((test: any) => {
+      // Struktur testCase: { description: string, requirement: string, regex?: string }
+      const { description, requirement, regex } = test;
+      
+      let isPassing = false;
+      if (regex) {
+        try {
+          const re = new RegExp(regex, 'i');
+          isPassing = re.test(code);
+        } catch {
+          isPassing = code.toLowerCase().includes(requirement.toLowerCase());
+        }
+      } else if (requirement) {
+        isPassing = code.toLowerCase().includes(requirement.toLowerCase());
+      }
+
+      if (!isPassing) {
+        errors.push(description || 'Periksa tag dan isian yang digunakan!');
+      }
+    });
+
+    return errors;
+  }, [challenge.testCases]);
 
   // Auto-preview Drag & Drop
   useEffect(() => {
@@ -306,30 +350,41 @@ function ChallengeView({
       } else {
         setPreviewCode("");
         setHasRunPreview(false);
+        setValidationErrors([]);
       }
     }
-  }, [dragItems, sourceDragItems, challenge.method]);
+  }, [dragItems, sourceDragItems, challenge.method, runValidation]);
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
   const handleRun = () => {
     setIsRunning(true);
+    setSubmitStatus("idle");
+    
     setTimeout(() => {
+      let codeToPreview = userCode;
+      if (challenge.method === "DRAG_AND_DROP") {
+        codeToPreview = dragItems.map((i) => i.content).join("\n");
+      }
+      
+      setPreviewCode(codeToPreview);
+      setHasRunPreview(true);
+      
+      // Reset Error Log saat me-run kode baru
+      setValidationErrors([]);
+      setActivePreviewTab("preview");
+      
       if (challenge.method === "DRAG_AND_DROP") {
         const isCorrect = checkDragDropAnswer();
         if (isCorrect) {
-          const code = dragItems.map((i) => i.content).join("\n");
-          setPreviewCode(code);
           setSubmitStatus("success");
         } else {
           setSubmitStatus("error");
           setTimeout(() => setSubmitStatus("idle"), 3000);
         }
-      } else {
-        setPreviewCode(userCode);
       }
-      setHasRunPreview(true);
+      
       setIsRunning(false);
-    }, 200);
+    }, 400);
   };
 
   const handleReset = () => {
@@ -383,6 +438,20 @@ function ChallengeView({
       const isCorrect = result.data?.isCorrect ?? false;
       const earnedXp = result.data?.xpEarned ?? 0;
       setXpEarned(earnedXp);
+
+      if (!isCorrect) {
+        const errors = runValidation(challenge.method === "DRAG_AND_DROP" ? 
+          JSON.parse(answerCode).join("\n") : answerCode
+        );
+        setValidationErrors(errors);
+        if (errors.length > 0) {
+          setActivePreviewTab("errors");
+        }
+      } else {
+        setValidationErrors([]);
+        setActivePreviewTab("preview");
+      }
+
       setSubmitStatus(isCorrect ? "success" : "error");
       setShowResultDialog(true);
 
@@ -453,8 +522,8 @@ function ChallengeView({
           } as TutorialStep,
           {
             targetId: "tutorial-preview",
-            title: "Live Preview",
-            description: "Hasil output dari kodemu akan muncul di sini.",
+            title: "Live Preview & Errors",
+            description: "Lihat hasil kodinganmu atau cek 'Error Log' jika ada yang kurang.",
             position: "left",
           } as TutorialStep,
         ]
@@ -481,24 +550,25 @@ function ChallengeView({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-2">
-            <Badge variant="default" className={cn("text-[10px] uppercase font-bold px-2 py-0.5", methodInfo.color)}>
+            <Badge variant="default" className={cn("text-[11px] uppercase font-bold px-2 py-1", methodInfo.color)}>
               {methodInfo.label}
             </Badge>
             <Badge
               variant="outline"
-              className="text-[10px] border-yellow-500/50 text-yellow-400 px-2 py-0.5"
+              className="text-[11px] border-yellow-500/50 text-yellow-400 px-3 py-1"
             >
-              ⚡ {challenge.xpBase} XP
+              <Zap className="h-3 w-3 mr-1" />
+              {challenge.xpBase} XP
             </Badge>
             <Badge
               variant="outline"
-              className="text-[10px] border-slate-600 text-slate-400 px-2 py-0.5 capitalize"
+              className="text-[11px] border-slate-600 text-slate-400 px-3 py-1 capitalize"
             >
               {challenge.difficulty.toLowerCase()}
             </Badge>
             <Badge
               variant="outline"
-              className="text-[10px] border-indigo-600/50 text-indigo-400 px-2 py-0.5 uppercase"
+              className="text-[11px] border-indigo-600/50 text-indigo-400 px-3 py-1 uppercase"
             >
               {language}
             </Badge>
@@ -509,7 +579,7 @@ function ChallengeView({
         <div className="flex items-center gap-2 bg-slate-800 px-4 py-1.5 rounded-full border border-slate-700">
           <Clock className="h-4 w-4 text-indigo-400" />
           <span className="font-mono text-sm font-bold text-indigo-400">{timer}</span>
-          <span className="text-[10px] text-slate-500 uppercase">elapsed</span>
+          {/* <span className="text-[10px] text-slate-500 uppercase">elapsed</span> */}
         </div>
 
         {/* Level info */}
@@ -532,13 +602,13 @@ function ChallengeView({
           <div className="p-4 lg:p-5 flex-1 overflow-y-auto">
             <h1 className="text-lg lg:text-xl font-bold text-white mb-2">{challenge.title}</h1>
             <p className="text-slate-400 text-xs lg:text-sm mb-4 leading-relaxed">
-              {challenge.description}
+              Perhatikan instruksi di bawah untuk mengerjakan challenge ini!
             </p>
 
             {/* Tugas */}
-            <div className="mb-4">
+            <div className="mb-4 mt-4">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
                 <span className="text-xs font-bold uppercase text-slate-300">Tugas</span>
               </div>
               <div className="bg-slate-800/50 rounded-lg p-3 text-xs lg:text-sm text-slate-300 border border-slate-700/50">
@@ -652,7 +722,7 @@ function ChallengeView({
           >
             {/* Editor Tabs (hanya untuk CODING_MANUAL / FIX_THE_BUG) */}
             {isCodeBased && (
-              <div className="h-9 lg:h-10 bg-slate-900 border-b border-slate-800 flex items-center px-2 shrink-0">
+              <div className="h-9 lg:h-10 bg-slate-900 border-b border-slate-800 flex items-center shrink-0">
                 <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Language)} className="h-full">
                   <TabsList className="h-full bg-transparent p-0 gap-0">
                     <TabsTrigger
@@ -700,9 +770,31 @@ function ChallengeView({
           {isCodeBased && (
             <div
               id="tutorial-preview"
-              className="h-[200px] lg:h-[260px] flex flex-col bg-slate-900/50 shrink-0 border-t border-slate-800"
+              className="h-[220px] lg:h-[280px] flex flex-col bg-slate-900 shrink-0 border-t border-slate-800"
             >
-              <div className="h-8 lg:h-9 bg-slate-900 border-b border-slate-800 flex items-center px-3 lg:px-4 shrink-0">
+              <div className="h-9 lg:h-10 bg-slate-900 border-b border-slate-800 flex items-center justify-between pr-4 shrink-0">
+                <Tabs value={activePreviewTab} onValueChange={setActivePreviewTab} className="h-full">
+                  <TabsList className="h-full bg-transparent p-0 gap-0">
+                    <TabsTrigger
+                      value="preview"
+                      className="h-full px-3 lg:px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-indigo-500 text-[10px] lg:text-xs font-bold transition-all"
+                    >
+                      Live Preview
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="errors"
+                      className="h-full px-3 lg:px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-red-500 text-[10px] lg:text-xs font-bold transition-all flex items-center gap-2"
+                    >
+                      Error Log
+                      {validationErrors.length > 0 && (
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] text-white animate-pulse">
+                          {validationErrors.length}
+                        </span>
+                      )}
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
                 <div className="flex items-center gap-2">
                   <div
                     className={cn(
@@ -710,17 +802,46 @@ function ChallengeView({
                       hasRunPreview ? "bg-emerald-500 animate-pulse" : "bg-slate-600"
                     )}
                   />
-                  <span className="text-[10px] lg:text-xs font-bold uppercase text-slate-300">
-                    Live Preview
+                  <span className="text-[10px] lg:text-xs font-bold uppercase text-slate-500 hidden sm:inline">
+                    {hasRunPreview ? "Active" : "Idle"}
                   </span>
                 </div>
               </div>
-              <div className="flex-1 min-h-0">
-                <PreviewPanel
-                  code={previewCode}
-                  isActive={hasRunPreview}
-                  language={language}
-                />
+              
+              <div className="flex-1 min-h-0 bg-slate-950/50 overflow-auto">
+                {activePreviewTab === "preview" ? (
+                  <PreviewPanel
+                    code={previewCode}
+                    isActive={hasRunPreview}
+                    language={language}
+                  />
+                ) : (
+                  <div className="p-4 lg:p-6 space-y-4">
+                    {validationErrors.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 text-slate-500">
+                        <CheckCircle2 className="h-10 w-10 mb-2 text-emerald-500/20" />
+                        <p className="text-sm">Tidak ada kesalahan yang terdeteksi.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-red-500/80 mb-1">
+                          <AlertTriangle className="h-3.5 w-3.5" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Kesalahan Terdeteksi:</span>
+                        </div>
+                        {validationErrors.map((err, i) => (
+                          <div 
+                            key={i} 
+                            className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10 text-red-200/90 animate-in fade-in slide-in-from-left-2 duration-300" 
+                            style={{ animationDelay: `${i * 100}ms` }}
+                          >
+                            <XCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                            <p className="text-xs lg:text-sm leading-relaxed">{err}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
