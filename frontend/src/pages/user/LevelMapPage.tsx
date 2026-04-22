@@ -26,6 +26,15 @@ export default function LevelMapPage() {
   const [nextLevel, setNextLevel] = useState<Level | null>(null);
   const [isLastLevel, setIsLastLevel] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Deteksi layar HP
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   // Ambil data progres & info level
   useEffect(() => {
     async function loadData() {
@@ -96,14 +105,18 @@ export default function LevelMapPage() {
   // Drag to scroll state
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
 
   // Drag Handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
     setIsDragging(true);
     setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setStartY(e.pageY - scrollContainerRef.current.offsetTop);
     setScrollLeft(scrollContainerRef.current.scrollLeft);
+    setScrollTop(scrollContainerRef.current.scrollTop);
   };
 
   const handleMouseLeave = () => {
@@ -117,14 +130,24 @@ export default function LevelMapPage() {
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !scrollContainerRef.current) return;
     e.preventDefault();
-    const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+    if (isMobile) {
+      const y = e.pageY - scrollContainerRef.current.offsetTop;
+      const walk = (y - startY) * 1.5;
+      scrollContainerRef.current.scrollTop = scrollTop - walk;
+    } else {
+      const x = e.pageX - scrollContainerRef.current.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+    }
   };
 
   const handleWheel = (e: React.WheelEvent) => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollLeft += e.deltaY;
+      if (isMobile) {
+        scrollContainerRef.current.scrollTop += e.deltaY;
+      } else {
+        scrollContainerRef.current.scrollLeft += e.deltaY;
+      }
     }
   }
 
@@ -243,33 +266,38 @@ export default function LevelMapPage() {
     });
 
     return nodes;
-  }, [isMaterialCompleted, completedChallengeNodes, NODE_CONFIG, unlockState]);
+  }, [completedChallengeNodes, NODE_CONFIG, unlockState]);
 
-  // Calculate Positions (Grouped Horizontal with Gaps)
+  // Calculate Positions (Grouped Horizontal with Gaps / Vertical for Mobile)
   const { points, pathD, width, height, zones } = useMemo(() => {
-    const leftPadding = 100;
-    const rightPadding = 150;
-    const nodeSpacing = 160;
-    const groupGap = 300;
-    const amplitude = 80;   
+    const startPadding = isMobile ? 120 : 100;
+    const endPadding = isMobile ? 180 : 150;
+    const nodeSpacing = isMobile ? 140 : 160;
+    const groupGap = isMobile ? 240 : 300;
+    const amplitude = isMobile ? 60 : 80;   
     const frequency = 0.8; 
-    const containerHeight = 600;
     
-    let currentX = leftPadding;
+    const secondaryAxisCenter = isMobile ? (window.innerWidth / 2) : (600 / 2);
+    
+    let currentPos = startPadding;
     const resultPoints: any[] = [];
     const resultZones: any[] = [];
 
-    let currentGroupStart = currentX;
+    let currentGroupStart = currentPos;
     let lastDifficulty = 'intro';
 
     mapNodes.forEach((node, i) => {
         if (i > 0 && node.difficulty !== lastDifficulty) {
-            currentX += (node.type === 'next_level' ? 240 : groupGap);
-            currentGroupStart = currentX;
+            currentPos += (node.type === 'next_level' ? (isMobile ? 120 : 240) : groupGap);
+            currentGroupStart = currentPos;
         }
 
-        const y = (containerHeight / 2) + Math.sin(i * frequency) * amplitude;
-        resultPoints.push({ x: currentX, y });
+        const waveOffset = Math.sin(i * frequency) * amplitude;
+        
+        let x = isMobile ? secondaryAxisCenter + waveOffset : currentPos;
+        let y = isMobile ? currentPos : secondaryAxisCenter + waveOffset;
+        
+        resultPoints.push({ x, y, primaryPos: currentPos });
 
         const nextNode = mapNodes[i+1];
         if (!nextNode || nextNode.difficulty !== node.difficulty) {
@@ -281,7 +309,6 @@ export default function LevelMapPage() {
             else if (node.difficulty === 'hard') { label = 'HARD LEVEL'; color = 'text-red-500'; }
 
             if (label) {
-                // Tentukan offset X spesifik untuk tiap label agar tertata rapi sesuai keinginan user
                 let offsetX = '-40%'; 
                 if (label === 'EASY LEVEL') offsetX = '-65%';
                 if (label === 'HARD LEVEL') offsetX = '-15%';
@@ -289,52 +316,70 @@ export default function LevelMapPage() {
                 resultZones.push({
                     label,
                     color,
-                    x: currentGroupStart,
-                    width: currentX - currentGroupStart,
-                    centerX: currentGroupStart + (currentX - currentGroupStart) / 2,
+                    startPos: currentGroupStart,
+                    length: currentPos - currentGroupStart,
+                    centerPos: currentGroupStart + (currentPos - currentGroupStart) / 2,
                     offsetX
                 });
             }
         }
 
         lastDifficulty = node.difficulty || 'intro';
-        currentX += nodeSpacing;
+        currentPos += nodeSpacing;
     });
 
-    let d = `M ${resultPoints[0].x} ${resultPoints[0].y}`;
-    
-    for (let i = 0; i < resultPoints.length - 1; i++) {
-        const current = resultPoints[i];
-        const next = resultPoints[i + 1];
-        const isNextLevelNode = mapNodes[i + 1].type === 'next_level';
+    let d = '';
+    if (resultPoints.length > 0) {
+      d = `M ${resultPoints[0].x} ${resultPoints[0].y}`;
+      
+      for (let i = 0; i < resultPoints.length - 1; i++) {
+          const current = resultPoints[i];
+          const next = resultPoints[i + 1];
+          const isNextLevelNode = mapNodes[i + 1].type === 'next_level';
 
-        let targetX = next.x;
-        let targetY = next.y;
+          let targetX = next.x;
+          let targetY = next.y;
 
-        if (isNextLevelNode) {
-            targetX -= 40; 
-        }
+          if (isNextLevelNode) {
+              if (isMobile) {
+                  targetY -= 40; 
+              } else {
+                  targetX -= 40; 
+              }
+          }
 
-        const distX = targetX - current.x;
-        
-        const cpOffset = distX * 0.4;
+          const distPrimary = isMobile ? (targetY - current.y) : (targetX - current.x);
+          const cpOffset = distPrimary * 0.6;
 
-        const cp1x = current.x + cpOffset;
-        const cp1y = current.y;
-        const cp2x = targetX - cpOffset;
-        const cp2y = targetY;
-        
-        d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${targetX} ${targetY}`;
+          let cp1x, cp1y, cp2x, cp2y;
+          
+          if (isMobile) {
+              cp1x = current.x;
+              cp1y = current.y + cpOffset;
+              cp2x = targetX;
+              cp2y = targetY - cpOffset;
+          } else {
+              cp1x = current.x + cpOffset;
+              cp1y = current.y;
+              cp2x = targetX - cpOffset;
+              cp2y = targetY;
+          }
+          
+          d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${targetX} ${targetY}`;
+      }
     }
+
+    const totalLength = resultPoints.length > 0 ? (resultPoints[resultPoints.length - 1].primaryPos + endPadding) : 1000;
 
     return {
       points: resultPoints,
       pathD: d,
-      width: resultPoints.length > 0 ? (resultPoints[resultPoints.length - 1].x + rightPadding) : 1000,
-      height: containerHeight,
+      width: isMobile ? '100%' : totalLength,
+      height: isMobile ? totalLength : 600,
       zones: resultZones
     };
-  }, [mapNodes]);
+  }, [mapNodes, isMobile]);
+
 
   const stars = useMemo(() => {
     return Array.from({ length: 100 }).map((_, i) => ({
@@ -402,7 +447,13 @@ export default function LevelMapPage() {
         <div className="pointer-events-auto">
              <Button variant="secondary" size="sm" className="gap-2 shadow-lg bg-slate-900/80 backdrop-blur border border-slate-700 hover:bg-slate-800" asChild>
                 <Link to="/level">
-                    <ChevronLeft className="h-4 w-4" /> Kembali ke Level
+                {isMobile ? (
+                    <ChevronLeft className="h-4 w-4" />
+                ) : (
+                    <>
+                        <ChevronLeft className="h-4 w-4" /> Kembali ke Level
+                    </>
+                )}
                 </Link>
             </Button>
         </div>
@@ -416,18 +467,30 @@ export default function LevelMapPage() {
         onMouseMove={handleMouseMove}
         onWheel={handleWheel}
         className={cn(
-          "flex-1 overflow-x-auto overflow-y-hidden relative flex items-center [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']",
+          "flex-1 relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] flex",
+          isMobile ? "overflow-y-auto overflow-x-hidden items-start justify-center" : "overflow-x-auto overflow-y-hidden items-center justify-start",
           isDragging ? "cursor-grabbing" : "cursor-grab"
         )}
       >
-        <div className="relative" style={{ width: width, height: '100%' }}>
+        <div className="relative" style={{ width: width, height: height }}>
             
             {/* Zone Background Labels */}
             {zones.map((zone, idx) => (
                 <div 
                     key={idx}
-                    className="absolute top-1/2 left-0 pointer-events-none select-none flex flex-col items-center justify-center"
-                    style={{ left: zone.centerX, transform: `translate(${zone.offsetX}, -200px)` }}
+                    className="absolute pointer-events-none select-none flex flex-col items-center justify-center"
+                    style={{ 
+                      ...(isMobile ? {
+                        top: zone.centerPos, 
+                        left: '50%',
+                        transform: 'translate(-50%, -50%) rotate(90deg)',
+                        opacity: 0.3
+                      } : {
+                        top: '50%',
+                        left: zone.centerPos, 
+                        transform: `translate(${zone.offsetX}, -200px)`
+                      })
+                    }}
                 >
                     <h2 className={`text-6xl md:text-8xl font-black whitespace-nowrap tracking-tighter ${zone.color}`}>
                         {zone.label}
@@ -523,7 +586,7 @@ export default function LevelMapPage() {
                         className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20"
                         style={{ left: pos.x, top: pos.y }}
                     >
-                        {isUnlocked && (nextLevel || isLastLevel) && (
+                        {!isMobile && isUnlocked && (nextLevel || isLastLevel) && (
                              <div className="absolute bottom-1/2 left-1/2 -translate-x-1/2 w-48 h-[250px] pointer-events-none flex flex-col items-center">
                                 <div className="absolute -top-12 animate-float">
                                      <div className="relative">
@@ -569,16 +632,25 @@ export default function LevelMapPage() {
                                 {isUnlocked ? (
                                     isLastLevel ? (
                                         <div className="flex flex-col items-center leading-tight">
+                                            {isMobile ? (
+                                                <CircleHelp className="h-10 w-10 text-indigo-400 mb-1" />
+                                            ) : null}
                                             <span className="text-xs font-black text-white px-1">
                                                 COMING SOON
                                             </span>
                                         </div>
                                     ) : nextLevel ? (
                                         <div className="flex flex-col items-center leading-tight">
-                                            <span className="text-[10px] font-black text-indigo-400 tracking-widest uppercase mb-1">NEXT</span>
-                                            <span className="text-xs font-black text-white px-1">
-                                                {nextLevel.name}
-                                            </span>
+                                            {isMobile ? (
+                                                <i className={`fa-brands ${nextLevel.iconName} text-3xl text-indigo-400 mb-1`}></i>
+                                            ) : (
+                                                <span className="text-[10px] font-black text-indigo-400 tracking-widest uppercase mb-1">NEXT</span>
+                                            )}
+                                            {!isMobile && (
+                                                <span className="text-xs font-black text-white px-1">
+                                                    {nextLevel.name}
+                                                </span>
+                                            )}
                                         </div>
                                     ) : (
                                         <Lock className="h-10 w-10 text-slate-700" />
@@ -588,7 +660,21 @@ export default function LevelMapPage() {
                                 )}
                             </div>
 
-                            {/* Unlock Prompt */}
+                            {/* Unlock Prompt or Mobile Next Badge */}
+                            {isUnlocked && isMobile && nextLevel && !isLastLevel && (
+                                <div className="absolute -bottom-10 whitespace-nowrap z-30 pointer-events-none">
+                                    <Badge className="bg-indigo-500/90 border border-indigo-400 text-white px-3 py-1 text-xs">
+                                        Next: {nextLevel.name}
+                                    </Badge>
+                                </div>
+                            )}
+                            {isUnlocked && isMobile && isLastLevel && (
+                                <div className="absolute -bottom-10 whitespace-nowrap z-30 pointer-events-none">
+                                    <Badge className="bg-indigo-500/90 border border-indigo-400 text-white px-3 py-1 text-xs">
+                                        Stay Tuned!
+                                    </Badge>
+                                </div>
+                            )}
                             {!isUnlocked && (
                                 <div className="absolute -bottom-10 whitespace-nowrap opacity-60">
                                      <Badge variant="outline" className="text-[12px] border-slate-700 text-slate-500">
@@ -613,12 +699,13 @@ export default function LevelMapPage() {
             );
             })}
 
-            {/* Spacer untuk memastikan padding kanan muncul saat di-scroll */}
+            {/* Spacer untuk memastikan padding kanan/bawah muncul saat di-scroll */}
             <div style={{ 
                 position: 'absolute', 
-                left: width - 1, 
-                width: '1px', 
-                height: '1px', 
+                left: isMobile ? '0' : width - 1, 
+                top: isMobile ? height - 1 : '0',
+                width: isMobile ? '100%' : '1px', 
+                height: isMobile ? '1px' : '100%', 
                 pointerEvents: 'none' 
             }} />
         </div>
