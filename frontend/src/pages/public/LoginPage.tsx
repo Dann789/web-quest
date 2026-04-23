@@ -54,7 +54,7 @@ export default function LoginPage() {
       {/* LEFT SIDE - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         {/* Animated Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="absolute inset-0 bg-linear-to-br from-background via-background to-muted/20">
           {/* Geometric mesh pattern using primary color */}
           <svg
             className="absolute inset-0 w-full h-full opacity-30"
@@ -190,7 +190,7 @@ export default function LoginPage() {
           {/* Headline */}
           <h1 className="text-4xl xl:text-5xl font-bold text-foreground leading-tight">
             Web
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-400">
               Quest
             </span>
           </h1>
@@ -242,7 +242,7 @@ export default function LoginPage() {
                     }
                     required
                     disabled={isLoading}
-                    className="pl-10 h-12 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
+                    className="pl-10 mt-2 h-12 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
               </div>
@@ -267,7 +267,7 @@ export default function LoginPage() {
                     }
                     required
                     disabled={isLoading}
-                    className="pl-10 pr-10 h-12 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
+                    className="pl-10 mt-2 pr-10 h-12 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
                   />
                   <button
                     type="button"

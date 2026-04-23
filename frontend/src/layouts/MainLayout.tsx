@@ -68,7 +68,7 @@ export default function MainLayout() {
         </header>
 
         {/* PAGE CONTENT */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:px-4 py-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:px-6 py-8">
           <div className="container mx-auto max-w-6xl animate-in fade-in duration-500">
              <Outlet />
           </div>
