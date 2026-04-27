@@ -56,7 +56,7 @@ interface DragDropContent {
 }
 
 // ─── Tipe bahasa yang didukung editor ────────────────────────────────────────
-type Language = "html" | "css" | "javascript" | "php" | "sql";
+type Language = "html" | "css" | "javascript" | "php" | "sql" | "php_process" | "php_connection";
 
 // ─── Deteksi bahasa editor berdasarkan levelId ───────────────────────────────
 function detectLanguage(levelId: number): Language {
@@ -101,51 +101,83 @@ function useTimer(isActive: boolean) {
 
 // ─── Preview Panel ────────────────────────────────────────────────────────────
 function PreviewPanel({
-  code,
+  codes,
   isActive,
-  language,
+  primaryLanguage,
 }: {
-  code: string;
+  codes: Record<string, string>;
   isActive: boolean;
-  language: string;
+  primaryLanguage: Language;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const updatePreview = useCallback(() => {
-    if (!iframeRef.current || !code) return;
+    if (!iframeRef.current) return;
     const doc = iframeRef.current.contentDocument;
     if (!doc) return;
 
     let previewHtml = "";
-    if (language === "css") {
-      previewHtml = `<!DOCTYPE html><html><head><style>${code}</style></head><body style="background:#1e293b;color:white;padding:24px;font-family:system-ui">
-        <h1>Heading 1</h1><h2>Heading 2</h2><p>Ini adalah paragraf contoh untuk CSS preview.</p>
-        <a href="#">Link Contoh</a><button>Tombol</button></body></html>`;
-    } else if (language === "javascript") {
-      previewHtml = `<!DOCTYPE html><html><head></head><body style="background:#1e293b;color:white;padding:24px;font-family:monospace">
-        <div id="output" style="white-space:pre-wrap"></div>
-        <script>
-          const origLog = console.log;
-          const output = document.getElementById('output');
-          console.log = (...args) => { output.textContent += args.join(' ') + '\\n'; origLog(...args); };
-          try { ${code} } catch(e) { output.textContent += 'Error: ' + e.message; }
-        <\/script></body></html>`;
-    } else if (language === "sql") {
-      previewHtml = `<!DOCTYPE html><html><body style="background:#1e293b;color:#94a3b8;padding:24px;font-family:monospace">
-        <p style="color:#64748b">SQL Preview tidak dapat dieksekusi langsung di browser.</p>
-        <pre style="background:#0f172a;padding:16px;border-radius:8px;color:#38bdf8">${code}</pre>
-        </body></html>`;
-    } else if (language === "php") {
-      previewHtml = `<!DOCTYPE html><html><body style="background:#1e293b;color:#94a3b8;padding:24px;font-family:monospace">
-        <p style="color:#64748b">PHP Preview tidak dapat dieksekusi langsung di browser.</p>
-        <pre style="background:#0f172a;padding:16px;border-radius:8px;color:#a78bfa">${code}</pre>
+    
+    // Jika level CSS atau JS, gabungkan HTML + CSS + JS
+    if (primaryLanguage === "css" || primaryLanguage === "javascript") {
+      const { html, css, javascript } = codes;
+      previewHtml = `
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            ${css || ""}
+            /* Default fallback styles if empty */
+            ${!css ? `body{background:#ffffff;color:black;font-family:system-ui}` : ""}
+          </style>
+        </head>
+        <body>
+          ${html || (!css && !javascript ? "<h1>Preview Boilerplate</h1><p>Edit index.html atau style.css untuk melihat perubahan.</p>" : "")}
+          <script>
+            // Console override for preview
+            const origLog = console.log;
+            const output = document.createElement('div');
+
+            
+            console.log = (...args) => { 
+              output.textContent += args.join(' ') + '\\n'; 
+              origLog(...args); 
+            };
+
+            try {
+              ${javascript || ""}
+            } catch(e) {
+              output.style.color = "#ef4444";
+              output.textContent += 'Error: ' + e.message;
+            }
+          <\/script>
+        </body>
+        </html>
+      `;
+    } else if (primaryLanguage === "sql" || primaryLanguage === "php") {
+      let code = "";
+      if (primaryLanguage === "php") {
+        code = [
+          codes.php ? `/* index.php */\n${codes.php}` : "",
+          codes.php_process ? `/* process.php */\n${codes.php_process}` : "",
+          codes.php_connection ? `/* connection.php */\n${codes.php_connection}` : ""
+        ].filter(Boolean).join("\n\n");
+      } else {
+        code = codes[primaryLanguage] || "";
+      }
+
+      previewHtml = `<!DOCTYPE html><html><body style="background:#ffffff;color:black;padding:24px;font-family:monospace">
+        <p style="color:#64748b">${primaryLanguage.toUpperCase()} Preview tidak dapat dieksekusi langsung di browser.</p>
+        <pre style="background:#0f172a;padding:16px;border-radius:8px;color:${primaryLanguage === "sql" ? "#38bdf8" : "#a78bfa"}">${code}</pre>
         </body></html>`;
     } else {
       // html (default)
+      const code = codes.html || "";
       previewHtml = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
-        <style>*{box-sizing:border-box}body{background:#1e293b;color:white;font-family:system-ui;padding:24px;margin:0}
-        h1{font-size:2em;color:#f1f5f9}h2{font-size:1.5em;color:#f1f5f9}p{color:#cbd5e1}
-        a{color:#38bdf8}button{background:#3b82f6;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer}
+        <style>*{box-sizing:border-box}body{background:#ffffff;color:black;font-family:system-ui;padding:24px;margin:0}
+        h1{font-size:2em;color:black}h2{font-size:1.5em;color:black}p{color:black}
+        a{color:}button{background:#3b82f6;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer}
         input,textarea{background:#334155;border:1px solid #475569;color:white;padding:8px 12px;border-radius:6px;width:100%}
         table{border-collapse:collapse;width:100%}th,td{border:1px solid #475569;padding:12px;text-align:left}th{background:#334155}
         </style></head><body>${code}</body></html>`;
@@ -154,11 +186,11 @@ function PreviewPanel({
     doc.open();
     doc.write(previewHtml);
     doc.close();
-  }, [code, language]);
+  }, [codes, primaryLanguage]);
 
   useEffect(() => {
     updatePreview();
-  }, [code, updatePreview]);
+  }, [codes, updatePreview]);
 
   if (!isActive) {
     return (
@@ -178,7 +210,7 @@ function PreviewPanel({
     <iframe
       ref={iframeRef}
       title="Live Preview"
-      className="w-full h-full bg-slate-800 border-0"
+      className="w-full h-full bg-white border-0"
       sandbox="allow-scripts allow-same-origin"
     />
   );
@@ -282,8 +314,25 @@ function ChallengeView({
   }, [dragDropData]);
 
   // ─── State ─────────────────────────────────────────────────────────────────
-  const [userCode, setUserCode] = useState(challenge.starterCode ?? "");
-  const [previewCode, setPreviewCode] = useState("");
+  const [userCode, setUserCode] = useState<Record<string, string>>(() => {
+    const initial = { 
+      html: "", 
+      css: "", 
+      javascript: "", 
+      php: "", 
+      php_process: "", 
+      php_connection: "", 
+      sql: "" 
+    };
+    try {
+      if (challenge.starterCode?.trim().startsWith("{")) {
+        return { ...initial, ...JSON.parse(challenge.starterCode) };
+      }
+    } catch {}
+    return { ...initial, [language]: challenge.starterCode ?? "" };
+  });
+
+  const [previewCodes, setPreviewCodes] = useState<Record<string, string>>(userCode);
   const [hasRunPreview, setHasRunPreview] = useState(false);
   const [dragItems, setDragItems] = useState<DragItem[]>([]);
   const [sourceDragItems, setSourceDragItems] = useState<DragItem[]>(initialSourceItems);
@@ -345,15 +394,15 @@ function ChallengeView({
     if (challenge.method === "DRAG_AND_DROP") {
       if (sourceDragItems.length === 0 && dragItems.length > 0) {
         const generatedCode = dragItems.map((i) => i.content).join("\n");
-        setPreviewCode(generatedCode);
+        setPreviewCodes((prev) => ({ ...prev, [language]: generatedCode }));
         setHasRunPreview(true);
       } else {
-        setPreviewCode("");
+        setPreviewCodes((prev) => ({ ...prev, [language]: "" }));
         setHasRunPreview(false);
         setValidationErrors([]);
       }
     }
-  }, [dragItems, sourceDragItems, challenge.method, runValidation]);
+  }, [dragItems, sourceDragItems, challenge.method, language]);
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
   const handleRun = () => {
@@ -361,12 +410,13 @@ function ChallengeView({
     setSubmitStatus("idle");
     
     setTimeout(() => {
-      let codeToPreview = userCode;
+      let codesToPreview = { ...userCode };
       if (challenge.method === "DRAG_AND_DROP") {
-        codeToPreview = dragItems.map((i) => i.content).join("\n");
+        const generated = dragItems.map((i) => i.content).join("\n");
+        codesToPreview = { ...userCode, [language]: generated };
       }
       
-      setPreviewCode(codeToPreview);
+      setPreviewCodes(codesToPreview);
       setHasRunPreview(true);
       
       // Reset Error Log saat me-run kode baru
@@ -388,8 +438,28 @@ function ChallengeView({
   };
 
   const handleReset = () => {
-    setUserCode(challenge.starterCode ?? "");
-    setPreviewCode("");
+    const initial = { 
+      html: "", 
+      css: "", 
+      javascript: "", 
+      php: "", 
+      php_process: "", 
+      php_connection: "", 
+      sql: "" 
+    };
+    let resetVal = initial;
+    try {
+      if (challenge.starterCode?.trim().startsWith("{")) {
+        resetVal = { ...initial, ...JSON.parse(challenge.starterCode) };
+      } else {
+        resetVal = { ...initial, [language]: challenge.starterCode ?? "" };
+      }
+    } catch {
+      resetVal = { ...initial, [language]: challenge.starterCode ?? "" };
+    }
+
+    setUserCode(resetVal);
+    setPreviewCodes(resetVal);
     setHasRunPreview(false);
     setSourceDragItems(initialSourceItems);
     setDragItems([]);
@@ -415,10 +485,31 @@ function ChallengeView({
     }
 
     // Siapkan answerCode berdasarkan metode
-    const answerCode =
-      challenge.method === "DRAG_AND_DROP"
-        ? JSON.stringify(dragItems.map((i) => i.content))
-        : userCode;
+    // Untuk multi-tab: hanya sertakan key yang relevan dengan bahasa level
+    // supaya format JSON cocok dengan kunci jawaban di database.
+    const getRelevantKeys = (): string[] => {
+      if (language === "css") return ["html", "css"];
+      if (language === "javascript") return ["html", "css", "javascript"];
+      if (language === "php") return ["php", "php_process", "php_connection"];
+      return [language]; // html, sql → single file
+    };
+
+    const buildAnswerCode = (): string => {
+      if (challenge.method === "DRAG_AND_DROP") {
+        return JSON.stringify(dragItems.map((i) => i.content));
+      }
+      const keys = getRelevantKeys();
+      if (keys.length === 1) {
+        // Single file: kirim sebagai string biasa (bukan JSON)
+        return userCode[keys[0]] ?? "";
+      }
+      // Multi file: kirim sebagai JSON object hanya dengan key yang relevan
+      const filtered: Record<string, string> = {};
+      keys.forEach((k) => { filtered[k] = userCode[k] ?? ""; });
+      return JSON.stringify(filtered);
+    };
+
+    const answerCode = buildAnswerCode();
 
     setIsSubmitting(true);
     try {
@@ -724,17 +815,30 @@ function ChallengeView({
               <div className="h-9 lg:h-10 bg-slate-900 border-b border-slate-800 flex items-center shrink-0">
                 <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Language)} className="h-full">
                   <TabsList className="h-full bg-transparent p-0 gap-0">
-                    <TabsTrigger
-                      value={language}
-                      className="h-full px-3 lg:px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-indigo-500 text-xs font-medium"
-                    >
-                      <span className="text-orange-400 mr-1.5">⧩</span>
-                      {language === "html" && "index.html"}
-                      {language === "css" && "style.css"}
-                      {language === "javascript" && "script.js"}
-                      {language === "php" && "index.php"}
-                      {language === "sql" && "query.sql"}
-                    </TabsTrigger>
+                    {/* Primary Tab */}
+                    {[
+                      { id: "html", label: "index.html", color: "text-orange-400" },
+                      { id: "css", label: "styles.css", color: "text-blue-400" },
+                      { id: "javascript", label: "script.js", color: "text-yellow-400" },
+                      { id: "php", label: "index.php", color: "text-purple-400" },
+                      { id: "php_process", label: "process.php", color: "text-purple-400" },
+                      { id: "php_connection", label: "connection.php", color: "text-purple-400" },
+                      { id: "sql", label: "query.sql", color: "text-cyan-400" },
+                    ].filter(t => {
+                      if (language === "css") return t.id === "html" || t.id === "css";
+                      if (language === "javascript") return t.id === "html" || t.id === "css" || t.id === "javascript";
+                      if (language === "php") return t.id === "php" || t.id === "php_process" || t.id === "php_connection";
+                      return t.id === language;
+                    }).map((t) => (
+                      <TabsTrigger
+                        key={t.id}
+                        value={t.id}
+                        className="h-full px-3 lg:px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-indigo-500 text-xs font-medium"
+                      >
+                        <span className={cn("mr-1.5", t.color)}>⧩</span>
+                        {t.label}
+                      </TabsTrigger>
+                    ))}
                   </TabsList>
                 </Tabs>
               </div>
@@ -744,9 +848,9 @@ function ChallengeView({
             <div className="flex-1 min-h-0 relative">
               {isCodeBased && (
                 <MonacoCodeEditor
-                  code={userCode}
-                  onChange={setUserCode}
-                  language={language}
+                  code={userCode[activeTab] || ""}
+                  onChange={(val) => setUserCode(prev => ({ ...prev, [activeTab]: val }))}
+                  language={activeTab.startsWith("php") ? "php" : activeTab as any}
                 />
               )}
 
@@ -810,9 +914,9 @@ function ChallengeView({
               <div className="flex-1 min-h-0 bg-slate-950/50 overflow-auto">
                 {activePreviewTab === "preview" ? (
                   <PreviewPanel
-                    code={previewCode}
+                    codes={previewCodes}
                     isActive={hasRunPreview}
-                    language={language}
+                    primaryLanguage={language}
                   />
                 ) : (
                   <div className="p-4 lg:p-6 space-y-4">

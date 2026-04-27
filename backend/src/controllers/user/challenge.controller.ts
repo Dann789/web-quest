@@ -4,9 +4,6 @@ import { type SubmitAnswerRequest } from "../../types";
 import { UserProgressController } from "./progress.controller";
 
 export class ChallengeAttemptController {
-  /**
-   * Get a random challenge for user to attempt
-   */
   static async getRandomChallenge(userId: number, levelId: number, nodeSlot: number) {
     try {
       // Check if user exists
@@ -38,7 +35,7 @@ export class ChallengeAttemptController {
         };
       }
 
-      // ─── Cek apakah node ini sudah pernah dibuka sebelumnya ───────────────
+      // Check if node has been assigned before
       const existingAssignment = await prisma.assignment.findUnique({
         where: {
           idx_assignment_node_unique: {
@@ -66,7 +63,7 @@ export class ChallengeAttemptController {
         },
       });
 
-      // Jika assignment sudah ada, kembalikan challenge yang sama (tidak random ulang)
+      // If assignment already exists, return the same challenge (not random again)
       if (existingAssignment) {
         const challenge = existingAssignment.challenge;
         return {
@@ -94,12 +91,6 @@ export class ChallengeAttemptController {
         };
       }
 
-      // ─── Node baru: lakukan randomisasi challenge ─────────────────────────
-
-      // Tentukan difficulty berdasarkan nodeSlot
-      // nodeSlot 1–5   → EASY
-      // nodeSlot 6–15  → MEDIUM
-      // nodeSlot 16–18 → HARD
       type DifficultyType = "EASY" | "MEDIUM" | "HARD";
       let targetDifficulty: DifficultyType;
 
@@ -116,7 +107,7 @@ export class ChallengeAttemptController {
         };
       }
 
-      // Ambil challenge aktif di level ini sesuai difficulty yang ditentukan
+      // Get active challenges in this level based on difficulty
       const allChallenges = await prisma.challenge.findMany({
         where: { levelId, isActive: true, difficulty: targetDifficulty },
         select: {
@@ -141,7 +132,7 @@ export class ChallengeAttemptController {
         };
       }
 
-      // Ambil challenge yang sudah ditetapkan ke node-node lain milik user di level ini
+      // Get challenges that have been assigned to other nodes for this user in this level
       const alreadyAssigned = await prisma.assignment.findMany({
         where: { userId, levelId },
         select: { challengeId: true },
@@ -149,10 +140,10 @@ export class ChallengeAttemptController {
 
       const assignedIds = new Set(alreadyAssigned.map((a) => a.challengeId));
 
-      // Filter hanya challenge yang belum dipakai oleh node lain
+      // Filter only challenges that have not been used by other nodes
       const availableChallenges = allChallenges.filter((c) => !assignedIds.has(c.id));
 
-      // Jika semua challenge sudah terpakai di node lain, fallback ke semua challenge
+      // If all challenges have been used by other nodes, fallback to all challenges
       const pool = availableChallenges.length > 0 ? availableChallenges : allChallenges;
 
       // Pilih secara acak
@@ -214,7 +205,7 @@ export class ChallengeAttemptController {
     const { assignmentId, challengeId, method, answerCode, timeSpent } = body;
 
     try {
-      // ─── 1. Ambil data assignment & challenge ──────────────────────────────
+      // Get data assignment & challenge
       const assignment = await prisma.assignment.findUnique({
         where: { id: assignmentId },
         include: {
@@ -241,21 +232,70 @@ export class ChallengeAttemptController {
 
       const challenge = assignment.challenge;
 
-      // ─── 2. Validasi jawaban berdasarkan metode ────────────────────────────
-      const normalizeCode = (code: string): string =>
-        code
-          .trim()
-          .toLowerCase()
+      // Validate answer based on method
+      const normalizeCode = (code: string): string => {
+        if (!code) return "";
+        return code
           .replace(/\r\n/g, "\n")
-          .replace(/\s+/g, " ")
-          .replace(/\s*=\s*/g, "=")
-          .replace(/\s*\/>/g, "/>")
-          .replace(/>\s+</g, "><");
+          .replace(/\r/g, "\n")
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0)
+          .join("\n");
+      };
+
+      const compareCodes = (actual: string, expected: string): boolean => {
+        const isJsonObj = (s: string) => {
+          const t = s.trim();
+          return t.startsWith("{") && t.endsWith("}");
+        };
+
+        if (isJsonObj(actual) && isJsonObj(expected)) {
+          try {
+            const actualObj: Record<string, string> = JSON.parse(actual);
+            const expectedObj: Record<string, string> = JSON.parse(expected);
+
+            const keys = Object.keys(expectedObj);
+            if (keys.length === 0) return true;
+
+            const result = keys.every((key) => {
+              const actualVal = normalizeCode(String(actualObj[key] ?? ""));
+              const expectedVal = normalizeCode(String(expectedObj[key] ?? ""));
+              return actualVal === expectedVal;
+            });
+
+            if (!result) {
+              const firstFail = keys.find((key) => {
+                const a = normalizeCode(String(actualObj[key] ?? ""));
+                const e = normalizeCode(String(expectedObj[key] ?? ""));
+                return a !== e;
+              });
+              if (firstFail) {
+                console.log(`[submitAnswer] Mismatch di key "${firstFail}"`);
+                console.log(`  Actual   : ${normalizeCode(String(actualObj[firstFail] ?? "")).substring(0, 200)}`);
+                console.log(`  Expected : ${normalizeCode(String(expectedObj[firstFail] ?? "")).substring(0, 200)}`);
+              }
+            }
+
+            return result;
+          } catch (parseErr) {
+            console.warn("[submitAnswer] Gagal parse JSON, fallback ke string compare:", parseErr);
+          }
+        }
+
+        const a = normalizeCode(actual);
+        const e = normalizeCode(expected);
+        if (a !== e) {
+          console.log(`[submitAnswer] String mismatch`);
+          console.log(`  Actual   : ${a.substring(0, 200)}`);
+          console.log(`  Expected : ${e.substring(0, 200)}`);
+        }
+        return a === e;
+      };
 
       let isCorrect = false;
 
       if (method === "DRAG_AND_DROP") {
-        // answerCode berisi JSON array urutan string (konten blok)
         const content = challenge.content as { blocks: string[]; expectedOrder: string[] } | null;
         if (!content?.expectedOrder) {
           return { success: false, message: "Data soal drag & drop tidak valid." };
@@ -268,7 +308,6 @@ export class ChallengeAttemptController {
           return { success: false, message: "Format jawaban drag & drop tidak valid." };
         }
       } else {
-        // CODING_MANUAL & FIX_THE_BUG — validasi via testCases
         const testCases = challenge.testCases as Array<{
           input: string | null;
           weight: number;
@@ -284,27 +323,21 @@ export class ChallengeAttemptController {
         const toCheck = visible.length > 0 ? visible : testCases;
 
         isCorrect = toCheck.every((tc) =>
-          normalizeCode(answerCode) === normalizeCode(tc.expectedOutput ?? "")
+          compareCodes(answerCode, tc.expectedOutput ?? "")
         );
       }
 
-      // ─── 3. Cek apakah ini percobaan pertama ──────────────────────────────
-      // isFirstAttempt = true  → belum pernah mencoba sama sekali sebelumnya
-      // isFirstAttempt = false → sudah pernah mencoba (salah atau benar sebelumnya)
       const previousAttempt = await prisma.attempt.findFirst({
         where: { userId, challengeId, xpEarned: { gt: 0 } },
       });
       const isFirstAttempt = previousAttempt === null;
-
-      // ─── 4. Hitung XP ──────────────────────────────────────────────────────
-      // XP hanya diberikan jika: jawaban benar AND ini adalah attempt pertama
       const idealTimeSec = challenge.idealTime ?? 0;
       const overTime = timeSpent > idealTimeSec;
       const xpEarned = (isCorrect && isFirstAttempt)
         ? Math.max(0, challenge.xpBase - (overTime ? 5 : 0))
         : 0;
 
-      // ─── 5. Insert Attempt ─────────────────────────────────────────────────
+      // Insert Attempt
       const attempt = await prisma.attempt.create({
         data: {
           userId,
@@ -312,13 +345,12 @@ export class ChallengeAttemptController {
           challengeId,
           isFirstAttempt,
           timeSpent,
-          xpEarned, // 0 jika bukan attempt pertama atau jawaban salah
+          xpEarned,
         },
       });
 
-      // ─── 6. Jika benar: update Assignment & User.totalXp ──────────────────
+      // Update Assignment & User.totalXp
       if (isCorrect) {
-        // Update isCompleted & completedAt pada Assignment jika belum selesai
         if (!assignment.isCompleted) {
           await prisma.assignment.update({
             where: { id: assignmentId },
@@ -329,7 +361,6 @@ export class ChallengeAttemptController {
           });
         }
 
-        // Tambahkan XP ke user HANYA jika ini adalah attempt pertama (is_first_attempt = true)
         if (isFirstAttempt && xpEarned > 0) {
           await prisma.user.update({
             where: { id: userId },
@@ -343,7 +374,7 @@ export class ChallengeAttemptController {
         message: isCorrect ? "Jawaban benar!" : "Jawaban salah. Coba lagi.",
         data: {
           isCorrect,
-          xpEarned,           // 0 jika bukan attempt pertama atau salah
+          xpEarned,
           attemptId: attempt.id,
           isFirstAttempt,
           overTime,

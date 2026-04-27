@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { useEffect, useState } from 'react';
 import { Puzzle } from 'lucide-react';
 import Editor from '@monaco-editor/react';
+import { cn } from '@/lib/utils';
 
 interface ChallengeDialogProps {
   open: boolean;
@@ -17,6 +18,154 @@ interface ChallengeDialogProps {
   levels: { id: number; name: string }[];
 }
 
+// ─── Tipe bahasa yang didukung ────────────────────────────────────────────────
+type EditorLanguage = 'html' | 'css' | 'javascript' | 'php' | 'sql';
+
+// ─── Mapping levelId → bahasa (harus sama dengan ChallengePage) ──────────────
+const LANGUAGE_MAP: Record<number, EditorLanguage> = {
+  1: 'html',
+  2: 'css',
+  3: 'javascript',
+  4: 'php',
+  5: 'sql',
+};
+
+// ─── Konfigurasi tab berdasarkan bahasa ──────────────────────────────────────
+type TabConfig = { id: string; label: string; monacoLang: string; color: string };
+
+function getTabsForLanguage(lang: EditorLanguage): TabConfig[] {
+  switch (lang) {
+    case 'css':
+      return [
+        { id: 'html', label: 'index.html', monacoLang: 'html', color: 'text-orange-400' },
+        { id: 'css', label: 'styles.css', monacoLang: 'css', color: 'text-blue-400' },
+      ];
+    case 'javascript':
+      return [
+        { id: 'html', label: 'index.html', monacoLang: 'html', color: 'text-orange-400' },
+        { id: 'css', label: 'styles.css', monacoLang: 'css', color: 'text-blue-400' },
+        { id: 'javascript', label: 'script.js', monacoLang: 'javascript', color: 'text-yellow-400' },
+      ];
+    case 'php':
+      return [
+        { id: 'php', label: 'index.php', monacoLang: 'php', color: 'text-purple-400' },
+        { id: 'php_process', label: 'process.php', monacoLang: 'php', color: 'text-purple-400' },
+        { id: 'php_connection', label: 'connection.php', monacoLang: 'php', color: 'text-purple-400' },
+      ];
+    case 'sql':
+      return [{ id: 'sql', label: 'query.sql', monacoLang: 'sql', color: 'text-cyan-400' }];
+    default: // html
+      return [{ id: 'html', label: 'index.html', monacoLang: 'html', color: 'text-orange-400' }];
+  }
+}
+
+// ─── Ambil semua key yang dibutuhkan untuk satu bahasa ───────────────────────
+function getInitialMultiCode(lang: EditorLanguage): Record<string, string> {
+  const keys = getTabsForLanguage(lang).map(t => t.id);
+  return Object.fromEntries(keys.map(k => [k, '']));
+}
+
+// ─── Parse nilai starterCode / correctAnswer dari DB ke bentuk Record ─────────
+function parseCodeValue(raw: string, lang: EditorLanguage): Record<string, string> {
+  const defaultVal = getInitialMultiCode(lang);
+  if (!raw) return defaultVal;
+  try {
+    if (raw.trim().startsWith('{')) {
+      const parsed = JSON.parse(raw);
+      return { ...defaultVal, ...parsed };
+    }
+  } catch {}
+  // String biasa: masukkan ke primary key
+  const primaryKey = getTabsForLanguage(lang)[0].id;
+  return { ...defaultVal, [primaryKey]: raw };
+}
+
+// ─── Serialize nilai Record ke string untuk disimpan ke form/payload ──────────
+function serializeCodeValue(codes: Record<string, string>, lang: EditorLanguage): string {
+  const tabs = getTabsForLanguage(lang);
+  if (tabs.length === 1) {
+    // Single tab: simpan sebagai string biasa
+    return codes[tabs[0].id] || '';
+  }
+  // Multi tab: simpan sebagai JSON
+  return JSON.stringify(codes);
+}
+
+// ─── Komponen Editor Multi-Tab ────────────────────────────────────────────────
+function MultiTabEditor({
+  label,
+  required,
+  note,
+  language,
+  codes,
+  onChange,
+}: {
+  label: string;
+  required?: boolean;
+  note?: string;
+  language: EditorLanguage;
+  codes: Record<string, string>;
+  onChange: (codes: Record<string, string>) => void;
+}) {
+  const tabs = getTabsForLanguage(language);
+  const [activeTab, setActiveTab] = useState(tabs[0].id);
+
+  // Reset tab aktif jika language berubah
+  useEffect(() => {
+    setActiveTab(tabs[0].id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
+
+  const activeTabConfig = tabs.find(t => t.id === activeTab) ?? tabs[0];
+
+  return (
+    <div className="space-y-2">
+      <Label>
+        {label}{' '}
+        {required && <span className="text-red-500">*</span>}
+        {note && <span className="text-muted-foreground text-xs ml-1">{note}</span>}
+      </Label>
+
+      <div className="border rounded-md overflow-hidden">
+        {/* Tab header */}
+        {tabs.length > 1 && (
+          <div className="flex bg-[#1e1e1e] border-b border-[#3c3c3c]">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'px-4 py-1.5 text-xs font-medium border-b-2 transition-all',
+                  activeTab === tab.id
+                    ? 'border-indigo-500 bg-[#252526] text-white'
+                    : 'border-transparent text-[#858585] hover:text-[#cccccc]'
+                )}
+              >
+                <span className={cn('mr-1', tab.color)}>⧩</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Monaco editor */}
+        <div className="h-[180px]">
+          <Editor
+            height="100%"
+            language={activeTabConfig.monacoLang}
+            theme="vs-dark"
+            value={codes[activeTab] ?? ''}
+            onChange={(val) => onChange({ ...codes, [activeTab]: val ?? '' })}
+            options={{ minimap: { enabled: false }, fontSize: 13 }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Default Form ─────────────────────────────────────────────────────────────
 const DEFAULT_FORM = {
   title: '',
   levelId: '',
@@ -27,13 +176,13 @@ const DEFAULT_FORM = {
   xpBase: 10,
   hint: '',
   isActive: true,
-  // CODING_MANUAL fields
-  starterCode: '',
-  correctAnswer: '',
-  // FIX_THE_BUG fields
+  // CODING_MANUAL fields (disimpan sebagai Record)
+  starterCodes: {} as Record<string, string>,
+  correctAnswerCodes: {} as Record<string, string>,
+  // FIX_THE_BUG
   buggyCode: '',
-  // DRAG_AND_DROP fields
-  orderedLines: '',   // textarea: dosen ketik baris urutan benar, pisah baris baru
+  // DRAG_AND_DROP
+  orderedLines: '',
 };
 
 export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, levels }: ChallengeDialogProps) {
@@ -41,10 +190,18 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
 
   const isEditMode = !!challenge;
 
-  // Parse content JSON dari API ke field form saat edit
+  // ─── Deteksi bahasa dari levelId ─────────────────────────────────────────
+  const detectedLang: EditorLanguage = LANGUAGE_MAP[Number(formData.levelId)] ?? 'html';
+
+  // ─── Isi form saat edit / reset saat create ───────────────────────────────
   useEffect(() => {
     if (challenge) {
       const content = challenge.content as any ?? {};
+      const lang: EditorLanguage = LANGUAGE_MAP[Number(challenge.levelId)] ?? 'html';
+
+      const rawStarter = content.starterCode ?? challenge.starterCode ?? '';
+      const rawAnswer = content.correctAnswer ?? '';
+      const rawBuggy = content.buggyCode ?? challenge.starterCode ?? '';
 
       setFormData({
         title: challenge.title ?? '',
@@ -56,18 +213,30 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
         xpBase: challenge.xpBase ?? 10,
         hint: challenge.hint ?? '',
         isActive: challenge.isActive ?? true,
-        starterCode: content.starterCode ?? challenge.starterCode ?? '',
-        correctAnswer: content.correctAnswer ?? '',
-        buggyCode: content.buggyCode ?? challenge.starterCode ?? '',
+        starterCodes: parseCodeValue(rawStarter, lang),
+        correctAnswerCodes: parseCodeValue(rawAnswer, lang),
+        buggyCode: rawBuggy,
         orderedLines: (content.expectedOrder ?? []).join('\n'),
       });
     } else {
-      setFormData({ ...DEFAULT_FORM });
+      setFormData({ ...DEFAULT_FORM, starterCodes: {}, correctAnswerCodes: {} });
     }
   }, [challenge, open]);
 
+  // ─── Reset multi-code state saat level berubah ───────────────────────────
+  useEffect(() => {
+    const lang: EditorLanguage = LANGUAGE_MAP[Number(formData.levelId)] ?? 'html';
+    setFormData(prev => ({
+      ...prev,
+      starterCodes: getInitialMultiCode(lang),
+      correctAnswerCodes: getInitialMultiCode(lang),
+    }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.levelId]);
+
   const set = (field: string, val: any) => setFormData(prev => ({ ...prev, [field]: val }));
 
+  // ─── Submit ───────────────────────────────────────────────────────────────
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -81,57 +250,43 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
       xpBase: Number(formData.xpBase),
       hint: formData.hint || null,
       isActive: formData.isActive,
-      // testCaseInputs tidak dikirim — backend auto-generate dari kunci jawaban
     };
 
-    // Sertakan field spesifik berdasarkan method
     if (formData.method === 'CODING_MANUAL') {
-      payload.starterCode = formData.starterCode || null;
-      payload.correctAnswer = formData.correctAnswer;
+      payload.starterCode = serializeCodeValue(formData.starterCodes, detectedLang) || null;
+      payload.correctAnswer = serializeCodeValue(formData.correctAnswerCodes, detectedLang);
     } else if (formData.method === 'FIX_THE_BUG') {
       payload.buggyCode = formData.buggyCode;
-      payload.correctAnswer = formData.correctAnswer;
+      payload.correctAnswer = serializeCodeValue(formData.correctAnswerCodes, detectedLang);
     } else if (formData.method === 'DRAG_AND_DROP') {
       const lines = formData.orderedLines.split('\n').map(l => l.trim()).filter(Boolean);
       payload.expectedOrder = lines;
-      // blocks: acak dari expectedOrder (backend/frontend bisa shuffle)
       payload.blocks = [...lines].sort(() => Math.random() - 0.5);
     }
 
     onSubmit(payload);
   };
 
+  // ─── Render field per method ──────────────────────────────────────────────
   const renderMethodFields = () => {
     switch (formData.method) {
       case 'CODING_MANUAL':
         return (
           <>
-            <div className="space-y-2">
-              <Label>Starter Code <span className="text-muted-foreground text-xs">(kode awal yang dilihat mahasiswa)</span></Label>
-              <div className="border rounded-md overflow-hidden h-[180px]">
-                <Editor
-                  height="100%"
-                  defaultLanguage="html"
-                  theme="vs-dark"
-                  value={formData.starterCode}
-                  onChange={(val) => set('starterCode', val ?? '')}
-                  options={{ minimap: { enabled: false }, fontSize: 13 }}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Kunci Jawaban <span className="text-red-500">*</span></Label>
-              <div className="border rounded-md overflow-hidden h-[180px]">
-                <Editor
-                  height="100%"
-                  defaultLanguage="html"
-                  theme="vs-dark"
-                  value={formData.correctAnswer}
-                  onChange={(val) => set('correctAnswer', val ?? '')}
-                  options={{ minimap: { enabled: false }, fontSize: 13 }}
-                />
-              </div>
-            </div>
+            <MultiTabEditor
+              label="Starter Code"
+              note="(kode awal yang dilihat mahasiswa)"
+              language={detectedLang}
+              codes={formData.starterCodes}
+              onChange={(codes) => set('starterCodes', codes)}
+            />
+            <MultiTabEditor
+              label="Kunci Jawaban"
+              required
+              language={detectedLang}
+              codes={formData.correctAnswerCodes}
+              onChange={(codes) => set('correctAnswerCodes', codes)}
+            />
           </>
         );
 
@@ -140,10 +295,10 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
           <>
             <div className="space-y-2">
               <Label>Kode yang Mengandung Bug <span className="text-red-500">*</span></Label>
-              <div className="border rounded-md overflow-hidden h-[160px]">
+              <div className="border rounded-md overflow-hidden h-[180px]">
                 <Editor
                   height="100%"
-                  defaultLanguage="javascript"
+                  language={detectedLang}
                   theme="vs-dark"
                   value={formData.buggyCode}
                   onChange={(val) => set('buggyCode', val ?? '')}
@@ -151,19 +306,13 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Kode Solusi yang Benar <span className="text-red-500">*</span></Label>
-              <div className="border rounded-md overflow-hidden h-[160px]">
-                <Editor
-                  height="100%"
-                  defaultLanguage="javascript"
-                  theme="vs-dark"
-                  value={formData.correctAnswer}
-                  onChange={(val) => set('correctAnswer', val ?? '')}
-                  options={{ minimap: { enabled: false }, fontSize: 13 }}
-                />
-              </div>
-            </div>
+            <MultiTabEditor
+              label="Kode Solusi yang Benar"
+              required
+              language={detectedLang}
+              codes={formData.correctAnswerCodes}
+              onChange={(codes) => set('correctAnswerCodes', codes)}
+            />
           </>
         );
 
@@ -238,14 +387,14 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="CODING_MANUAL">Coding Manual</SelectItem>
-                    <SelectItem value="DRAG_AND_DROP">Drag & Drop</SelectItem>
+                    <SelectItem value="DRAG_AND_DROP">Drag &amp; Drop</SelectItem>
                     <SelectItem value="FIX_THE_BUG">Fix The Bug</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Difficulty & XP <span className="text-red-500">*</span></Label>
+                <Label>Difficulty &amp; XP <span className="text-red-500">*</span></Label>
                 <div className="flex gap-2">
                   <Select value={formData.difficulty} onValueChange={(val) => set('difficulty', val)}>
                     <SelectTrigger className="flex-1">
@@ -270,7 +419,7 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
               </div>
             </div>
 
-            {/* Ideal Time + Status (Status hanya tampil di edit mode) */}
+            {/* Ideal Time + Status */}
             <div className={`grid gap-4 ${isEditMode ? 'grid-cols-2' : 'grid-cols-1'}`}>
               <div className="space-y-2">
                 <Label>Waktu Ideal (detik) <span className="text-red-500">*</span></Label>
@@ -315,8 +464,19 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
                 <span className="font-semibold text-sm">
                   Konfigurasi: {formData.method.replace(/_/g, ' ')}
                 </span>
+                {formData.levelId && (
+                  <span className="ml-auto text-xs text-muted-foreground px-2 py-0.5 rounded border border-dashed">
+                    Bahasa: <span className="font-mono font-semibold text-primary">{detectedLang.toUpperCase()}</span>
+                  </span>
+                )}
               </div>
-              {renderMethodFields()}
+              {!formData.levelId ? (
+                <p className="text-xs text-muted-foreground italic">
+                  Pilih level terlebih dahulu untuk menentukan bahasa pemrograman pada editor.
+                </p>
+              ) : (
+                renderMethodFields()
+              )}
             </div>
 
             {/* Hint */}
@@ -329,7 +489,6 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
                 rows={2}
               />
             </div>
-
 
           </div>
 
