@@ -55,6 +55,9 @@ model Level {
   xpRequired  Int      @map("xp_required")
   description String?  @db.Text
   iconName    String?  @db.VarChar(50)
+  easyNodes   Int      @default(0) @map("easy_nodes")
+  mediumNodes Int      @default(0) @map("medium_nodes")
+  hardNodes   Int      @default(0) @map("hard_nodes")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 

@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "levels" ADD COLUMN     "easy_nodes" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "hard_nodes" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "medium_nodes" INTEGER NOT NULL DEFAULT 0;
