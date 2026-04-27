@@ -33,6 +33,15 @@ export const levelRoutes = new Elysia({ prefix: "/api/levels" })
         iconName: t.String({
           maxLength: 255,
         }),
+        easyNodes: t.Numeric({
+          minimum: 0,
+        }),
+        mediumNodes: t.Numeric({
+          minimum: 0,
+        }),
+        hardNodes: t.Numeric({
+          minimum: 0,
+        }),
       }),
     },
   )
@@ -62,6 +71,21 @@ export const levelRoutes = new Elysia({ prefix: "/api/levels" })
         iconName: t.Optional(
           t.String({
             maxLength: 255,
+          }),
+        ),
+        easyNodes: t.Optional(
+          t.Numeric({
+            minimum: 0,
+          }),
+        ),
+        mediumNodes: t.Optional(
+          t.Numeric({
+            minimum: 0,
+          }),
+        ),
+        hardNodes: t.Optional(
+          t.Numeric({
+            minimum: 0,
           }),
         ),
       }),

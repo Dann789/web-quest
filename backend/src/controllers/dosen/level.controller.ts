@@ -44,13 +44,16 @@ export class LevelController {
           xpRequired: true,
           description: true,
           iconName: true,
+          easyNodes: true,
+          mediumNodes: true,
+          hardNodes: true,
           createdAt: true,
-          _count: {
-            select: {
-              materials: true,
-              challenges: true,
-            },
-          },
+          // _count: {
+          //   select: {
+          //     materials: true,
+          //     challenges: true,
+          //   },
+          // },
         },
         orderBy: {
           xpRequired: "asc",
@@ -58,17 +61,17 @@ export class LevelController {
       });
 
       // Transform _count to more readable format
-      const formattedLevels = levels.map((level) => ({
-        ...level,
-        totalMaterials: level._count.materials,
-        totalChallenges: level._count.challenges,
-        _count: undefined,
-      }));
+      // const formattedLevels = levels.map((level) => ({
+      //   ...level,
+      //   totalMaterials: level._count.materials,
+      //   totalChallenges: level._count.challenges,
+      //   _count: undefined,
+      // }));
 
       return {
         success: true,
         message: "List Data Level",
-        data: formattedLevels,
+        data: levels,
       };
     } catch (e: unknown) {
       console.error(`Error getting levels:`, e);
@@ -81,7 +84,7 @@ export class LevelController {
 
   static async createLevel(options: CreateLevelRequest) {
     try {
-      const { name, xpRequired, description, iconName } = options;
+      const { name, xpRequired, description, iconName, easyNodes, mediumNodes, hardNodes } = options;
 
       // Check if level already exists
       const existingLevel = await prisma.level.findFirst({
@@ -102,6 +105,9 @@ export class LevelController {
           xpRequired,
           description,
           iconName,
+          easyNodes,
+          mediumNodes,
+          hardNodes,
         },
         select: {
           id: true,
@@ -109,6 +115,9 @@ export class LevelController {
           xpRequired: true,
           description: true,
           iconName: true,
+          easyNodes: true,
+          mediumNodes: true,
+          hardNodes: true,
           createdAt: true,
         },
       });
@@ -132,7 +141,7 @@ export class LevelController {
    */
   static async updateLevel(id: number, options: UpdateLevelRequest) {
     try {
-      const { name, xpRequired, description, iconName } = options;
+      const { name, xpRequired, description, iconName, easyNodes, mediumNodes, hardNodes } = options;
 
       // Check if level exists
       const existingLevel = await prisma.level.findUnique({
@@ -152,6 +161,9 @@ export class LevelController {
       if (xpRequired !== undefined) updateData.xpRequired = xpRequired;
       if (description !== undefined) updateData.description = description;
       if (iconName !== undefined) updateData.iconName = iconName;
+      if (easyNodes !== undefined) updateData.easyNodes = easyNodes;
+      if (mediumNodes !== undefined) updateData.mediumNodes = mediumNodes;
+      if (hardNodes !== undefined) updateData.hardNodes = hardNodes;
 
       // Check if there's anything to update
       if (Object.keys(updateData).length === 0) {
@@ -171,6 +183,9 @@ export class LevelController {
           xpRequired: true,
           description: true,
           iconName: true,
+          easyNodes: true,
+          mediumNodes: true,
+          hardNodes: true,
           createdAt: true,
         },
       });
@@ -222,20 +237,23 @@ export class LevelController {
           xpRequired: true,
           description: true,
           iconName: true,
+          easyNodes: true,
+          mediumNodes: true,
+          hardNodes: true,
           createdAt: true,
-          materials: {
-            select: {
-              id: true,
-              title: true,
-              order: true,
-            },
-            orderBy: { order: "asc" },
-          },
-          _count: {
-            select: {
-              challenges: true,
-            },
-          },
+          // materials: {
+          //   select: {
+          //     id: true,
+          //     title: true,
+          //     order: true,
+          //   },
+          //   orderBy: { order: "asc" },
+          // },
+          // _count: {
+          //   select: {
+          //     challenges: true,
+          //   },
+          // },
         },
       });
 
@@ -247,17 +265,17 @@ export class LevelController {
       }
 
       // Format response
-      const formattedLevel = {
-        ...level,
-        totalMaterials: level.materials.length,
-        totalChallenges: level._count.challenges,
-        _count: undefined,
-      };
+      // const formattedLevel = {
+      //   ...level,
+      //   totalMaterials: level.materials.length,
+      //   totalChallenges: level._count.challenges,
+      //   _count: undefined,
+      // };
 
       return {
         success: true,
         message: "Level Found!",
-        data: formattedLevel,
+        data: level,
       };
     } catch (e: unknown) {
       console.error(`Error getting level by id:`, e);

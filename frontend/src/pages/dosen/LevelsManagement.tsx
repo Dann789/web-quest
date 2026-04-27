@@ -96,7 +96,7 @@ export default function LevelsManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Layers className="h-8 w-8" /> 
+            <Layers className="h-8 w-8" />
             Manajemen Level
           </h1>
           <p className="text-muted-foreground mt-2">Kelola urutan dan konten level pembelajaran</p>
@@ -122,6 +122,7 @@ export default function LevelsManagement() {
                 <TableHead className="text-center w-[80px]">No</TableHead>
                 <TableHead>Nama Level</TableHead>
                 <TableHead className="text-center">XP Requirement</TableHead>
+                <TableHead className="text-center">Jumlah Soal (E/M/H)</TableHead>
                 <TableHead className="text-center">Deskripsi</TableHead>
                 <TableHead className="text-center w-[120px]">Aksi</TableHead>
               </TableRow>
@@ -149,20 +150,29 @@ export default function LevelsManagement() {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">{level.xpRequired} XP</TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-emerald-500 font-bold">{level.easyNodes}</span>
+                        <span className="text-muted-foreground">/</span>
+                        <span className="text-amber-500 font-bold">{level.mediumNodes}</span>
+                        <span className="text-muted-foreground">/</span>
+                        <span className="text-rose-500 font-bold">{level.hardNodes}</span>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-muted-foreground text-center truncate max-w-[300px]">{level.description}</TableCell>
                     <TableCell className="text-center">
                       <div className="flex justify-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-8 w-8"
                           onClick={() => openEdit(level)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-8 w-8 text-destructive hover:text-destructive"
                           onClick={() => openDelete(level)}
                         >
@@ -185,22 +195,22 @@ export default function LevelsManagement() {
       </Card>
 
       {/* CREATE DIALOG */}
-      <LevelDialog 
-        open={isCreateOpen} 
-        onOpenChange={setIsCreateOpen} 
+      <LevelDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
         onSubmit={handleCreate}
       />
 
       {/* EDIT DIALOG */}
-      <LevelDialog 
-        open={isEditOpen} 
-        onOpenChange={setIsEditOpen} 
+      <LevelDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
         level={selectedLevel}
         onSubmit={handleEdit}
       />
 
       {/* DELETE DIALOG */}
-      <DeleteLevelDialog 
+      <DeleteLevelDialog
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         onConfirm={handleDelete}

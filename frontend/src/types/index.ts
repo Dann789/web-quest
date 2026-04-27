@@ -58,6 +58,9 @@ export interface Level {
   xpRequired: number;
   description: string;
   iconName: string;
+  easyNodes: number;
+  mediumNodes: number;
+  hardNodes: number;
 }
 
 export type LevelCompletionItem = {

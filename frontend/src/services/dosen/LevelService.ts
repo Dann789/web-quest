@@ -46,6 +46,9 @@ export async function createLevel(levelData: {
   xpRequired: number;
   description: string;
   iconName: string;
+  easyNodes: number;
+  mediumNodes: number;
+  hardNodes: number;
 }): Promise<ApiResponse<Level>> {
   try {
     const response = await fetch(`${API_BASE}/api/levels`, {
@@ -56,6 +59,9 @@ export async function createLevel(levelData: {
         xpRequired: levelData.xpRequired,
         description: levelData.description,
         iconName: levelData.iconName,
+        easyNodes: levelData.easyNodes,
+        mediumNodes: levelData.mediumNodes,
+        hardNodes: levelData.hardNodes,
       }),
     });
     const data = await response.json();

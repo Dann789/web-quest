@@ -91,6 +91,9 @@ export interface CreateLevelRequest {
   xpRequired: number;
   description: string;
   iconName: string;
+  easyNodes: number;
+  mediumNodes: number;
+  hardNodes: number;
 }
 
 export interface UpdateLevelRequest {
@@ -98,6 +101,9 @@ export interface UpdateLevelRequest {
   xpRequired?: number;
   description?: string;
   iconName?: string;
+  easyNodes?: number;
+  mediumNodes?: number;
+  hardNodes?: number;
 }
 
 // Assignment Types

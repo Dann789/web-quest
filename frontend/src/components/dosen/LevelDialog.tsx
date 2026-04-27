@@ -36,7 +36,10 @@ export function LevelDialog({ open, onOpenChange, level, onSubmit }: LevelDialog
     name: '',
     description: '',
     xpRequired: 0,
-    iconName: 'fa-code'
+    iconName: 'fa-code',
+    easyNodes: 0,
+    mediumNodes: 0,
+    hardNodes: 0,
   });
 
   const isEditMode = !!level;
@@ -47,14 +50,20 @@ export function LevelDialog({ open, onOpenChange, level, onSubmit }: LevelDialog
         name: level.name,
         description: level.description || '',
         xpRequired: level.xpRequired,
-        iconName: level.iconName || 'fa-code'
+        iconName: level.iconName || 'fa-code',
+        easyNodes: level.easyNodes,
+        mediumNodes: level.mediumNodes,
+        hardNodes: level.hardNodes,
       });
     } else {
       setFormData({
         name: '',
         description: '',
         xpRequired: 0,
-        iconName: 'fa-code'
+        iconName: 'fa-code',
+        easyNodes: 0,
+        mediumNodes: 0,
+        hardNodes: 0,
       });
     }
   }, [level, open]);
@@ -128,11 +137,45 @@ export function LevelDialog({ open, onOpenChange, level, onSubmit }: LevelDialog
               </div>
             </div>
 
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="xp" className="text-right">
+                Jumlah Soal (E/M/H)
+              </Label>
+              <div className="col-span-3 space-y-2">
+                <div className="flex items-center gap-2">
+                   <Input 
+                      type="number" 
+                      id="easyNodes"
+                      min={0}
+                      value={formData.easyNodes}
+                      onChange={(e) => setFormData({ ...formData, easyNodes: parseInt(e.target.value) || 0 })}
+                      className="w-24"
+                   />
+                   <Input 
+                      type="number" 
+                      id="mediumNodes"
+                      min={0}
+                      value={formData.mediumNodes}
+                      onChange={(e) => setFormData({ ...formData, mediumNodes: parseInt(e.target.value) || 0 })}
+                      className="w-24"
+                   />
+                   <Input 
+                      type="number" 
+                      id="hardNodes"
+                      min={0}
+                      value={formData.hardNodes}
+                      onChange={(e) => setFormData({ ...formData, hardNodes: parseInt(e.target.value) || 0 })}
+                      className="w-24"
+                   />
+                </div>
+              </div>
+            </div>
+
             {/* Icon Picker */}
             <div className="grid grid-cols-4 gap-4 mt-2">
               <Label className="text-right pt-2">Icon Level</Label>
               <div className="col-span-3">
-                <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto p-1 pr-2">
+                <div className="grid grid-cols-5 gap-2 max-h-[170px] overflow-y-auto p-1 pr-2">
                   {AVAILABLE_ICONS.map((icon) => (
                     <button
                       key={icon.id}
