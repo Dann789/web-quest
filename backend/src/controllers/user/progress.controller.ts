@@ -1,4 +1,3 @@
-import { isNotEmpty } from "elysia/utils";
 import prisma from "../../config/database";
 
 export class UserProgressController {
@@ -215,22 +214,30 @@ export class UserProgressController {
 
   static async getProgressLevel(userId: number, levelId: number) {
     try {
+      const level = await prisma.level.findUnique({
+        where: {
+          id: levelId,
+        },
+      });
+
+      if (!level) {
+        return {
+          success: false,
+          message: "Level tidak ditemukan",
+        };
+      }
+
       const completedNodes = await this.getCompleteNodes(userId, levelId);
       const completedMaterials = await this.getMaterialProgress(
         userId,
         levelId,
       );
 
-      const totalChallenges = await prisma.challenge.count({
-        where: {
-          levelId: levelId,
-        },
-      });
-      // const totalNodes = totalChallenges + (completedMaterials.data?.totalMaterials ? 1 : 0);
+      const totalNodes = level.easyNodes + level.mediumNodes + level.hardNodes + 1;
       const totalCompleted =
         (completedNodes.data?.completedNodes?.length || 0) +
         (completedMaterials.data?.isAllCompleted ? 1 : 0);
-      const progressPercentage = Math.round((totalCompleted / 18) * 100);
+      const progressPercentage = Math.round((totalCompleted / totalNodes) * 100);
 
       return {
         success: true,
@@ -240,7 +247,7 @@ export class UserProgressController {
           completedMaterials: completedMaterials.data?.completedMaterials,
           totalMaterials: completedMaterials.data?.totalMaterials,
           isAllCompleted: completedMaterials.data?.isAllCompleted,
-          // totalNodes: totalNodes,
+          totalNodes: totalNodes,
           totalCompleted: totalCompleted,
           progressPercentage: progressPercentage,
         },

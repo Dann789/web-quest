@@ -50,7 +50,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
             icon: FileText,
           },
           { path: "/dosen/challenges", label: "Manajemen Soal", icon: Puzzle },
-          { path: "/dosen/logs", label: "Log Aktivitas", icon: Activity },
+          { path: "/dosen/logs", label: "Monitoring Progress", icon: Activity },
           { path: "/dosen/leaderboard", label: "Leaderboard", icon: Trophy },
         ];
       default: // mahasiswa
@@ -113,7 +113,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
             <Button
               variant="ghost"
               className={cn(
-                "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200 mb-2",
+                "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200 mb-2 cursor-pointer",
                 isActive(path)
                   ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
                   : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
@@ -131,7 +131,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200",
+                    "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200 cursor-pointer",
                     isActive("/profile")
                       ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
                       : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
@@ -152,7 +152,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200",
+                    "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200 cursor-pointer",
                     isActive("/dosen/profile")
                       ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
                       : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",

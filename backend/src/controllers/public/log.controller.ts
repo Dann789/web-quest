@@ -9,7 +9,6 @@ export class LogController {
                     _count: {
                         select: {
                             materials: true,
-                            challenges: true
                         }
                     }
                 }
@@ -45,14 +44,21 @@ export class LogController {
 
             const formattedData = users.map(user => {
                 const currentProgress = user.progress[0];
-                const currentLevelId = currentProgress?.levelId || 1; 
+                const currentLevelId = currentProgress?.levelId || 1;
                 const currentLevelInfo = levels.find(l => l.id === currentLevelId);
+
+                // Gunakan easyNodes/mediumNodes/hardNodes dari level yang sedang ditempuh user
+                const easyMax = currentLevelInfo?.easyNodes ?? 0;
+                const mediumMax = currentLevelInfo?.mediumNodes ?? 0;
+                const hardMax = currentLevelInfo?.hardNodes ?? 0;
+
+                // totalNodes = jumlah node challenge + 1 node untuk materi
+                const totalNodes = easyMax + mediumMax + hardMax + 1;
 
                 const levelAssignments = user.assignments.filter(a => a.challenge.levelId === currentLevelId);
                 const completedMaterialsInLevel = user.materialProgress.filter(mp => mp.material.levelId === currentLevelId).length;
-                
+
                 const totalMaterialsInLevel = currentLevelInfo?._count.materials || 0;
-                const totalChallengesInLevel = currentLevelInfo?._count.challenges || 0;
 
                 const challengesCount = {
                     easy: levelAssignments.filter(a => a.challenge.difficulty === 'EASY').length,
@@ -69,12 +75,10 @@ export class LogController {
                     }
                 }
 
-                // const totalNodes = totalChallengesInLevel + (totalMaterialsInLevel > 0 ? 1 : 0);
-                const totalNodes = 18;
                 const totalCompleted = levelAssignments.length + (materialStatus === 'completed' ? 1 : 0);
-                
-                const progressPercentage = totalNodes > 0 
-                    ? Math.round((totalCompleted / totalNodes) * 100) 
+
+                const progressPercentage = totalNodes > 0
+                    ? Math.min(100, Math.round((totalCompleted / totalNodes) * 100))
                     : 0;
 
                 return {
@@ -82,9 +86,15 @@ export class LogController {
                     username: user.username,
                     name: user.name,
                     currentLevel: currentLevelInfo?.name || "Belum Memulai",
-                    materialStatus: materialStatus, 
+                    materialStatus: materialStatus,
                     challenges: challengesCount,
-                    progress: progressPercentage, 
+                    // Sertakan max node per difficulty sesuai level user saat ini
+                    nodeMax: {
+                        easy: easyMax,
+                        medium: mediumMax,
+                        hard: hardMax,
+                    },
+                    progress: progressPercentage,
                     xp: user.totalXp
                 };
             });
@@ -102,3 +112,4 @@ export class LogController {
         }
     }
 }
+

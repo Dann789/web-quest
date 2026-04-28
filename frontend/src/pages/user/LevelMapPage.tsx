@@ -23,6 +23,7 @@ export default function LevelMapPage() {
   // State untuk menyimpan data progress
   const [completedChallengeNodes, setCompletedChallengeNodes] = useState<number[]>([]);
   const [isMaterialCompleted, setIsMaterialCompleted] = useState<boolean>(false);
+  const [level, setLevel] = useState<Level | null>(null);
   const [nextLevel, setNextLevel] = useState<Level | null>(null);
   const [isLastLevel, setIsLastLevel] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -55,6 +56,8 @@ export default function LevelMapPage() {
           setIsMaterialCompleted(materialRes.data.isAllCompleted);
         }
         if (levelsRes.success && levelsRes.data) {
+          const level = levelsRes.data.find(l => l.id === parsedLevelId);
+          setLevel(level || null);
           const sorted = [...levelsRes.data].sort((a, b) => a.order - b.order);
           const currentIndex = sorted.findIndex(l => l.id === parsedLevelId);
           if (currentIndex !== -1) {
@@ -152,10 +155,10 @@ export default function LevelMapPage() {
   }
 
   const NODE_CONFIG = useMemo(() => ({
-    easy:   5,
-    medium: 8,
-    hard:   4,
-  }), []);
+    easy:   level?.easyNodes || 5,
+    medium: level?.mediumNodes || 8,
+    hard:   level?.hardNodes || 4,
+  }), [level]);
 
   const unlockState = useMemo(() => {
     const easyStart  = 1;
@@ -261,7 +264,7 @@ export default function LevelMapPage() {
       id: 'next-level',
       type: 'next_level',
       title: 'Next Level Portal',
-      status: isHardCompleted ? 'locked' : 'unlocked',
+      status: isHardCompleted ? 'unlocked' : 'locked',
       difficulty: 'final',
     });
 
