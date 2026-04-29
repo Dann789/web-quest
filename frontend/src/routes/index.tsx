@@ -26,7 +26,7 @@ import DosenDashboard from "@/pages/dosen/DosenDashboard";
 import LevelsManagement from "@/pages/dosen/LevelsManagement";
 import MaterialsManagement from "@/pages/dosen/MaterialsManagement";
 import ChallengeManagement from "@/pages/dosen/ChallengeManagement";
-import DosenLogsPage from "@/pages/dosen/DosenLogsPage";
+import DosenMonitoringPage from "@/pages/dosen/DosenMonitoringPage";
 import DosenProfilePage from "@/pages/dosen/DosenProfilePage";
 
 // Admin Pages
@@ -116,8 +116,8 @@ const router = createBrowserRouter([
         element: <ChallengeManagement />,
       },
       {
-        path: "/dosen/logs",
-        element: <DosenLogsPage />,
+        path: "/dosen/monitoring",
+        element: <DosenMonitoringPage />,
       },
       {
         path: "/dosen/leaderboard",

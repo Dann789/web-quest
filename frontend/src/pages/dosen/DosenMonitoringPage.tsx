@@ -17,21 +17,13 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Activity, Search, Filter, Eye, Download } from "lucide-react";
+import { Activity, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { getCurrentProgress } from "@/services/public/LogService";
+import { getCurrentProgress } from "@/services/public/MonitoringService";
 import { getLevels } from "@/services/dosen/LevelService";
-import { useAuth } from "@/contexts/AuthContext";
 import type { Level } from "@/types";
 
-export default function DosenLogsPage() {
+export default function DosenMonitoringPage() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [levelFilter, setLevelFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,7 +75,7 @@ export default function DosenLogsPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <Activity className="h-8 w-8 text-primary" />
-            Log Aktivitas Mahasiswa
+            Monitoring Progress Mahasiswa
           </h1>
           <p className="text-muted-foreground mt-2">
             Monitoring progress belajar dan pencapaian mahasiswa secara
@@ -123,10 +115,10 @@ export default function DosenLogsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button className="gap-2 px-4" size="sm">
+              {/* <Button className="gap-2 px-4" size="sm">
                 <Download className="h-4 w-4" />
                 Export
-              </Button>
+              </Button> */}
             </div>
           </div>
         </CardHeader>
@@ -138,9 +130,9 @@ export default function DosenLogsPage() {
                 <TableHead className="text-center">Nama Mahasiswa</TableHead>
                 <TableHead className="text-center">Level Aktif</TableHead>
                 <TableHead className="text-center">Materi</TableHead>
-                <TableHead className="text-center">Challenge (E/M/H)</TableHead>
+                <TableHead className="text-center">Challenge</TableHead>
                 <TableHead className="text-center">Progress</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
+                {/* <TableHead className="text-center">Aksi</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -164,7 +156,7 @@ export default function DosenLogsPage() {
                       <div className="font-medium text-center">{data.name}</div>
                     </TableCell>
 
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge
                         variant="outline"
                         className="bg-blue-500/10 text-blue-600 border-blue-500/20"
@@ -173,8 +165,7 @@ export default function DosenLogsPage() {
                       </Badge>
                     </TableCell>
 
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+                    <TableCell className="text-center">
                         {data.materialStatus === "completed" ? (
                           <Badge
                             variant="default"
@@ -190,42 +181,41 @@ export default function DosenLogsPage() {
                             Belum
                           </Badge>
                         )}
-                      </div>
                     </TableCell>
 
                     <TableCell>
                       <div className="flex items-center justify-center gap-2">
                         <div
                           className="flex flex-col items-center px-2 py-1 bg-green-500/10 rounded border border-green-500/20 w-[60px]"
-                          title="Easy (Max 5)"
+                          title={`Easy (Max ${data.nodeMax?.easy ?? 0})`}
                         >
                           <span className="text-[10px] text-muted-foreground font-bold">
-                            ESY
+                            Easy
                           </span>
                           <span className="text-sm font-bold text-green-600">
-                            {data.challenges.easy}/5
+                            {data.challenges.easy}/{data.nodeMax?.easy ?? 0}
                           </span>
                         </div>
                         <div
                           className="flex flex-col items-center px-2 py-1 bg-amber-500/10 rounded border border-amber-500/20 w-[60px]"
-                          title="Medium (Max 10)"
+                          title={`Medium (Max ${data.nodeMax?.medium ?? 0})`}
                         >
                           <span className="text-[10px] text-muted-foreground font-bold">
-                            MED
+                            Medium
                           </span>
                           <span className="text-sm font-bold text-amber-600">
-                            {data.challenges.medium}/10
+                            {data.challenges.medium}/{data.nodeMax?.medium ?? 0}
                           </span>
                         </div>
                         <div
                           className="flex flex-col items-center px-2 py-1 bg-red-500/10 rounded border border-red-500/20 w-[60px]"
-                          title="Hard (Max 3)"
+                          title={`Hard (Max ${data.nodeMax?.hard ?? 0})`}
                         >
                           <span className="text-[10px] text-muted-foreground font-bold">
-                            HRD
+                            Hard
                           </span>
                           <span className="text-sm font-bold text-red-600">
-                            {data.challenges.hard}/3
+                            {data.challenges.hard}/{data.nodeMax?.hard ?? 0}
                           </span>
                         </div>
                       </div>
@@ -237,25 +227,10 @@ export default function DosenLogsPage() {
                           value={data.progress}
                           className="h-2 flex-1"
                         />
-                        <span className="text-xs font-bold w-9 text-right">
+                        <span className="text-sm font-bold w-9 text-right">
                           {data.progress}%
                         </span>
                       </div>
-                    </TableCell>
-
-                    <TableCell className="text-center">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Detail</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
                     </TableCell>
                   </TableRow>
                 ))

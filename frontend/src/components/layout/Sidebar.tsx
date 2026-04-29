@@ -50,7 +50,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
             icon: FileText,
           },
           { path: "/dosen/challenges", label: "Manajemen Soal", icon: Puzzle },
-          { path: "/dosen/logs", label: "Monitoring Progress", icon: Activity },
+          { path: "/dosen/monitoring", label: "Monitoring Progress", icon: Activity },
           { path: "/dosen/leaderboard", label: "Leaderboard", icon: Trophy },
         ];
       default: // mahasiswa

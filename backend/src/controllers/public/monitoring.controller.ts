@@ -1,7 +1,7 @@
 import prisma from "../../config/database";
 import { UserRole } from "@prisma/client";
 
-export class LogController {
+export class MonitoringController {
     static async getCurrentProgress() {
         try {
             const levels = await prisma.level.findMany({
