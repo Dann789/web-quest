@@ -1,86 +1,147 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Activity, Search, Filter } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Activity, Layers, Book, CodeXml, Award } from 'lucide-react';
+import { 
+  getDosenLevelLogs, 
+  getDosenMaterialLogs, 
+  getDosenChallengeLogs, 
+  getMahasiswaLevelLogs, 
+  getMahasiswaMaterialLogs, 
+  getMahasiswaChallengeLogs, 
+  getMahasiswaBadgeLogs 
+} from '@/services/admin/LogService';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
-/**
- * Admin Activity Logs Page (Monitoring Progress)
- * Menampilkan status materi, challenge, progress, dan XP user
- */
+const RenderPagination = ({ 
+  currentPage, 
+  totalPages, 
+  onPageChange 
+}: { 
+  currentPage: number, 
+  totalPages: number, 
+  onPageChange: (p: number) => void 
+}) => {
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="py-4 border-t">
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious 
+              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+              className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+            />
+          </PaginationItem>
+          
+          <PaginationItem>
+             <span className="text-sm text-muted-foreground mx-4">Halaman {currentPage} dari {totalPages}</span>
+          </PaginationItem>
+
+          <PaginationItem>
+            <PaginationNext 
+              onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+              className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
+};
+
 export default function AdminLogsPage() {
-  const [levelFilter, setLevelFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const limit = 10;
 
-  // Mock Data User Progress
-  // Rule: Easy Max 5, Medium Max 10, Hard Max 3
-  const userProgressData = [
-    { 
-      id: 1, 
-      username: 'AlexCode', 
-      avatar: 'AC',
-      materialStatus: 'completed', 
-      challenges: { easy: 5, medium: 10, hard: 3},
-      progress: 100,
-      currentLevel: 'HTML Basics'
-    },
-    { 
-      id: 2, 
-      username: 'SarahDev', 
-      avatar: 'SD',
-      materialStatus: 'in-progress',
-      challenges: { easy: 4, medium: 2, hard: 0 },
-      progress: 75,
-      currentLevel: 'CSS Styling'
-    },
-    { 
-      id: 3, 
-      username: 'JohnDoe', 
-      avatar: 'JD',
-      materialStatus: 'in-progress',
-      challenges: { easy: 2, medium: 0, hard: 0 },
-      progress: 30,
-      currentLevel: 'HTML Basics'
-    },
-    { 
-      id: 4, 
-      username: 'NewbieUser', 
-      avatar: 'NU',
-      materialStatus: 'not-started',
-      challenges: { easy: 0, medium: 0, hard: 0 },
-      progress: 0,
-      currentLevel: 'HTML Basics'
-    },
-    { 
-      id: 5, 
-      username: 'ProCoder', 
-      avatar: 'PC',
-      materialStatus: 'completed',
-      challenges: { easy: 5, medium: 10, hard: 3 }, // Maxed out
-      progress: 100,
-      currentLevel: 'JavaScript Advanced'
-    },
-  ];
+  // Dosen Level
+  const [dosenLevel, setDosenLevel] = useState<any[]>([]);
+  const [dlPage, setDlPage] = useState(1);
+  const [dlTotal, setDlTotal] = useState(1);
+  useEffect(() => {
+    getDosenLevelLogs({ limit, page: dlPage }).then(res => {
+      if (res.success) { setDosenLevel(res.data); setDlTotal(res.pagination?.totalPages || 1); }
+    });
+  }, [dlPage]);
 
-  // Filter Logic
-  const filteredData = userProgressData.filter(user => {
-    const matchesSearch = user.username.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLevel = levelFilter === 'all' || 
-      (levelFilter === 'html' && user.currentLevel.includes('HTML')) ||
-      (levelFilter === 'css' && user.currentLevel.includes('CSS')) ||
-      (levelFilter === 'js' && user.currentLevel.includes('JavaScript'));
-    
-    return matchesSearch && matchesLevel;
-  });
+  // Dosen Material
+  const [dosenMaterial, setDosenMaterial] = useState<any[]>([]);
+  const [dmPage, setDmPage] = useState(1);
+  const [dmTotal, setDmTotal] = useState(1);
+  useEffect(() => {
+    getDosenMaterialLogs({ limit, page: dmPage }).then(res => {
+      if (res.success) { setDosenMaterial(res.data); setDmTotal(res.pagination?.totalPages || 1); }
+    });
+  }, [dmPage]);
+
+  // Dosen Challenge
+  const [dosenChallenge, setDosenChallenge] = useState<any[]>([]);
+  const [dcPage, setDcPage] = useState(1);
+  const [dcTotal, setDcTotal] = useState(1);
+  useEffect(() => {
+    getDosenChallengeLogs({ limit, page: dcPage }).then(res => {
+      if (res.success) { setDosenChallenge(res.data); setDcTotal(res.pagination?.totalPages || 1); }
+    });
+  }, [dcPage]);
+
+  // Mahasiswa Level
+  const [mhsLevel, setMhsLevel] = useState<any[]>([]);
+  const [mlPage, setMlPage] = useState(1);
+  const [mlTotal, setMlTotal] = useState(1);
+  useEffect(() => {
+    getMahasiswaLevelLogs({ limit, page: mlPage }).then(res => {
+      if (res.success) { setMhsLevel(res.data); setMlTotal(res.pagination?.totalPages || 1); }
+    });
+  }, [mlPage]);
+
+  // Mahasiswa Material
+  const [mhsMaterial, setMhsMaterial] = useState<any[]>([]);
+  const [mmPage, setMmPage] = useState(1);
+  const [mmTotal, setMmTotal] = useState(1);
+  useEffect(() => {
+    getMahasiswaMaterialLogs({ limit, page: mmPage }).then(res => {
+      if (res.success) { setMhsMaterial(res.data); setMmTotal(res.pagination?.totalPages || 1); }
+    });
+  }, [mmPage]);
+
+  // Mahasiswa Challenge
+  const [mhsChallenge, setMhsChallenge] = useState<any[]>([]);
+  const [mcPage, setMcPage] = useState(1);
+  const [mcTotal, setMcTotal] = useState(1);
+  useEffect(() => {
+    getMahasiswaChallengeLogs({ limit, page: mcPage }).then(res => {
+      if (res.success) { setMhsChallenge(res.data); setMcTotal(res.pagination?.totalPages || 1); }
+    });
+  }, [mcPage]);
+
+  // Mahasiswa Badge
+  const [mhsBadge, setMhsBadge] = useState<any[]>([]);
+  const [mbPage, setMbPage] = useState(1);
+  const [mbTotal, setMbTotal] = useState(1);
+  useEffect(() => {
+    getMahasiswaBadgeLogs({ limit, page: mbPage }).then(res => {
+      if (res.success) { setMhsBadge(res.data); setMbTotal(res.pagination?.totalPages || 1); }
+    });
+  }, [mbPage]);
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString('id-ID', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  };
 
   return (
     <div className="space-y-6">
-      
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -88,126 +149,341 @@ export default function AdminLogsPage() {
             Log Aktivitas
           </h1>
           <p className="text-muted-foreground mt-1">
-            Monitoring progress belajar dan pencapaian user
+            Monitoring histori aktivitas Dosen dan Mahasiswa
           </p>
         </div>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4 flex flex-col sm:flex-row gap-4 items-center">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Cari user..."
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-            <Select value={levelFilter} onValueChange={setLevelFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter Level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Level</SelectItem>
-                <SelectItem value="html">HTML</SelectItem>
-                <SelectItem value="css">CSS</SelectItem>
-                <SelectItem value="js">JavaScript</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="level" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[600px] rounded-full">
+          <TabsTrigger value="level" className="rounded-full">
+            <Layers className="h-4 w-4 mr-2" />
+            Log Level
+          </TabsTrigger>
+          <TabsTrigger value="materi" className="rounded-full">
+            <Book className="h-4 w-4 mr-2" />
+            Log Materi
+          </TabsTrigger>
+          <TabsTrigger value="challenge" className="rounded-full">
+            <CodeXml className="h-4 w-4 mr-2" />
+            Log Challenge
+          </TabsTrigger>
+          <TabsTrigger value="badge" className="rounded-full">
+            <Award className="h-4 w-4 mr-2" />
+            Log Badge
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Main Data Table */}
-      <Card>
-        <CardHeader>
-           <CardTitle>Progress Monitoring</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Level Saat Ini</TableHead>
-                <TableHead>Status Materi</TableHead>
-                <TableHead className="text-center">Challenges (E / M / H)</TableHead>
-                <TableHead>Progress Level</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredData.length > 0 ? (
-                filteredData.map((data) => (
-                  <TableRow key={data.id}>
-                    {/* User Info */}
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>{data.avatar}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium">{data.username}</span>
-                      </div>
-                    </TableCell>
-
-                    {/* Current Level */}
-                    <TableCell>
-                      <Badge variant="outline">{data.currentLevel}</Badge>
-                    </TableCell>
-
-                    {/* Material Status */}
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {data.materialStatus === 'completed' ? (
-                          <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">Selesai</Badge>
-                        ) : (
-                          <Badge variant="secondary" className="bg-slate-200 text-slate-600 hover:bg-slate-300">Belum</Badge>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    {/* Challenges Breakdown */}
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="flex flex-col items-center px-2 py-1 bg-green-500/10 rounded border border-green-500/20 w-[60px]" title="Easy (Max 5)">
-                          <span className="text-[10px] text-muted-foreground font-bold">EZY</span>
-                          <span className="text-sm font-bold text-green-600">{data.challenges.easy}/5</span>
-                        </div>
-                        <div className="flex flex-col items-center px-2 py-1 bg-amber-500/10 rounded border border-amber-500/20 w-[60px]" title="Medium (Max 10)">
-                          <span className="text-[10px] text-muted-foreground font-bold">MED</span>
-                          <span className="text-sm font-bold text-amber-600">{data.challenges.medium}/10</span>
-                        </div>
-                        <div className="flex flex-col items-center px-2 py-1 bg-red-500/10 rounded border border-red-500/20 w-[60px]" title="Hard (Max 3)">
-                          <span className="text-[10px] text-muted-foreground font-bold">HRD</span>
-                          <span className="text-sm font-bold text-red-600">{data.challenges.hard}/3</span>
-                        </div>
-                      </div>
-                    </TableCell>
-
-                    {/* Progress Bar */}
-                    <TableCell className="w-[200px]">
-                      <div className="flex items-center gap-2">
-                        <Progress value={data.progress} className="h-2 flex-1" />
-                        <span className="text-xs font-bold w-9 text-right">{data.progress}%</span>
-                      </div>
-                    </TableCell>
+        {/* TAB LEVEL */}
+        <TabsContent value="level" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Aktivitas Mahasiswa (Level)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-6">Mahasiswa</TableHead>
+                    <TableHead>Level</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Terbuka Pada</TableHead>
+                    <TableHead>Selesai Pada</TableHead>
                   </TableRow>
-                ))
-              ) : (
-                 <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
-                            <p>Tidak ada data ditemukan</p>
+                </TableHeader>
+                <TableBody>
+                  {mhsLevel.length > 0 ? mhsLevel.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="pl-6">
+                        <div className="font-medium">{log.userName}</div>
+                        <div className="text-xs text-muted-foreground">{log.userUsername}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{log.levelName}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {log.isLevelCompleted ? (
+                          <Badge className="bg-emerald-500 hover:bg-emerald-600">Selesai</Badge>
+                        ) : (
+                          <Badge variant="secondary">Terbuka</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{formatDate(log.unlockedAt)}</TableCell>
+                      <TableCell>{formatDate(log.completedAt)}</TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow><TableCell colSpan={5} className="text-center h-24">Belum ada aktivitas</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              <RenderPagination currentPage={mlPage} totalPages={mlTotal} onPageChange={setMlPage} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Aktivitas Dosen (CRUD Level)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-6">Nama Level</TableHead>
+                    <TableHead>Nodes (E/M/H)</TableHead>
+                    <TableHead>XP Required</TableHead>
+                    <TableHead>Aksi</TableHead>
+                    <TableHead>Waktu</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {dosenLevel.length > 0 ? dosenLevel.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="pl-6 font-medium">{log.name}</TableCell>
+                      <TableCell>{log.easyNodes} / {log.mediumNodes} / {log.hardNodes}</TableCell>
+                      <TableCell>{log.xpRequired} XP</TableCell>
+                      <TableCell>
+                        {log.wasUpdated ? (
+                          <Badge className="bg-blue-500 hover:bg-blue-600">Diperbarui</Badge>
+                        ) : (
+                          <Badge className="bg-emerald-500 hover:bg-emerald-600">Dibuat</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{formatDate(log.wasUpdated ? log.updatedAt : log.createdAt)}</TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow><TableCell colSpan={5} className="text-center h-24">Belum ada aktivitas</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              <RenderPagination currentPage={dlPage} totalPages={dlTotal} onPageChange={setDlPage} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB MATERI */}
+        <TabsContent value="materi" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Aktivitas Mahasiswa (Materi)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-6">Mahasiswa</TableHead>
+                    <TableHead>Level</TableHead>
+                    <TableHead>Materi</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Waktu</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mhsMaterial.length > 0 ? mhsMaterial.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="pl-6">
+                        <div className="font-medium">{log.userName}</div>
+                        <div className="text-xs text-muted-foreground">{log.userUsername}</div>
+                      </TableCell>
+                      <TableCell><Badge variant="outline">{log.levelName}</Badge></TableCell>
+                      <TableCell className="font-medium">{log.materialTitle}</TableCell>
+                      <TableCell>
+                        {log.isCompleted ? (
+                          <Badge className="bg-emerald-500 hover:bg-emerald-600">Selesai</Badge>
+                        ) : (
+                          <Badge variant="secondary">Mulai</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{formatDate(log.isCompleted ? log.completedAt : log.startedAt)}</TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow><TableCell colSpan={5} className="text-center h-24">Belum ada aktivitas</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              <RenderPagination currentPage={mmPage} totalPages={mmTotal} onPageChange={setMmPage} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Aktivitas Dosen (CRUD Materi)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-6">Judul Materi</TableHead>
+                    <TableHead>Level</TableHead>
+                    <TableHead>Urutan</TableHead>
+                    <TableHead>Aksi</TableHead>
+                    <TableHead>Waktu</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {dosenMaterial.length > 0 ? dosenMaterial.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="pl-6 font-medium">{log.title}</TableCell>
+                      <TableCell><Badge variant="outline">{log.levelName}</Badge></TableCell>
+                      <TableCell>{log.order}</TableCell>
+                      <TableCell>
+                        {log.wasUpdated ? (
+                          <Badge className="bg-blue-500 hover:bg-blue-600">Diperbarui</Badge>
+                        ) : (
+                          <Badge className="bg-emerald-500 hover:bg-emerald-600">Dibuat</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{formatDate(log.wasUpdated ? log.updatedAt : log.createdAt)}</TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow><TableCell colSpan={5} className="text-center h-24">Belum ada aktivitas</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              <RenderPagination currentPage={dmPage} totalPages={dmTotal} onPageChange={setDmPage} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB CHALLENGE */}
+        <TabsContent value="challenge" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Aktivitas Mahasiswa (Challenge)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-6">Mahasiswa</TableHead>
+                    <TableHead>Challenge</TableHead>
+                    <TableHead>Difficulty</TableHead>
+                    <TableHead>XP / Waktu</TableHead>
+                    <TableHead>Dikumpulkan Pada</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mhsChallenge.length > 0 ? mhsChallenge.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="pl-6">
+                        <div className="font-medium">{log.userName}</div>
+                        <div className="text-xs text-muted-foreground">{log.userUsername}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{log.challengeTitle}</div>
+                        <div className="text-xs text-muted-foreground">{log.levelName}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{log.difficulty}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-emerald-600 font-bold">+{log.xpEarned} XP</div>
+                        <div className="text-xs text-muted-foreground">{log.timeSpent} dtk</div>
+                      </TableCell>
+                      <TableCell>{formatDate(log.submittedAt)}</TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow><TableCell colSpan={5} className="text-center h-24">Belum ada aktivitas</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              <RenderPagination currentPage={mcPage} totalPages={mcTotal} onPageChange={setMcPage} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Aktivitas Dosen (CRUD Challenge)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-6">Judul Challenge</TableHead>
+                    <TableHead>Level & Difficulty</TableHead>
+                    <TableHead>Base XP</TableHead>
+                    <TableHead>Aksi</TableHead>
+                    <TableHead>Waktu</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {dosenChallenge.length > 0 ? dosenChallenge.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="pl-6 font-medium">{log.title}</TableCell>
+                      <TableCell>
+                        <div><Badge variant="outline" className="mb-1">{log.levelName}</Badge></div>
+                        <span className="text-xs">{log.difficulty}</span>
+                      </TableCell>
+                      <TableCell>{log.xpBase} XP</TableCell>
+                      <TableCell>
+                        {log.wasUpdated ? (
+                          <Badge className="bg-blue-500 hover:bg-blue-600">Diperbarui</Badge>
+                        ) : (
+                          <Badge className="bg-emerald-500 hover:bg-emerald-600">Dibuat</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{formatDate(log.wasUpdated ? log.updatedAt : log.createdAt)}</TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow><TableCell colSpan={5} className="text-center h-24">Belum ada aktivitas</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              <RenderPagination currentPage={dcPage} totalPages={dcTotal} onPageChange={setDcPage} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB BADGE */}
+        <TabsContent value="badge" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Aktivitas Mahasiswa (Badge)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-6">Mahasiswa</TableHead>
+                    <TableHead>Badge</TableHead>
+                    <TableHead>Rarity</TableHead>
+                    <TableHead>Didapatkan Pada</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mhsBadge.length > 0 ? mhsBadge.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="pl-6">
+                        <div className="font-medium">{log.userName}</div>
+                        <div className="text-xs text-muted-foreground">{log.userUsername}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium flex items-center gap-2">
+                          {log.badgeIconPath && log.badgeIconPath !== '' ? (
+                            <img src={log.badgeIconPath} alt={log.badgeName} className="w-6 h-6 object-contain" />
+                          ) : (
+                            <div className="w-6 h-6 bg-slate-200 rounded-full shrink-0" />
+                          )}
+                          {log.badgeName}
                         </div>
-                    </TableCell>
-                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={log.rarity === 'LEGENDARY' ? 'default' : log.rarity === 'EPIC' ? 'secondary' : 'outline'}>
+                          {log.rarity}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(log.earnedAt)}</TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow><TableCell colSpan={4} className="text-center h-24">Belum ada aktivitas</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              <RenderPagination currentPage={mbPage} totalPages={mbTotal} onPageChange={setMbPage} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+      </Tabs>
     </div>
   );
 }
