@@ -2,15 +2,19 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, ChevronLeft, ChevronRight, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { EditorContent, useEditor } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import Image from '@tiptap/extension-image'
+import Highlight from '@tiptap/extension-highlight'
+import { createLowlight, common } from 'lowlight'
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { Material } from '@/types';
 import { useAuth } from "@/contexts/AuthContext";
 import { getMaterialsByLevelId } from '@/services/dosen/MaterialService';
 import { addProgressMaterial, updateStatusMaterial } from '@/services/user/ProgressService';
+
 
 interface MaterialModalProps {
   isOpen: boolean;
@@ -52,14 +56,46 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
     fetchData();
   }, [isOpen, levelId]);
 
+  const lowlight = createLowlight(common);
+  const currentMaterial = materials[currentIndex];
+  const totalMaterials = materials.length;
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Image.configure({
+        HTMLAttributes: {
+          class: 'rounded-md max-w-full h-auto',
+        },
+      }),
+      CodeBlockLowlight.configure({
+        lowlight,
+        HTMLAttributes: {
+          class: 'block rounded-md bg-slate-950 p-4 text-sm text-slate-50 font-mono',
+        },
+      }),
+      Highlight,
+    ],
+    content: '',
+    editable: false,
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm sm:prose-base dark:prose-invert max-w-none focus:outline-none tiptap-modal-render',
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (currentMaterial && editor) {
+      editor.commands.setContent(currentMaterial.content || '');
+    }
+  }, [currentMaterial, editor]);
+
   const handleClose = () => {
     setCurrentIndex(0);
     setViewedMaterial([]);
     onClose();
   };
-
-  const currentMaterial = materials[currentIndex];
-  const totalMaterials = materials.length;
 
   useEffect(() => {
     const recordProgress = async () => {
@@ -162,37 +198,8 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
 
           {/* Materi Content */}
           {!loading && !error && currentMaterial && (
-            <div className="prose prose-invert max-w-none prose-pre:bg-slate-950 prose-pre:border prose-pre:border-slate-800">
-              <ReactMarkdown
-                components={{
-                  code(props) {
-                    const { children, className, node, ref, ...rest } = props;
-                    const match = /language-(\w+)/.exec(className || '');
-                    return match ? (
-                      <SyntaxHighlighter
-                        {...rest}
-                        PreTag="div"
-                        children={String(children).replace(/\n$/, '')}
-                        language={match[1]}
-                        style={atomDark}
-                        className="rounded-md !bg-slate-950 !p-4 !m-0"
-                      />
-                    ) : (
-                      <code
-                        {...rest}
-                        className={cn(
-                          'bg-slate-800 px-1.5 py-0.5 rounded text-sm text-indigo-300 font-mono',
-                          className
-                        )}
-                      >
-                        {children}
-                      </code>
-                    );
-                  },
-                }}
-              >
-                {currentMaterial.content}
-              </ReactMarkdown>
+            <div className="tiptap-render-container">
+               <EditorContent editor={editor} />
             </div>
           )}
         </CardContent>
