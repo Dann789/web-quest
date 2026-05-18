@@ -1,5 +1,7 @@
 import { Elysia, t } from "elysia";
 import { ChallengeAttemptController } from "../../controllers/user/challenge.controller";
+import { PhpRunnerController } from "../../controllers/user/phpRunner.controller";
+import { SqlRunnerController } from "../../controllers/user/sqlRunner.controller";
 
 export const challengeAttemptRoutes = new Elysia({ prefix: "/api/user/challenges" })
   // GET — ambil soal berdasarkan userId, levelId, nodeSlot
@@ -10,6 +12,29 @@ export const challengeAttemptRoutes = new Elysia({ prefix: "/api/user/challenges
       levelId: t.Numeric(),
       nodeSlot: t.Numeric(),
     }),
+  })
+
+  // POST — jalankan kode PHP (Preview)
+  .post("/run-php", ({ body }) => 
+    PhpRunnerController.run(body as any), {
+    body: t.Object({
+      codes: t.Record(t.String(), t.String()),
+      userId: t.Optional(t.Numeric()),
+      templateName: t.Optional(t.String()),
+      level: t.Optional(t.Union([t.Literal("php_level"), t.Literal("db_level")])),
+      sandboxEnabled: t.Optional(t.Boolean())
+    })
+  })
+
+  // POST — jalankan query SQL (Preview)
+  .post("/run-sql", ({ body }) => 
+    SqlRunnerController.run(body as any), {
+    body: t.Object({
+      sql: t.String(),
+      userId: t.Numeric(),
+      templateName: t.String(),
+      level: t.Literal("db_level")
+    })
   })
 
   // POST — submit & validasi jawaban

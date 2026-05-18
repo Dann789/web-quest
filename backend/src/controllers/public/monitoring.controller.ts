@@ -2,8 +2,10 @@ import prisma from "../../config/database";
 import { UserRole } from "@prisma/client";
 
 export class MonitoringController {
-    static async getCurrentProgress() {
+    static async getCurrentProgress(page: number = 1, limit: number = 10) {
         try {
+            const skip = (page - 1) * limit;
+
             const levels = await prisma.level.findMany({
                 include: {
                     _count: {
@@ -14,45 +16,51 @@ export class MonitoringController {
                 }
             });
 
-            const users = await prisma.user.findMany({
-                where: {
-                    role: UserRole.MAHASISWA
-                },
-                orderBy: {
-                    id: 'asc'
-                },
-                include: {
-                    progress: {
-                        include: { level: true },
-                        orderBy: { level: { xpRequired: 'desc' } },
-                        take: 1
+            const [users, total] = await Promise.all([
+                prisma.user.findMany({
+                    where: {
+                        role: UserRole.MAHASISWA
                     },
-                    materialProgress: {
-                        where: { isCompleted: true },
-                        include: { material: true }
+                    skip,
+                    take: limit,
+                    orderBy: {
+                        id: 'asc'
                     },
-                    assignments: {
-                        where: { isCompleted: true },
-                        include: {
-                            challenge: {
-                                select: { difficulty: true, levelId: true }
+                    include: {
+                        progress: {
+                            include: { level: true },
+                            orderBy: { level: { xpRequired: 'desc' } },
+                            take: 1
+                        },
+                        materialProgress: {
+                            where: { isCompleted: true },
+                            include: { material: true }
+                        },
+                        assignments: {
+                            where: { isCompleted: true },
+                            include: {
+                                challenge: {
+                                    select: { difficulty: true, levelId: true }
+                                }
                             }
                         }
                     }
-                }
-            });
+                }),
+                prisma.user.count({
+                    where: { role: UserRole.MAHASISWA }
+                })
+            ]);
 
             const formattedData = users.map(user => {
+                // ... (rest of the formatting logic remains the same)
                 const currentProgress = user.progress[0];
                 const currentLevelId = currentProgress?.levelId || 1;
                 const currentLevelInfo = levels.find(l => l.id === currentLevelId);
 
-                // Gunakan easyNodes/mediumNodes/hardNodes dari level yang sedang ditempuh user
                 const easyMax = currentLevelInfo?.easyNodes ?? 0;
                 const mediumMax = currentLevelInfo?.mediumNodes ?? 0;
                 const hardMax = currentLevelInfo?.hardNodes ?? 0;
 
-                // totalNodes = jumlah node challenge + 1 node untuk materi
                 const totalNodes = easyMax + mediumMax + hardMax + 1;
 
                 const levelAssignments = user.assignments.filter(a => a.challenge.levelId === currentLevelId);
@@ -88,7 +96,6 @@ export class MonitoringController {
                     currentLevel: currentLevelInfo?.name || "Belum Memulai",
                     materialStatus: materialStatus,
                     challenges: challengesCount,
-                    // Sertakan max node per difficulty sesuai level user saat ini
                     nodeMax: {
                         easy: easyMax,
                         medium: mediumMax,
@@ -101,7 +108,14 @@ export class MonitoringController {
 
             return {
                 success: true,
-                data: formattedData
+                data: formattedData,
+                pagination: {
+                    currentPage: page,
+                    totalPages: Math.ceil(total / limit),
+                    totalItems: total,
+                    hasNext: page < Math.ceil(total / limit),
+                    hasPrev: page > 1
+                }
             };
         } catch (error) {
             console.error(error);

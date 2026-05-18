@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useEffect, useState } from 'react';
 import { type Level } from '@/types';
+import { toast } from 'sonner';
 
 // List of available FontAwesome icons
 const AVAILABLE_ICONS = [
@@ -15,7 +16,7 @@ const AVAILABLE_ICONS = [
   { id: 'fa-php', type: 'fa-brands' },
   { id: 'fa-react', type: 'fa-brands' },
   { id: 'fa-vuejs', type: 'fa-brands' },
-  { id: 'fa-postgresql', type: 'fa-brands' },
+  { id: 'fa-database', type: 'fa-solid' },
   { id: 'fa-bug', type: 'fa-solid' },
   { id: 'fa-terminal', type: 'fa-solid' },
   { id: 'fa-layer-group', type: 'fa-solid' },
@@ -71,6 +72,7 @@ export function LevelDialog({ open, onOpenChange, level, onSubmit }: LevelDialog
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
+    isEditMode ? toast.success('Level berhasil diperbarui!') : toast.success('Level berhasil ditambahkan!');
     onOpenChange(false);
   };
 

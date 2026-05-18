@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Eye, EyeOff, User, Lock, ArrowRight } from "lucide-react";
 import { login as loginService } from "@/services/auth/AuthService";
+import { toast } from "sonner";
 
 /**
  * Login Page - Split layout with branding and form
@@ -32,6 +33,7 @@ export default function LoginPage() {
 
       if (response.success && response.data) {
         login(response.data.token, response.data.user);
+        toast.success("Login berhasil!");
 
         if (response.data.user.role === "ADMIN") {
           navigate("/admin");
@@ -283,20 +285,9 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Remember & Forgot */}
-              <div className="flex items-end justify-end">
-                <button
-                  type="button"
-                  className="text-sm text-primary hover:text-primary/80 transition-colors"
-                >
-                  Lupa Password?
-                </button>
-              </div>
-
-              {/* Submit Button - Uses default primary button style */}
               <Button
                 type="submit"
-                className="w-full h-12 font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
+                className="mt-3 w-full h-12 font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
                 disabled={isLoading}
               >
                 {isLoading ? (

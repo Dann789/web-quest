@@ -57,7 +57,15 @@ export default function DosenDashboard() {
       }
 
       if (leaderboardRes.success && leaderboardRes.data) {
-        setLeaderboard(leaderboardRes.data);
+        if (leaderboardRes.data.topThree) {
+          const combined = [
+            ...(leaderboardRes.data.topThree || []),
+            ...(leaderboardRes.data.paginatedOthers || [])
+          ];
+          setLeaderboard(combined);
+        } else {
+          setLeaderboard(leaderboardRes.data);
+        }
       }
 
       if (levelRes.success && levelRes.data) {

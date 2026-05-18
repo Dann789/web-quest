@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, Mail, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { updateUser } from '@/services/admin/UserService';
+import { toast } from 'sonner';
 
 export default function DosenProfilePage() {
   const { user, updateUser: updateAuthUser } = useAuth();
@@ -55,12 +56,14 @@ export default function DosenProfilePage() {
         const updatedUser = { ...user!, ...payload };
         updateAuthUser(updatedUser);
         setFormData(prev => ({ ...prev, password: '' }));
-        setSuccessMsg('Profil berhasil diperbarui!');
+        toast.success('Profil berhasil diperbarui!');
         setTimeout(() => setSuccessMsg(''), 4000);
       } else {
+        toast.error('Profil gagal diperbarui!');
         setErrorMsg(result.message || 'Gagal menyimpan perubahan.');
       }
     } catch {
+      toast.error('Terjadi kesalahan jaringan. Coba lagi.');
       setErrorMsg('Terjadi kesalahan jaringan. Coba lagi.');
     } finally {
       setIsLoading(false);

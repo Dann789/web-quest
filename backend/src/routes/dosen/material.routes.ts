@@ -3,9 +3,19 @@ import { MaterialController } from "../../controllers/dosen/material.controller"
 import { type CreateMaterialRequest, type UpdateMaterialRequest } from "../../types";
 
 export const materialRoutes = new Elysia({ prefix: "/api/materials" })
-    // GET all materials
-    .get("/", () => {
-        return MaterialController.getAllMaterials();
+    // GET all materials with pagination and filtering
+    .get("/", ({ query: { page, limit, levelId } }) => {
+        return MaterialController.getAllMaterials(
+            Number(page ?? 1), 
+            Number(limit ?? 10),
+            levelId ? Number(levelId) : undefined
+        );
+    }, {
+        query: t.Object({
+            page: t.Optional(t.Numeric()),
+            limit: t.Optional(t.Numeric()),
+            levelId: t.Optional(t.Numeric())
+        })
     })
 
     // POST create new material

@@ -151,6 +151,11 @@ export interface CreateChallengeRequest {
   buggyCode?: string | null; // FIX_THE_BUG: kode yang sengaja salah
   blocks?: string[] | null; // DRAG_AND_DROP: blok acak
   expectedOrder?: string[] | null; // DRAG_AND_DROP: urutan benar
+
+  // Properti Sandbox (disimpan di kolom content)
+  sandboxEnabled?: boolean;
+  sandboxTemplate?: string | null;
+  sandboxLevel?: string | null;
 }
 
 export interface UpdateChallengeRequest {
@@ -170,6 +175,11 @@ export interface UpdateChallengeRequest {
   buggyCode?: string | null;
   blocks?: string[] | null;
   expectedOrder?: string[] | null;
+
+  // Properti Sandbox
+  sandboxEnabled?: boolean;
+  sandboxTemplate?: string | null;
+  sandboxLevel?: string | null;
 }
 
 // // CHALLENGE ATTEMPT TYPES

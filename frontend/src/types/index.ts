@@ -151,6 +151,8 @@ export interface SubmitAnswerResult {
   attemptId: number;
   isFirstAttempt: boolean;
   overTime: boolean;
+  newBadges: NewBadge[];
+  unlockedLevelName: string | null;
 }
 
 // ============================================
@@ -177,6 +179,15 @@ export interface BadgeItem {
   description: string;
   iconPath: string;
   rarity: BadgeRarity;
+}
+
+// Badge yang baru saja didapat (dikirim dari backend setelah submit jawaban)
+export interface NewBadge {
+  id: number;
+  name: string;
+  description: string;
+  iconPath: string;
+  rarity: string;
 }
 
 export interface UserBadge {

@@ -9,8 +9,8 @@ function getAuthHeaders(): HeadersInit {
   return headers;
 }
 
-export async function getCurrentProgress(): Promise<ApiResponse<any>> {
-  const response = await fetch(`${API_BASE}/monitoring/current-progress`, {
+export async function getCurrentProgress(page: number = 1, limit: number = 10): Promise<ApiResponse<any>> {
+  const response = await fetch(`${API_BASE}/monitoring/current-progress?page=${page}&limit=${limit}`, {
     method: "GET",
     headers: getAuthHeaders(),
   });

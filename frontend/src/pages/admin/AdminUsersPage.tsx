@@ -344,7 +344,7 @@ export default function AdminUsersPage() {
       <DeleteUserDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        userName={selectedUser?.username || ''}
+        name={selectedUser?.name || ''}
         onConfirm={handleDelete}
       />
     </div>

@@ -11,6 +11,8 @@ import type { Level, Material } from '@/types';
 import { createMaterial, deleteMaterial, getMaterials, updateMaterial } from '@/services/dosen/MaterialService';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { TablePagination } from '@/components/common/TablePagination';
 
 /**
  * Materials Management Page for Dosen
@@ -25,48 +27,65 @@ export default function MaterialsManagement() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+    totalItems: 0
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Load levels
+  const fetchData = async (page: number = 1) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Load levels only once
+      if (levels.length === 0) {
         const levelsResponse = await getLevels();
         if (levelsResponse.success) {
           setLevels(levelsResponse.data || []);
         } else {
           setError(levelsResponse.message);
         }
-
-        // Load materials
-        const materialsResponse = await getMaterials();
-        if (materialsResponse.success) {
-          setMaterials(materialsResponse.data || []);
-        } else {
-          setError(materialsResponse.message);
-        }
-      } catch (err) {
-        setError("Failed to fetch data.");
-        console.error(err);
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchData();
-  }, []);
+      // Load materials with pagination and level filter
+      const levelId = filterLevel === 'all' ? undefined : Number(filterLevel);
+      const materialsResponse = await getMaterials(page, 10, levelId);
+      if (materialsResponse.success) {
+        setMaterials(materialsResponse.data || []);
+        if (materialsResponse.pagination) {
+          setPaginationInfo({
+            totalPages: materialsResponse.pagination.totalPages,
+            hasNext: materialsResponse.pagination.hasNext,
+            hasPrev: materialsResponse.pagination.hasPrev,
+            totalItems: materialsResponse.pagination.totalItems
+          });
+        }
+      } else {
+        setError(materialsResponse.message);
+      }
+    } catch (err) {
+      setError("Failed to fetch data.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(currentPage);
+  }, [currentPage, filterLevel]);
+
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterLevel]);
 
   const loadMaterials = async () => {
-    setLoading(true);
-    setError(null);
-    const response = await getMaterials();
-    if (response.success) {
-      setMaterials(response.data || []);
-    } else {
-      setError(response.message);
-    }
-    setLoading(false);
+    await fetchData(currentPage);
   };
 
   // Handlers
@@ -75,9 +94,11 @@ export default function MaterialsManagement() {
     setError(null);
     const response = await createMaterial(data);
     if (response.success) {
+      toast.success('Materi berhasil ditambahkan!');
       await loadMaterials();
       setIsCreateOpen(false);
     } else {
+      toast.error('Materi gagal ditambahkan!');
       setError(response.message);
     }
     setLoading(false);
@@ -120,9 +141,11 @@ export default function MaterialsManagement() {
       };
       const response = await updateMaterial(selectedMaterial.id, payload);
       if (response.success) {
+        toast.success('Materi berhasil diupdate!');
         await loadMaterials();
         setIsEditOpen(false);
       } else {
+        toast.error('Materi gagal diupdate!');
         setError(response.message);
         setLoading(false);
       }
@@ -138,10 +161,12 @@ export default function MaterialsManagement() {
     setError(null);
     const response = await deleteMaterial(selectedMaterial.id);
     if (response.success) {
+      toast.success('Materi berhasil dihapus!');
       await loadMaterials();
       setIsDeleteOpen(false);
       setSelectedMaterial(null);
     } else {
+      toast.error('Materi gagal dihapus!');
       setError(response.message);
     }
     setLoading(false);
@@ -157,9 +182,6 @@ export default function MaterialsManagement() {
     setIsDeleteOpen(true);
   };
 
-  const filteredMaterials = filterLevel === 'all'
-    ? materials
-    : materials.filter(m => m.levelId === Number(filterLevel));
 
   return (
     <div className="space-y-6">
@@ -220,10 +242,10 @@ export default function MaterialsManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredMaterials.length > 0 ? (
-                  filteredMaterials.map((material, index) => (
+                {materials.length > 0 ? (
+                  materials.map((material, index) => (
                     <TableRow key={material.id}>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{(currentPage - 1) * 10 + index + 1}</TableCell>
                       <TableCell>
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                           {(material as any).level?.name ?? `Level ${material.levelId}`}
@@ -262,6 +284,13 @@ export default function MaterialsManagement() {
                 )}
               </TableBody>
             </Table>
+            <TablePagination 
+              currentPage={currentPage}
+              totalPages={paginationInfo.totalPages}
+              hasNext={paginationInfo.hasNext}
+              hasPrev={paginationInfo.hasPrev}
+              onPageChange={setCurrentPage}
+            />
           </CardContent>
         </Card>
       )}

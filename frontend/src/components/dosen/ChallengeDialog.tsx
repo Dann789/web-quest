@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useEffect, useState } from 'react';
-import { Puzzle } from 'lucide-react';
+import { Puzzle, Zap } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +28,20 @@ const LANGUAGE_MAP: Record<number, EditorLanguage> = {
   3: 'javascript',
   4: 'php',
   5: 'sql',
+};
+
+// ─── Daftar Template Sandbox yang tersedia ───────────────────────────────────
+const SANDBOX_TEMPLATES: Record<string, { id: string; name: string }[]> = {
+  '4': [
+    { id: 'soal_18', name: 'Template Produk (Default)' },
+    { id: 'soal_1', name: 'Template Toko Online' },
+    { id: 'soal_2', name: 'Sistem Login dan Register' },
+  ],
+  '5': [
+    { id: 'soal_1', name: 'Template Perpustakaan' },
+    { id: 'soal_2', name: 'Template Klinik' },
+    { id: 'soal_3', name: 'Sistem Nilai Mahasiswa' },
+  ]
 };
 
 // ─── Konfigurasi tab berdasarkan bahasa ──────────────────────────────────────
@@ -183,6 +197,9 @@ const DEFAULT_FORM = {
   buggyCode: '',
   // DRAG_AND_DROP
   orderedLines: '',
+  // Sandbox Database
+  sandboxEnabled: false,
+  sandboxTemplate: '',
 };
 
 export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, levels }: ChallengeDialogProps) {
@@ -217,14 +234,20 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
         correctAnswerCodes: parseCodeValue(rawAnswer, lang),
         buggyCode: rawBuggy,
         orderedLines: (content.expectedOrder ?? []).join('\n'),
+        sandboxEnabled: content.sandboxEnabled ?? false,
+        sandboxTemplate: content.sandboxTemplate ?? '',
       });
     } else {
       setFormData({ ...DEFAULT_FORM, starterCodes: {}, correctAnswerCodes: {} });
     }
   }, [challenge, open]);
 
-  // ─── Reset multi-code state saat level berubah ───────────────────────────
+  // ─── Reset multi-code state saat level berubah secara manual ─────────────
   useEffect(() => {
+    // Jika mode edit dan levelId sama dengan bawaan soal, jangan reset
+    if (challenge && String(challenge.levelId) === formData.levelId) {
+      return;
+    }
     const lang: EditorLanguage = LANGUAGE_MAP[Number(formData.levelId)] ?? 'html';
     setFormData(prev => ({
       ...prev,
@@ -250,6 +273,10 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
       xpBase: Number(formData.xpBase),
       hint: formData.hint || null,
       isActive: formData.isActive,
+      // Properti tambahan di kolom content
+      sandboxEnabled: formData.sandboxEnabled,
+      sandboxTemplate: formData.sandboxTemplate || null,
+      sandboxLevel: formData.levelId === '4' ? 'php_level' : formData.levelId === '5' ? 'db_level' : null,
     };
 
     if (formData.method === 'CODING_MANUAL') {
@@ -444,6 +471,57 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
                 </div>
               )}
             </div>
+            
+            {/* === Sandbox Toggle (Hanya untuk PHP/SQL + Metode Coding/Fix Bug) === */}
+            {((formData.levelId === '4' || formData.levelId === '5') && 
+              (formData.method === 'CODING_MANUAL' || formData.method === 'FIX_THE_BUG')) && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border border-indigo-500/30 bg-indigo-500/5 rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-bold flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-indigo-500" />
+                      Gunakan Sandbox Database?
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Aktifkan jika soal ini memerlukan manipulasi database (SQLite).
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.sandboxEnabled}
+                    onCheckedChange={(val) => {
+                      set('sandboxEnabled', val);
+                      if (val && !formData.sandboxTemplate) {
+                        const defaults = SANDBOX_TEMPLATES[formData.levelId];
+                        if (defaults) set('sandboxTemplate', defaults[0].id);
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Pilih Template (Hanya muncul jika sandboxEnabled=true) */}
+                {formData.sandboxEnabled && SANDBOX_TEMPLATES[formData.levelId] && (
+                  <div className="space-y-2 p-4 border border-indigo-500/20 bg-slate-900/50 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+                    <Label className="text-xs font-bold uppercase text-indigo-400">Pilih Template Database</Label>
+                    <Select 
+                      value={formData.sandboxTemplate} 
+                      onValueChange={(val) => set('sandboxTemplate', val)}
+                    >
+                      <SelectTrigger className="border-indigo-500/50">
+                        <SelectValue placeholder="Pilih Struktur Database..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SANDBOX_TEMPLATES[formData.levelId].map(t => (
+                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground italic">
+                      * Mahasiswa akan mendapatkan salinan database berdasarkan template ini.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Deskripsi */}
             <div className="space-y-2">

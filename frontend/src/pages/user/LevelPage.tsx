@@ -125,11 +125,11 @@ export default function LevelPage() {
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
                   <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${theme[(level.id - 1) % theme.length]}`}>
-                    <i className={`text-2xl fa-brands ${level.iconName}`}></i>
+                    <i className={`text-2xl ${level.iconName} ${level.iconName === 'fa-database' ? 'fa-solid' : 'fa-brands'}`}></i>
                   </div>
                   {isLocked ? (
                      <Badge variant="outline" className="gap-1 bg-background text-muted-foreground border-dashed">
-                       <Lock className="h-3 w-3" /> {level.xpRequired} XP Dibutuhkan
+                       <Lock className="h-3 w-3" />Butuh {level.xpRequired} XP
                      </Badge>
                   ) : (
                      <Badge className="bg-emerald-500 hover:bg-emerald-600">Terbuka</Badge>

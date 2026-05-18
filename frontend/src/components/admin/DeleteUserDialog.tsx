@@ -10,11 +10,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface DeleteUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  userName: string;
+  name: string;
   onConfirm: () => Promise<{ success: boolean; message: string }>;
 }
 
@@ -24,7 +25,7 @@ interface DeleteUserDialogProps {
 export default function DeleteUserDialog({ 
   open, 
   onOpenChange, 
-  userName, 
+  name, 
   onConfirm 
 }: DeleteUserDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,11 +39,14 @@ export default function DeleteUserDialog({
       const result = await onConfirm();
       
       if (result.success) {
+        toast.success(`Data user ${name} berhasil dihapus`);
         onOpenChange(false);
       } else {
+        toast.error(`Gagal menghapus user: ${result.message}`);
         setError(result.message);
       }
     } catch (err) {
+      toast.error('Terjadi Kesalahan');
       setError('Failed to delete user');
       console.error('Delete error:', err);
     } finally {
@@ -56,9 +60,9 @@ export default function DeleteUserDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete User</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{userName}</strong>? 
-            This action cannot be undone. All user data including progress, 
-            challenge attempts, and badges will be permanently deleted.
+            Apakah anda yakin ingin menghapus user <strong>{name}</strong>? 
+            Tindakan ini tidak dapat dibatalkan. Semua data user termasuk progres, 
+            percobaan challenge, dan badge akan dihapus secara permanen.
           </AlertDialogDescription>
         </AlertDialogHeader>
 

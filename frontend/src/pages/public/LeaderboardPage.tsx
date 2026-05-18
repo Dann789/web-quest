@@ -12,31 +12,56 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Trophy, Crown, Clock } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getLeaderboardData } from "@/services/public/LeaderboardService";
-import type { LeaderboardItem } from "@/types";
+import { TablePagination } from "@/components/common/TablePagination";
 
 export default function LeaderboardPage() {
   const { user } = useAuth();
   const [filterTime, setFilterTime] = useState("all_time");
-  const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
+  const [topThree, setTopThree] = useState<any[]>([]);
+  const [otherRanks, setOtherRanks] = useState<any[]>([]);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+    totalItems: 0
+  });
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
-      const result = await getLeaderboardData(filterTime);
+      const result = await getLeaderboardData(filterTime, currentPage, 10);
       if (result.success && result.data) {
-        const mapped = result.data.map((item, idx) => ({
+        const mapItem = (item: any) => ({
           ...item,
-          rank: idx + 1,
           name: item.name,
           avatar: item.name?.substring(0, 2).toUpperCase() || "??",
           xp: item.totalXp ?? 0,
           time: item.totalTimeSpent ?? 0,
           isMe: Boolean(user && item.id === user.id),
-        }));
-        setLeaderboard(mapped);
+        });
+
+        setTopThree(result.data.topThree.map(mapItem));
+        setOtherRanks(result.data.paginatedOthers.map(mapItem));
+
+        if (result.pagination) {
+          setPaginationInfo({
+            totalPages: result.pagination.totalPages,
+            hasNext: result.pagination.hasNext,
+            hasPrev: result.pagination.hasPrev,
+            totalItems: result.pagination.totalItems
+          });
+        }
       }
     };
     fetchLeaderboard();
-  }, [user, filterTime]);
+  }, [user, filterTime, currentPage]);
+
+  // Reset to page 1 when timeframe changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterTime]);
 
   function formatTime(time: number) {
     const minutes = Math.floor(time / 60);
@@ -70,12 +95,6 @@ export default function LeaderboardPage() {
         return "Top performers hall of fame";
     }
   };
-
-  console.log("Isi leaderboard state: ", leaderboard);
-  const topThree = leaderboard.slice(0, 3);
-  const otherRanks = leaderboard.slice(3);
-  console.log(topThree);
-  console.log(otherRanks);
 
   return (
     <div className="pb-10 space-y-8">
@@ -120,7 +139,7 @@ export default function LeaderboardPage() {
               </div>
             </div>
             <Card
-              className={`relative w-full mt-2 border-t-4 shadow-lg bg-gradient-to-t from-slate-500/10 to-transparent border-t-slate-300
+              className={`relative w-full mt-2 border-t-4 shadow-lg bg-linear-to-t from-slate-500/10 to-transparent border-t-slate-300
               ${topThree[1].isMe ? "shadow-[0_-20px_50px_rgba(203,213,225,0.4)] before:absolute before:-top-20 before:left-1/2 before:-translate-x-1/2 before:w-3/4 before:h-32 before:bg-amber-400/20 before:blur-2xl before:-z-10" : ""}`}
             >
               <CardContent className="p-4 text-center">
@@ -157,7 +176,7 @@ export default function LeaderboardPage() {
               </div>
             </div>
             <Card
-              className={`relative w-full mt-2 border-t-4 shadow-lg bg-gradient-to-t from-amber-500/10 to-transparent border-t-amber-400
+              className={`relative w-full mt-2 border-t-4 shadow-lg bg-linear-to-t from-amber-500/10 to-transparent border-t-amber-400
               ${topThree[0].isMe ? "shadow-[0_-20px_50px_rgba(251,191,36,0.4)] before:absolute before:-top-20 before:left-1/2 before:-translate-x-1/2 before:w-3/4 before:h-32 before:bg-amber-400/20 before:blur-2xl before:-z-10" : ""}`}
             >
               <CardContent className="p-6 text-center">
@@ -199,7 +218,7 @@ export default function LeaderboardPage() {
               </div>
             </div>
             <Card
-              className={`relative w-full mt-2 border-t-4 shadow-lg bg-gradient-to-t from-orange-900/10 to-transparent border-t-amber-700
+              className={`relative w-full mt-2 border-t-4 shadow-lg bg-linear-to-t from-orange-900/10 to-transparent border-t-amber-700
               ${topThree[2].isMe ? "shadow-[0_-20px_50px_rgba(235,111,16,0.4)] before:absolute before:-top-20 before:left-1/2 before:-translate-x-1/2 before:w-3/4 before:h-32 before:bg-amber-400/20 before:blur-2xl before:-z-10" : ""}`}
             >
               <CardContent className="p-4 text-center">
@@ -260,6 +279,14 @@ export default function LeaderboardPage() {
             </div>
           </div>
         ))}
+
+        <TablePagination 
+          currentPage={currentPage}
+          totalPages={paginationInfo.totalPages}
+          hasNext={paginationInfo.hasNext}
+          hasPrev={paginationInfo.hasPrev}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

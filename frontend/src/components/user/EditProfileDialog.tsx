@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { useState, useEffect } from 'react';
 import { User, Mail, AlertCircle } from 'lucide-react';
 import { updateUser } from '@/services/admin/UserService';
+import { toast } from 'sonner';
 
 interface EditProfileDialogProps {
   open: boolean;
@@ -55,11 +56,14 @@ export function EditProfileDialog({ open, onOpenChange, user, onSave }: EditProf
         // Merge updated fields into current user object and pass to parent
         const updatedUser = { ...user, ...payload };
         onSave(updatedUser);
+        toast.success('Profil berhasil diupdate!');
         onOpenChange(false);
       } else {
+        toast.error('Profil gagal diupdate!');
         setError(result.message || 'Gagal menyimpan perubahan');
       }
     } catch {
+      toast.error('Terjadi kesalahan. Coba lagi.');
       setError('Terjadi kesalahan. Coba lagi.');
     } finally {
       setIsLoading(false);

@@ -10,9 +10,13 @@ function getAuthHeaders(): HeadersInit {
   return headers;
 }
 
-export async function getChallenges(): Promise<ApiResponse<Challenge[]>> {
+export async function getChallenges(page: number = 1, limit: number = 10, levelId?: number, method?: ChallengeMethod): Promise<ApiResponse<Challenge[]>> {
   try {
-    const response = await fetch(`${API_BASE}/api/challenges`);
+    let url = `${API_BASE}/api/challenges?page=${page}&limit=${limit}`;
+    if (levelId) url += `&levelId=${levelId}`;
+    if (method) url += `&method=${method}`;
+    
+    const response = await fetch(url);
     const data = await response.json();
     return data;
   } catch (error) {

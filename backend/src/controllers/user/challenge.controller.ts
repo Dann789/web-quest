@@ -2,6 +2,7 @@ import { Decimal } from "@prisma/client/runtime/library";
 import prisma from "../../config/database";
 import { type SubmitAnswerRequest } from "../../types";
 import { UserProgressController } from "./progress.controller";
+import { UserBadgeController } from "./badge.controller";
 
 export class ChallengeAttemptController {
   static async getRandomChallenge(userId: number, levelId: number, nodeSlot: number) {
@@ -91,19 +92,31 @@ export class ChallengeAttemptController {
         };
       }
 
+      const levelConfig = await prisma.level.findUnique({
+        where: { id: levelId },
+        select: { easyNodes: true, mediumNodes: true, hardNodes: true }
+      });
+      if (!levelConfig) {
+        return { success: false, message: "Konfigurasi level tidak ditemukan." };
+      }
+
+      const easyLimit = levelConfig.easyNodes;
+      const mediumLimit = easyLimit + levelConfig.mediumNodes;
+      const hardLimit = mediumLimit + levelConfig.hardNodes;
+
       type DifficultyType = "EASY" | "MEDIUM" | "HARD";
       let targetDifficulty: DifficultyType;
 
-      if (nodeSlot >= 1 && nodeSlot <= 5) {
+      if (nodeSlot >= 1 && nodeSlot <= easyLimit) {
         targetDifficulty = "EASY";
-      } else if (nodeSlot >= 6 && nodeSlot <= 15) {
+      } else if (nodeSlot > easyLimit && nodeSlot <= mediumLimit) {
         targetDifficulty = "MEDIUM";
-      } else if (nodeSlot >= 16 && nodeSlot <= 18) {
+      } else if (nodeSlot > mediumLimit && nodeSlot <= hardLimit) {
         targetDifficulty = "HARD";
       } else {
         return {
           success: false,
-          message: `nodeSlot ${nodeSlot} tidak valid. Rentang yang diizinkan: 1–18.`,
+          message: `nodeSlot ${nodeSlot} tidak valid untuk level ini. Rentang maksimum: 1–${hardLimit}.`,
         };
       }
 
@@ -143,8 +156,14 @@ export class ChallengeAttemptController {
       // Filter only challenges that have not been used by other nodes
       const availableChallenges = allChallenges.filter((c) => !assignedIds.has(c.id));
 
+      if (availableChallenges.length === 0) {
+        return {
+          success: false,
+          message: `Tidak ada soal ${targetDifficulty} baru yang tersedia. Silakan hubungi pengajar untuk menambah bank soal.`,
+        };
+      }
       // If all challenges have been used by other nodes, fallback to all challenges
-      const pool = availableChallenges.length > 0 ? availableChallenges : allChallenges;
+      const pool = availableChallenges;
 
       // Pilih secara acak
       const randomIndex = Math.floor(Math.random() * pool.length);
@@ -350,6 +369,8 @@ export class ChallengeAttemptController {
       });
 
       // Update Assignment & User.totalXp
+      let newBadges: { id: number; name: string; description: string; iconPath: string; rarity: string }[] = [];
+
       if (isCorrect) {
         if (!assignment.isCompleted) {
           await prisma.assignment.update({
@@ -367,17 +388,40 @@ export class ChallengeAttemptController {
             data: { totalXp: { increment: xpEarned } },
           });
         }
+
+        // Jalankan pengecekan level completion & badge, tangkap badge baru
+        const levelResult = await UserProgressController.checkLevelCompletion(userId, assignment.levelId);
+        const challengeBadges = await UserBadgeController.checkAndAward(userId, "CHALLENGE");
+
+        // Gabungkan semua badge baru (LEVEL + CHALLENGE)
+        newBadges = [...levelResult.newBadges, ...challengeBadges];
+
+        return {
+          success: true,
+          message: "Jawaban benar!",
+          data: {
+            isCorrect,
+            xpEarned,
+            attemptId: attempt.id,
+            isFirstAttempt,
+            overTime,
+            newBadges,
+            unlockedLevelName: levelResult.unlockedLevelName,
+          },
+        };
       }
 
       return {
         success: true,
-        message: isCorrect ? "Jawaban benar!" : "Jawaban salah. Coba lagi.",
+        message: "Jawaban salah. Coba lagi.",
         data: {
           isCorrect,
           xpEarned,
           attemptId: attempt.id,
           isFirstAttempt,
           overTime,
+          newBadges: [],
+          unlockedLevelName: null,
         },
       };
     } catch (e: unknown) {

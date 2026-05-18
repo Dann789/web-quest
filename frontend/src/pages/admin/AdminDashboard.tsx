@@ -228,7 +228,7 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle>Ringkasan Platform</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-8">
             {/* Stat 1 */}
             <div className="flex items-center justify-between">
               <div>
@@ -272,7 +272,7 @@ export default function AdminDashboard() {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
-                            <div className={`${themeStr} rounded-xl flex items-center justify-center p-2`}>
+                            <div className={`${themeStr} rounded-xl flex items-center justify-center p-3 mt-2`}>
                               <i className={`fab ${popularLevel.iconName} ${textColor} text-5xl drop-shadow-md`}></i>
                             </div>
                           </TooltipTrigger>
@@ -282,7 +282,7 @@ export default function AdminDashboard() {
                         </Tooltip>
                       </TooltipProvider>
 
-                      <p className="text-xs text-muted-foreground w-full text-center mt-2">
+                      <p className="text-sm text-muted-foreground w-full text-center mt-2">
                         <span className="font-bold text-foreground">{popularLevel.userCount || 0} user</span>{" "}
                         sedang mempelajari topik ini minggu ini.
                       </p>
@@ -295,7 +295,7 @@ export default function AdminDashboard() {
                 <p className="text-xs text-muted-foreground text-center w-full mt-4">Belum ada aktivitas minggu ini.</p>
               )}
             </div>
-            <div className="pt-4 border-t border-border">
+            <div className="pt-2 border-t border-border">
               <p className="text-xs text-muted-foreground mb-3">
                 Akses Menu Lain
               </p>

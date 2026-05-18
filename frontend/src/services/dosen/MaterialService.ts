@@ -10,10 +10,13 @@ function getAuthHeaders(): HeadersInit {
   return headers;
 }
 
-// Get all Materials
-export async function getMaterials(): Promise<ApiResponse<Material[]>> {
+// Get all Materials with pagination and optional level filter
+export async function getMaterials(page: number = 1, limit: number = 10, levelId?: number): Promise<ApiResponse<Material[]>> {
   try {
-    const response = await fetch(`${API_BASE}/api/materials`);
+    let url = `${API_BASE}/api/materials?page=${page}&limit=${limit}`;
+    if (levelId) url += `&levelId=${levelId}`;
+    
+    const response = await fetch(url);
     const data = await response.json();
     return data;
   } catch (error) {

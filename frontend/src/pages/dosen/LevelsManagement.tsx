@@ -7,6 +7,7 @@ import { LevelDialog } from '@/components/dosen/LevelDialog';
 import { DeleteLevelDialog } from '@/components/dosen/DeleteLevelDialog';
 import { getLevels, createLevel, updateLevel, deleteLevel } from '@/services/dosen/LevelService';
 import type { Level } from '@/types';
+import { toast } from 'sonner';
 
 /**
  * Levels Management Page for Dosen
@@ -15,7 +16,7 @@ export default function LevelsManagement() {
 
   // Helper to determine icon type (brands vs solid)
   const getIconType = (iconName: string) => {
-    const brands = ['fa-html5', 'fa-css3', 'fa-js', 'fa-php', 'fa-react', 'fa-vuejs', 'fa-postgresql'];
+    const brands = ['fa-html5', 'fa-css3', 'fa-js', 'fa-php', 'fa-react', 'fa-vuejs'];
     return brands.includes(iconName) ? 'fa-brands' : 'fa-solid';
   };
 
@@ -73,9 +74,11 @@ export default function LevelsManagement() {
     setLoading(true);
     const response = await deleteLevel(selectedLevel.id);
     if (response.success) {
+      toast.success('Level berhasil dihapus!');
       await loadLevels();
       setIsDeleteOpen(false);
     } else {
+      toast.error('Level gagal dihapus!');
       setError(response.message);
     }
     setLoading(false);

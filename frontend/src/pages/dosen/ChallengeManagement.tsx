@@ -9,6 +9,7 @@ import { Plus, Edit, Trash, Puzzle, Loader2 } from 'lucide-react';
 import { ChallengeDialog } from '@/components/dosen/ChallengeDialog';
 import { DeleteChallengeDialog } from '@/components/dosen/DeleteChallengeDialog';
 import { getLevels } from '@/services/dosen/LevelService';
+import { toast } from 'sonner';
 import {
   getChallenges,
   createChallenge,
@@ -16,6 +17,7 @@ import {
   deleteChallenge,
 } from '@/services/dosen/ChallengeService';
 import type { Challenge, Level } from '@/types';
+import { TablePagination } from '@/components/common/TablePagination';
 
 // Label map untuk method
 const METHOD_LABELS: Record<string, string> = {
@@ -47,30 +49,60 @@ export default function ChallengeManagement() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<any>(null);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+    totalItems: 0
+  });
+
   // Load data on mount
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData(currentPage);
+  }, [currentPage, filterLevel, filterMethod]);
 
-  const loadData = async () => {
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterLevel, filterMethod]);
+
+  const loadData = async (page: number = 1) => {
     setLoading(true);
     setError(null);
-    const [challengesRes, levelsRes] = await Promise.all([
-      getChallenges(),
-      getLevels(),
-    ]);
+    try {
+      const levelId = filterLevel === 'all' ? undefined : Number(filterLevel);
+      const method = filterMethod === 'all' ? undefined : filterMethod;
 
-    if (challengesRes.success) {
-      setChallenges(challengesRes.data || []);
-    } else {
-      setError(challengesRes.message);
+      const [challengesRes, levelsRes] = await Promise.all([
+        getChallenges(page, 10, levelId, method as any),
+        levels.length === 0 ? getLevels() : Promise.resolve({ success: true, data: levels }),
+      ]);
+
+      if (challengesRes.success) {
+        setChallenges(challengesRes.data || []);
+        if (challengesRes.pagination) {
+          setPaginationInfo({
+            totalPages: challengesRes.pagination.totalPages,
+            hasNext: challengesRes.pagination.hasNext,
+            hasPrev: challengesRes.pagination.hasPrev,
+            totalItems: challengesRes.pagination.totalItems
+          });
+        }
+      } else {
+        setError(challengesRes.message);
+      }
+
+      if (levelsRes.success && levels.length === 0) {
+        setLevels(levelsRes.data || []);
+      }
+    } catch (err) {
+      setError("Gagal memuat data.");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-    if (levelsRes.success) {
-      setLevels(levelsRes.data || []);
-    }
-
-    setLoading(false);
   };
 
   // Forward form data ke backend — backend yg build JSON content & testCases
@@ -90,6 +122,10 @@ export default function ChallengeManagement() {
     buggyCode: data.buggyCode ?? null,
     blocks: data.blocks ?? null,
     expectedOrder: data.expectedOrder ?? null,
+    // Properti sandbox
+    sandboxEnabled: data.sandboxEnabled ?? false,
+    sandboxTemplate: data.sandboxTemplate ?? null,
+    sandboxLevel: data.sandboxLevel ?? null,
   });
 
   // CRUD Handlers
@@ -98,9 +134,11 @@ export default function ChallengeManagement() {
     const payload = buildPayload(data);
     const res = await createChallenge(payload as any);
     if (res.success) {
-      await loadData();
+      toast.success('Soal berhasil ditambahkan!');
+      await loadData(currentPage);
       setIsCreateOpen(false);
     } else {
+      toast.error('Soal gagal ditambahkan!');
       setError(res.message);
       setLoading(false);
     }
@@ -112,9 +150,11 @@ export default function ChallengeManagement() {
     const payload = buildPayload(data);
     const res = await updateChallenge(selectedChallenge.id, payload);
     if (res.success) {
-      await loadData();
+      toast.success('Soal berhasil diupdate!');
+      await loadData(currentPage);
       setIsEditOpen(false);
     } else {
+      toast.error('Soal gagal diupdate!');
       setError(res.message);
       setLoading(false);
     }
@@ -125,10 +165,12 @@ export default function ChallengeManagement() {
     setLoading(true);
     const res = await deleteChallenge(selectedChallenge.id);
     if (res.success) {
-      await loadData();
+      toast.success('Soal berhasil dihapus!');
+      await loadData(currentPage);
       setIsDeleteOpen(false);
       setSelectedChallenge(null);
     } else {
+      toast.error('Soal gagal dihapus!');
       setError(res.message);
       setLoading(false);
     }
@@ -145,11 +187,7 @@ export default function ChallengeManagement() {
   };
 
   // Filter logic — by levelId (number) and method (string)
-  const filteredChallenges = challenges.filter(c => {
-    const passLevel = filterLevel === 'all' || c.levelId === Number(filterLevel);
-    const passMethod = filterMethod === 'all' || c.method === filterMethod;
-    return passLevel && passMethod;
-  });
+
 
   // Helper: get level name from nested level object or levels list
   const getLevelName = (c: any) =>
@@ -189,7 +227,7 @@ export default function ChallengeManagement() {
               Bank Soal
               {!loading && (
                 <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  ({filteredChallenges.length} soal)
+                  ({paginationInfo.totalItems} soal)
                 </span>
               )}
             </CardTitle>
@@ -247,10 +285,10 @@ export default function ChallengeManagement() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : filteredChallenges.length > 0 ? (
-                filteredChallenges.map((challenge, index) => (
+              ) : challenges.length > 0 ? (
+                challenges.map((challenge, index) => (
                   <TableRow key={challenge.id}>
-                    <TableCell className="text-center text-muted-foreground">{index + 1}</TableCell>
+                    <TableCell className="text-center text-muted-foreground">{(currentPage - 1) * 10 + index + 1}</TableCell>
                     <TableCell>
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                         {getLevelName(challenge)}
@@ -309,6 +347,13 @@ export default function ChallengeManagement() {
               )}
             </TableBody>
           </Table>
+          <TablePagination 
+            currentPage={currentPage}
+            totalPages={paginationInfo.totalPages}
+            hasNext={paginationInfo.hasNext}
+            hasPrev={paginationInfo.hasPrev}
+            onPageChange={setCurrentPage}
+          />
         </CardContent>
       </Card>
 

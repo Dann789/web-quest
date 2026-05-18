@@ -26,7 +26,7 @@ export default function DashboardPage() {
   const hasCompletedEvaluation = false;
   const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
   const [summary, setSummary] = useState<any>(null);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([])
+  const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -44,7 +44,15 @@ export default function DashboardPage() {
       }
 
       if (leaderboardRes.success && leaderboardRes.data) {
-        setLeaderboard(leaderboardRes.data);
+        if (leaderboardRes.data.topThree) {
+          const combined = [
+            ...(leaderboardRes.data.topThree || []),
+            ...(leaderboardRes.data.paginatedOthers || [])
+          ];
+          setLeaderboard(combined);
+        } else {
+          setLeaderboard(leaderboardRes.data);
+        }
       }
 
     } catch (error) {
@@ -115,7 +123,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* HERO CARD (66%) */}
         <div className="lg:col-span-2">
-          <Card className="relative h-full overflow-hidden border-none shadow-2xl bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900">
+          <Card className="relative h-full overflow-hidden border-none shadow-2xl bg-linear-to-br from-indigo-950 via-purple-900 to-slate-900">
             {/* Background Effects */}
             <div className="absolute top-0 right-0 px-10 pt-16  opacity-10">
               <CodeXml className="w-64 h-64 text-white" />
@@ -123,12 +131,12 @@ export default function DashboardPage() {
             <div className="absolute rounded-full -bottom-20 -left-20 w-60 h-60 bg-blue-500/20 blur-3xl"></div>
 
             <CardContent className="relative z-10 p-8 flex flex-col justify-between h-full">
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="flex items-start">
                   <div>
                     <h1 className="text-3xl font-extrabold tracking-tight text-white">
                       Hi,{" "}
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300">
+                      <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-300 to-purple-300">
                         {user?.name}
                       </span>
                       ! 👋
@@ -142,7 +150,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="inline-flex items-center gap-4 mt-6 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors cursor-pointer group">
+                <div className="inline-flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors cursor-pointer group">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
                     <BookOpenText className="w-5 h-5 text-blue-300" />
                   </div>
@@ -203,7 +211,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="h-3 bg-secondary rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"
+                    className="h-full bg-linear-to-r from-blue-500 to-purple-600 rounded-full"
                     style={{
                       width: `${xpProgressPercentage}%`,
                     }}

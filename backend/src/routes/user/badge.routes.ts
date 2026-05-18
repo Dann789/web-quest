@@ -16,3 +16,14 @@ export const badgeRoutes = new Elysia({ prefix: "/api/badges" })
       badgeId: t.Numeric()
     })
   });
+
+  // .post("/sync/:userId", async ({ params: { userId } }) => {
+  //   await UserBadgeController.checkAndAward(userId, "LEVEL");
+  //   await UserBadgeController.checkAndAward(userId, "CHALLENGE");
+  //   await UserBadgeController.checkAndAward(userId, "MATERIAL");
+  //   return { success: true, message: "Badge synchronization triggered" };
+  // }, {
+  //   params: t.Object({
+  //     userId: t.Numeric()
+  //   })
+  // });

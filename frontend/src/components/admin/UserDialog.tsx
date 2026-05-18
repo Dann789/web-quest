@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { toast } from "sonner"
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -127,12 +128,14 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
       const result = await onSubmit(dataToSubmit);
 
       if (result.success) {
+        isEditMode ? toast.success('User berhasil diupdate') : toast.success('User berhasil ditambahkan');
         onOpenChange(false);
       } else {
         setError(result.message);
       }
     } catch (err) {
       setError('An unexpected error occurred');
+      toast.error('Terjadi kesalahan');
       console.error('Form submission error:', err);
     } finally {
       setIsLoading(false);

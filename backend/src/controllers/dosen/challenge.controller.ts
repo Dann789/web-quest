@@ -14,28 +14,44 @@ import {
  * Backend yang bertanggung jawab membentuk JSON ini.
  */
 function buildContent(method: string, options: Partial<CreateChallengeRequest>): object {
+  const levelId = options.levelId ? Number(options.levelId) : 1;
+  const languageMap: Record<number, string> = {
+    1: 'html',
+    2: 'css',
+    3: 'javascript',
+    4: 'php',
+    5: 'sql',
+  };
+  const language = languageMap[levelId] ?? 'html';
+
+  const baseContent: any = {
+    language,
+    sandboxEnabled: options.sandboxEnabled ?? false,
+    sandboxTemplate: options.sandboxTemplate ?? null,
+    sandboxLevel: options.sandboxLevel ?? null,
+  };
+
   switch (method) {
     case 'CODING_MANUAL':
       return {
+        ...baseContent,
         starterCode: options.starterCode ?? '',
         correctAnswer: options.correctAnswer ?? '',
-        language: 'html', // default, bisa diperluas nanti
       };
     case 'FIX_THE_BUG':
       return {
+        ...baseContent,
         buggyCode: options.buggyCode ?? '',
         correctAnswer: options.correctAnswer ?? '',
-        language: 'javascript',
       };
     case 'DRAG_AND_DROP':
       return {
-        // blocks: urutan acak yang ditampilkan ke user
+        ...baseContent,
         blocks: options.blocks ?? [],
-        // expectedOrder: urutan yang benar
         expectedOrder: options.expectedOrder ?? [],
       };
     default:
-      return {};
+      return baseContent;
   }
 }
 
@@ -78,44 +94,62 @@ function buildTestCases(method: string, options: Partial<CreateChallengeRequest>
 
 export class ChallengeController {
   /**
-   * Get all challenges
+   * Get all challenges with pagination and optional filters
    */
-  static async getAllChallenges() {
+  static async getAllChallenges(page: number = 1, limit: number = 10, levelId?: number, method?: ChallengeMethod) {
     try {
-      const challenges = await prisma.challenge.findMany({
-        select: {
-          id: true,
-          levelId: true,
-          title: true,
-          description: true,
-          difficulty: true,
-          method: true,
-          idealTime: true,
-          xpBase: true,
-          content: true,
-          starterCode: true,
-          testCases: true,
-          hint: true,
-          isActive: true,
-          createdAt: true,
-          updatedAt: true,
-          level: {
-            select: {
-              id: true,
-              name: true,
+      const skip = (page - 1) * limit;
+      const where: any = {};
+      if (levelId) where.levelId = levelId;
+      if (method) where.method = method;
+
+      const [challenges, total] = await Promise.all([
+        prisma.challenge.findMany({
+          where,
+          skip,
+          take: limit,
+          select: {
+            id: true,
+            levelId: true,
+            title: true,
+            description: true,
+            difficulty: true,
+            method: true,
+            idealTime: true,
+            xpBase: true,
+            content: true,
+            starterCode: true,
+            testCases: true,
+            hint: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+            level: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
           },
-        },
-        orderBy: [
-          { levelId: 'asc' },
-          { difficulty: 'asc' },
-        ],
-      });
+          orderBy: [
+            { levelId: 'asc' },
+            { difficulty: 'asc' },
+          ],
+        }),
+        prisma.challenge.count({ where })
+      ]);
 
       return {
         success: true,
         message: "List Data Challenge",
         data: challenges,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          hasNext: page < Math.ceil(total / limit),
+          hasPrev: page > 1
+        }
       };
     } catch (e: unknown) {
       console.error(`Error getting challenges:`, e);
@@ -314,18 +348,29 @@ export class ChallengeController {
       if (options.hint !== undefined) updateData.hint = options.hint;
       if (options.isActive !== undefined) updateData.isActive = options.isActive;
 
-      // Rebuild JSON columns jika ada field spesifik yang dikirim
+      // Rebuild JSON columns jika ada field spesifik yang dikirim (termasuk properti sandbox)
       const hasMethodFields =
         options.starterCode !== undefined ||
         options.correctAnswer !== undefined ||
         options.buggyCode !== undefined ||
         options.blocks !== undefined ||
-        options.expectedOrder !== undefined;
-
+        options.expectedOrder !== undefined ||
+        options.sandboxEnabled !== undefined ||
+        options.sandboxTemplate !== undefined ||
+        options.sandboxLevel !== undefined;
+ 
       if (hasMethodFields) {
-        updateData.content = buildContent(activeMethod, options as Partial<CreateChallengeRequest>);
-        updateData.testCases = buildTestCases(activeMethod, options as Partial<CreateChallengeRequest>);
+        // Gabungkan content lama dengan properti baru untuk memastikan tidak kehilangan field yang tidak dikirim
+        const oldContent = (existingChallenge.content as any) || {};
+        const mergedOptions = {
+          levelId: options.levelId !== undefined ? options.levelId : existingChallenge.levelId,
+          ...oldContent,
+          ...options
+        };
 
+        updateData.content = buildContent(activeMethod, mergedOptions as Partial<CreateChallengeRequest>);
+        updateData.testCases = buildTestCases(activeMethod, mergedOptions as Partial<CreateChallengeRequest>);
+ 
         // Update starterCode kolom terpisah
         updateData.starterCode =
           activeMethod === 'CODING_MANUAL' ? (options.starterCode ?? existingChallenge.starterCode) :

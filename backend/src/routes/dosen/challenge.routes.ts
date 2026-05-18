@@ -12,8 +12,22 @@ const methodValues = Object.values(ChallengeMethod);
 
 export const challengeRoutes = new Elysia({ prefix: "/api/challenges" })
 
-  // GET all challenges
-  .get("/", () => ChallengeController.getAllChallenges())
+  // GET all challenges with pagination and filters
+  .get("/", ({ query: { page, limit, levelId, method } }) => 
+    ChallengeController.getAllChallenges(
+        Number(page ?? 1), 
+        Number(limit ?? 10),
+        levelId ? Number(levelId) : undefined,
+        method as ChallengeMethod
+    ), {
+      query: t.Object({
+        page: t.Optional(t.Numeric()),
+        limit: t.Optional(t.Numeric()),
+        levelId: t.Optional(t.Numeric()),
+        method: t.Optional(t.String({ enum: methodValues }))
+      })
+    }
+  )
 
   // GET challenges by level  (MUST be before /:id to avoid route conflict)
   // Contoh: GET /api/challenges/level/1
@@ -87,7 +101,12 @@ export const challengeRoutes = new Elysia({ prefix: "/api/challenges" })
 
       // DRAG_AND_DROP
       blocks: t.Optional(t.Nullable(t.Array(t.String()))),
-      expectedOrder: t.Optional(t.Nullable(t.Array(t.String())))
+      expectedOrder: t.Optional(t.Nullable(t.Array(t.String()))),
+
+      // SANDBOX
+      sandboxEnabled: t.Optional(t.Boolean()),
+      sandboxTemplate: t.Optional(t.Nullable(t.String())),
+      sandboxLevel: t.Optional(t.Nullable(t.String()))
     })
   })
 
@@ -128,7 +147,12 @@ export const challengeRoutes = new Elysia({ prefix: "/api/challenges" })
         correctAnswer: t.Optional(t.Nullable(t.String())),
         buggyCode: t.Optional(t.Nullable(t.String())),
         blocks: t.Optional(t.Nullable(t.Array(t.String()))),
-        expectedOrder: t.Optional(t.Nullable(t.Array(t.String())))
+        expectedOrder: t.Optional(t.Nullable(t.Array(t.String()))),
+
+        // SANDBOX
+        sandboxEnabled: t.Optional(t.Boolean()),
+        sandboxTemplate: t.Optional(t.Nullable(t.String())),
+        sandboxLevel: t.Optional(t.Nullable(t.String()))
       })
     }
   )

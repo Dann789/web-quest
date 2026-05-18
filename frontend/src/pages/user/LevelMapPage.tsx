@@ -277,7 +277,7 @@ export default function LevelMapPage() {
     const endPadding = isMobile ? 180 : 150;
     const nodeSpacing = isMobile ? 140 : 160;
     const groupGap = isMobile ? 240 : 300;
-    const amplitude = isMobile ? 60 : 80;   
+    const amplitude = isMobile ? 50 : 70;   
     const frequency = 0.8; 
     
     const secondaryAxisCenter = isMobile ? (window.innerWidth / 2) : (600 / 2);
@@ -291,11 +291,11 @@ export default function LevelMapPage() {
 
     mapNodes.forEach((node, i) => {
         if (i > 0 && node.difficulty !== lastDifficulty) {
-            currentPos += (node.type === 'next_level' ? (isMobile ? 120 : 240) : groupGap);
+            currentPos += (node.type === 'next_level' ? (isMobile ? 120 : 350) : groupGap);
             currentGroupStart = currentPos;
         }
 
-        const waveOffset = Math.sin(i * frequency) * amplitude;
+        const waveOffset = (node.type === 'next_level' || node.type === 'materi') ? 0 : Math.sin(i * frequency) * amplitude;
         
         let x = isMobile ? secondaryAxisCenter + waveOffset : currentPos;
         let y = isMobile ? currentPos : secondaryAxisCenter + waveOffset;
@@ -491,7 +491,7 @@ export default function LevelMapPage() {
                       } : {
                         top: '50%',
                         left: zone.centerPos, 
-                        transform: `translate(${zone.offsetX}, -200px)`
+                        transform: `translate(${zone.offsetX}, -220px)`
                       })
                     }}
                 >
@@ -590,7 +590,7 @@ export default function LevelMapPage() {
                         style={{ left: pos.x, top: pos.y }}
                     >
                         {!isMobile && isUnlocked && (nextLevel || isLastLevel) && (
-                             <div className="absolute bottom-1/2 left-1/2 -translate-x-1/2 w-48 h-[250px] pointer-events-none flex flex-col items-center">
+                             <div className="absolute bottom-1/2 left-1/2 -translate-x-1/2 w-48 h-[175px] pointer-events-none flex flex-col items-center">
                                 <div className="absolute -top-12 animate-float">
                                      <div className="relative">
                                          <div className="absolute inset-0 blur-xl bg-indigo-400/40 rounded-full animate-pulse"></div>

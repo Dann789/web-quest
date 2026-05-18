@@ -3,36 +3,52 @@ import { type CreateMaterialRequest, type UpdateMaterialRequest } from "../../ty
 
 export class MaterialController {
   /**
-   * Get all materials with optional level filter
+   * Get all materials with optional level filter and pagination
    */
-  static async getAllMaterials() {
+  static async getAllMaterials(page: number = 1, limit: number = 10, levelId?: number) {
     try {
-      const materials = await prisma.material.findMany({
-        select: {
-          id: true,
-          levelId: true,
-          title: true,
-          content: true,
-          order: true,
-          createdAt: true,
-          updatedAt: true,
-          level: {
-            select: {
-              id: true,
-              name: true,
+      const skip = (page - 1) * limit;
+      const where = levelId ? { levelId } : {};
+
+      const [materials, total] = await Promise.all([
+        prisma.material.findMany({
+          where,
+          skip,
+          take: limit,
+          select: {
+            id: true,
+            levelId: true,
+            title: true,
+            content: true,
+            order: true,
+            createdAt: true,
+            updatedAt: true,
+            level: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
           },
-        },
-        orderBy: [
-          { levelId: 'asc' },
-          { order: 'asc' },
-        ],
-      });
+          orderBy: [
+            { levelId: 'asc' },
+            { order: 'asc' },
+          ],
+        }),
+        prisma.material.count({ where })
+      ]);
 
       return {
         success: true,
         message: "List Data Material",
         data: materials,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          hasNext: page < Math.ceil(total / limit),
+          hasPrev: page > 1
+        }
       };
     } catch (e: unknown) {
       console.error(`Error getting materials: ${e}`);

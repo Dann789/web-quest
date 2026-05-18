@@ -1,4 +1,5 @@
 import prisma from "../../config/database";
+import { UserBadgeController } from "./badge.controller";
 
 export class UserProgressController {
   static async getCompleteNodes(userId: number, levelId: number) {
@@ -116,6 +117,7 @@ export class UserProgressController {
           completedAt: new Date(),
         },
       });
+      await UserBadgeController.checkAndAward(userId, "MATERIAL");
 
       const levelId = materialProgress.material.levelId;
 
@@ -145,6 +147,7 @@ export class UserProgressController {
             },
           },
         });
+        await this.checkLevelCompletion(userId, levelId);
         return {
           success: true,
           message:
@@ -164,6 +167,75 @@ export class UserProgressController {
         success: false,
         message: "Failed to update material status",
       };
+    }
+  }
+
+  static async checkLevelCompletion(
+    userId: number,
+    levelId: number
+  ): Promise<{ unlockedLevelName: string | null; newBadges: any[] }> {
+    const result = { unlockedLevelName: null as string | null, newBadges: [] as any[] };
+    try {
+      const currentProgress = await prisma.progress.findUnique({
+        where: { idx_progress_unique: { userId, levelId } }
+      });
+
+      if (currentProgress?.completedAt) {
+        return result;
+      }
+
+      const level = await prisma.level.findUnique({ where: { id: levelId } });
+      if (!level) return result;
+
+      const completedChallenges = await prisma.assignment.count({
+        where: { userId, levelId, isCompleted: true },
+      });
+
+      const materialRes = await this.getMaterialProgress(userId, levelId);
+      const isMaterialDone = materialRes.data?.isAllCompleted;
+
+      const totalNodesNeeded =
+        level.easyNodes + level.mediumNodes + level.hardNodes;
+
+      if (completedChallenges >= totalNodesNeeded && isMaterialDone) {
+        await prisma.progress.update({
+          where: { idx_progress_unique: { userId, levelId } },
+          data: {
+            completedAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+
+        const nextLevel = await prisma.level.findFirst({
+          where: { id: { gt: levelId } },
+          orderBy: { id: "asc" },
+        });
+
+        if (nextLevel) {
+          await prisma.progress.upsert({
+            where: { idx_progress_unique: { userId, levelId: nextLevel.id } },
+            update: {
+              isUnlocked: true,
+              unlockedAt: new Date(),
+            },
+            create: {
+              userId: userId,
+              levelId: nextLevel.id,
+              isUnlocked: true,
+              unlockedAt: new Date(),
+            },
+          });
+          console.log(`Level ${nextLevel.id} berhasil dibuka untuk user ${userId}`);
+          result.unlockedLevelName = nextLevel.name;
+        }
+
+        // Tangkap badge kategori LEVEL
+        result.newBadges = await UserBadgeController.checkAndAward(userId, "LEVEL");
+      }
+      return result;
+    } catch (error) {
+      console.error("Gagal update progres level:", error);
+      return result;
     }
   }
 
@@ -238,6 +310,8 @@ export class UserProgressController {
         (completedNodes.data?.completedNodes?.length || 0) +
         (completedMaterials.data?.isAllCompleted ? 1 : 0);
       const progressPercentage = Math.round((totalCompleted / totalNodes) * 100);
+
+      await UserBadgeController.checkAndAward(userId, "LEVEL");
 
       return {
         success: true,

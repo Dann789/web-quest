@@ -5,6 +5,7 @@ export interface MaterialSection {
 }
 
 export interface MaterialContent {
+  levelId(levelId: any): unknown;
   title: string;
   sections: MaterialSection[];
 }

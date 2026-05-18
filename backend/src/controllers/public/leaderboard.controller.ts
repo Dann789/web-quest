@@ -2,7 +2,7 @@ import prisma from "../../config/database";
 import { UserRole } from "@prisma/client";
 
 export class LeaderboardController {
-  static async getLeaderboardData(timeframe: string) {
+  static async getLeaderboardData(timeframe: string, page: number = 1, limit: number = 10) {
     let startDate: Date | undefined;
     let endDate: Date | undefined;
     const now = new Date();
@@ -77,17 +77,14 @@ export class LeaderboardController {
             0,
           );
 
-          // Jumlah level yg materinya sudah selesai
           const completedLevelIds = new Set(
             user.materialProgress.map((mp) => mp.material.levelId),
           );
 
           const displayXp =
             startDate && endDate
-              // Harian / Mingguan
               ? user.attempts.reduce((acc, a) => acc + (a.xpEarned || 0), 0) +
                 completedLevelIds.size * 15
-              // Semua waktu
               : user.totalXp;
 
           return {
@@ -96,12 +93,33 @@ export class LeaderboardController {
             totalTimeSpent,
           };
         })
-        .sort((a, b) => b.totalXp - a.totalXp);
+        .sort((a, b) => b.totalXp - a.totalXp)
+        .map((user, index) => ({
+          ...user,
+          rank: index + 1
+        }));
+
+      const topThree = leaderboardWithAggregate.slice(0, 3);
+      const others = leaderboardWithAggregate.slice(3);
+      
+      const total = others.length;
+      const skip = (page - 1) * limit;
+      const paginatedOthers = others.slice(skip, skip + limit);
 
       return {
         success: true,
         message: "Leaderboard retrieved successfully",
-        data: leaderboardWithAggregate,
+        data: {
+          topThree,
+          paginatedOthers,
+        },
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          hasNext: page < Math.ceil(total / limit),
+          hasPrev: page > 1
+        }
       };
     } catch (error) {
       console.error(error);

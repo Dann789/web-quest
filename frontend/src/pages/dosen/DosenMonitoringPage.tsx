@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { getCurrentProgress } from "@/services/public/MonitoringService";
 import { getLevels } from "@/services/dosen/LevelService";
 import type { Level } from "@/types";
+import { TablePagination } from "@/components/common/TablePagination";
 
 export default function DosenMonitoringPage() {
   const [levels, setLevels] = useState<Level[]>([]);
@@ -30,31 +31,48 @@ export default function DosenMonitoringPage() {
   const [userProgressData, setUserProgressData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const [progressRes, levelsRes] = await Promise.all([
-          getCurrentProgress(),
-          getLevels(),
-        ]);
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+    totalItems: 0
+  });
 
-        if (progressRes.success && progressRes.data) {
-          setUserProgressData(progressRes.data);
-        }
+  const fetchData = async (page: number = 1) => {
+    try {
+      setIsLoading(true);
+      const [progressRes, levelsRes] = await Promise.all([
+        getCurrentProgress(page, 10),
+        levels.length === 0 ? getLevels() : Promise.resolve({ success: true, data: levels }),
+      ]);
 
-        if (levelsRes.success && levelsRes.data) {
-          setLevels(levelsRes.data);
+      if (progressRes.success && progressRes.data) {
+        setUserProgressData(progressRes.data);
+        if (progressRes.pagination) {
+          setPaginationInfo({
+            totalPages: progressRes.pagination.totalPages,
+            hasNext: progressRes.pagination.hasNext,
+            hasPrev: progressRes.pagination.hasPrev,
+            totalItems: progressRes.pagination.totalItems
+          });
         }
-      } catch (error) {
-        console.error("Error fetching logs data:", error);
-      } finally {
-        setIsLoading(false);
       }
-    };
 
-    fetchData();
-  }, []);
+      if (levelsRes.success && levelsRes.data && levels.length === 0) {
+        setLevels(levelsRes.data);
+      }
+    } catch (error) {
+      console.error("Error fetching logs data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(currentPage);
+  }, [currentPage]);
 
   // Filter Logic
   const filteredData = userProgressData.filter((user) => {
@@ -150,7 +168,7 @@ export default function DosenMonitoringPage() {
               ) : filteredData.length > 0 ? (
                 filteredData.map((data, index) => (
                   <TableRow key={data.id}>
-                    <TableCell className="text-center">{index + 1}</TableCell>
+                    <TableCell className="text-center">{(currentPage - 1) * 10 + index + 1}</TableCell>
 
                     <TableCell>
                       <div className="font-medium text-center">{data.name}</div>
@@ -245,6 +263,13 @@ export default function DosenMonitoringPage() {
               )}
             </TableBody>
           </Table>
+          <TablePagination 
+            currentPage={currentPage}
+            totalPages={paginationInfo.totalPages}
+            hasNext={paginationInfo.hasNext}
+            hasPrev={paginationInfo.hasPrev}
+            onPageChange={setCurrentPage}
+          />
         </CardContent>
       </Card>
     </div>
