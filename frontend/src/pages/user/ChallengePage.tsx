@@ -172,7 +172,6 @@ function PreviewPanel({
     if (primaryLanguage === "css" || primaryLanguage === "javascript") {
       const { html, css, javascript } = codes;
       // Tentukan apakah hanya JS murni (tanpa HTML boilerplate) untuk console-only mode
-      const isJsOnly = primaryLanguage === "javascript";
       previewHtml = `
         <!DOCTYPE html>
         <html lang="id">

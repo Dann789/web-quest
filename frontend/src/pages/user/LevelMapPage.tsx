@@ -765,7 +765,7 @@ export default function LevelMapPage() {
 
 function MapNode({
     node,
-    index,
+    // index,
     position,
     isLoading,
     onNodeClick,
@@ -779,7 +779,7 @@ function MapNode({
     
     // Determine Style based on Difficulty & Status
     const styles = useMemo(() => {
-        const isLocked = node.status === 'locked';
+        // const isLocked = node.status === 'locked';
         const isCompleted = node.status === 'completed';
         const isCurrent = node.status === 'unlocked';
 

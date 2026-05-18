@@ -27,8 +27,8 @@ export default function DashboardPage() {
   const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
   const [summary, setSummary] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [,setLoading] = useState(true);
+  const [, setError] = useState("");
 
   const loadData = useCallback(async () => {
     try {
