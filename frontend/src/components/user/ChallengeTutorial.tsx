@@ -24,7 +24,7 @@ export default function ChallengeTutorial({ steps, onComplete, onSkip }: Challen
   // Stores the final CSS properties (top, left, transform) for the tooltip container
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties | null>(null);
   // Stores the left offset for the arrow so it points to the target correctly
-  const [arrowStyle, setArrowStyle] = useState<React.CSSProperties | null>(null);
+  const [, setArrowStyle] = useState<React.CSSProperties | null>(null);
 
   const activeStep = steps[currentStep];
 
