@@ -6,7 +6,7 @@ export async function seedLevel5Material(prisma: PrismaClient) {
   const level = await prisma.level.upsert({
     where: { id: 5 },
     update: {
-      name: "Database SQL",
+      name: "Database",
       xpRequired: 2000,
       description: "Manajemen dan manipulasi database dengan SQL",
       iconName: "fa-database",
@@ -16,7 +16,7 @@ export async function seedLevel5Material(prisma: PrismaClient) {
     },
     create: {
       id: 5,
-      name: "Database SQL",
+      name: "Database",
       xpRequired: 2000,
       description: "Manajemen dan manipulasi database dengan SQL",
       iconName: "fa-database",
