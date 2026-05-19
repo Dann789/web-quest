@@ -21,6 +21,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import logoSidebar from "@/assets/logo/logo-sidebar.png";
 
 interface SidebarProps {
   className?: string;
@@ -85,7 +86,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
           onClick={onClose}
         >
           <img
-            src="/src/assets/logo/logo-sidebar.png"
+            src={logoSidebar}
             alt="Web Quest Logo"
             className="object-cover"
             width={80}

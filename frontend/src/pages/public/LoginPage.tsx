@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Eye, EyeOff, User, Lock, ArrowRight } from "lucide-react";
 import { login as loginService } from "@/services/auth/AuthService";
 import { toast } from "sonner";
+import logoTab from "@/assets/logo/logo-tab.png";
 
 /**
  * Login Page - Split layout with branding and form
@@ -183,7 +184,7 @@ export default function LoginPage() {
           {/* Logo */}
           <div>
             <img
-              src="/src/assets/logo/logo-tab.png"
+              src={logoTab}
               alt="Logo Web Quest"
               width={120}
               height={120}
