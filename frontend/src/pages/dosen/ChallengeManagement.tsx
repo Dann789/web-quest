@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Plus, Edit, Trash, Puzzle, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash, Puzzle, Loader2, Download } from 'lucide-react';
 import { ChallengeDialog } from '@/components/dosen/ChallengeDialog';
 import { DeleteChallengeDialog } from '@/components/dosen/DeleteChallengeDialog';
 import { getLevels } from '@/services/dosen/LevelService';
@@ -15,6 +15,7 @@ import {
   createChallenge,
   updateChallenge,
   deleteChallenge,
+  exportAllChallenges,
 } from '@/services/dosen/ChallengeService';
 import type { Challenge, Level } from '@/types';
 import { TablePagination } from '@/components/common/TablePagination';
@@ -57,6 +58,9 @@ export default function ChallengeManagement() {
     hasPrev: false,
     totalItems: 0
   });
+
+  // Export state
+  const [isExporting, setIsExporting] = useState(false);
 
   // Load data on mount
   useEffect(() => {
@@ -186,12 +190,70 @@ export default function ChallengeManagement() {
     setIsDeleteOpen(true);
   };
 
-  // Filter logic — by levelId (number) and method (string)
-
-
   // Helper: get level name from nested level object or levels list
   const getLevelName = (c: any) =>
     c.level?.name ?? levels.find(l => l.id === c.levelId)?.name ?? `Level ${c.levelId}`;
+
+  /**
+   * Export semua challenge ke file JSON.
+   * Format sesuai dengan schema payload yang digunakan saat create/update.
+   */
+  const handleExportJSON = async () => {
+    setIsExporting(true);
+    try {
+      const res = await exportAllChallenges();
+      if (!res.success || !res.data) {
+        toast.error('Gagal mengambil data challenge untuk export.');
+        return;
+      }
+
+      const exportData = res.data.map((c: any) => ({
+        id: c.id,
+        levelId: c.levelId,
+        levelName: getLevelName(c),
+        title: c.title,
+        description: c.description ?? '',
+        difficulty: c.difficulty,
+        method: c.method,
+        idealTime: c.idealTime,
+        xpBase: c.xpBase,
+        hint: c.hint ?? null,
+        isActive: c.isActive,
+        // Field spesifik per metode
+        starterCode: c.starterCode ?? null,
+        correctAnswer: c.correctAnswer ?? null,
+        buggyCode: c.buggyCode ?? null,
+        blocks: c.blocks ?? null,
+        expectedOrder: c.expectedOrder ?? null,
+        // Properti sandbox
+        sandboxEnabled: c.sandboxEnabled ?? false,
+        sandboxTemplate: c.sandboxTemplate ?? null,
+        sandboxLevel: c.sandboxLevel ?? null,
+        // Raw JSON columns
+        content: c.content ?? null,
+        testCases: c.testCases ?? null,
+      }));
+
+      const json = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      a.download = `challenges_export_${timestamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success(`Berhasil mengekspor ${exportData.length} soal ke JSON.`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Terjadi kesalahan saat export.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -204,9 +266,24 @@ export default function ChallengeManagement() {
           </h1>
           <p className="text-muted-foreground mt-2">Buat dan kelola soal tantangan untuk mahasiswa</p>
         </div>
-        <Button className="gap-2" onClick={() => setIsCreateOpen(true)} disabled={loading}>
-          <Plus className="h-4 w-4" /> Tambah Soal
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={handleExportJSON}
+            disabled={loading || isExporting}
+          >
+            {isExporting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            Export JSON
+          </Button>
+          <Button className="gap-2" onClick={() => setIsCreateOpen(true)} disabled={loading}>
+            <Plus className="h-4 w-4" /> Tambah Soal
+          </Button>
+        </div>
       </div>
 
       {/* Error Alert */}

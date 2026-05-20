@@ -6,21 +6,21 @@ export async function seedLevel4Material(prisma: PrismaClient) {
   const level = await prisma.level.upsert({
     where: { id: 4 },
     update: {
-      name: "PHP Programming",
+      name: "PHP Basic",
       xpRequired: 1000,
       description: "Pemrograman server-side dengan PHP",
       iconName: "fa-php",
-      easyNodes: 3,
+      easyNodes: 4,
       mediumNodes: 4,
       hardNodes: 3,
     },
     create: {
       id: 4,
-      name: "PHP Programming",
+      name: "PHP Basic",
       xpRequired: 1000,
       description: "Pemrograman server-side dengan PHP",
       iconName: "fa-php",
-      easyNodes: 3,
+      easyNodes: 4,
       mediumNodes: 4,
       hardNodes: 3,
     },
@@ -28,7 +28,7 @@ export async function seedLevel4Material(prisma: PrismaClient) {
 
   const materials = [
     {
-      id: 27,
+      id: 41,
       levelId: level.id,
       title: "Pengenalan PHP",
       order: 1,
@@ -48,7 +48,7 @@ echo "Halo, selamat datang di Web-Quest!";
       `,
     },
     {
-      id: 28,
+      id: 42,
       levelId: level.id,
       title: "Variabel & Tipe Data PHP",
       order: 2,
@@ -71,7 +71,7 @@ echo "Nama saya " . $nama . ", umur " . $umur . " tahun.";
       `,
     },
     {
-      id: 29,
+      id: 43,
       levelId: level.id,
       title: "Operator",
       order: 3,
@@ -155,7 +155,7 @@ if ($username == "admin" &amp;&amp; $password == "123") {
       `,
     },
     {
-      id: 30,
+      id: 44,
       levelId: level.id,
       title: "Conditional",
       order: 4,
@@ -232,7 +232,7 @@ switch ($hari) {
       `,
     },
     {
-      id: 31,
+      id: 45,
       levelId: level.id,
       title: "Looping",
       order: 5,
@@ -292,7 +292,7 @@ foreach ($buah as $item) {
       `,
     },
     {
-      id: 32,
+      id: 46,
       levelId: level.id,
       title: "Function",
       order: 6,
@@ -332,7 +332,7 @@ echo tambah(10, 5);
       `,
     },
     {
-      id: 33,
+      id: 47,
       levelId: level.id,
       title: "Array di PHP",
       order: 7,
@@ -364,7 +364,7 @@ echo $mahasiswa["nama"]; // Output: Wildan
       `,
     },
     {
-      id: 34,
+      id: 48,
       levelId: level.id,
       title: "Form Handling",
       order: 8,
@@ -429,7 +429,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       `,
     },
     {
-      id: 35,
+      id: 49,
       levelId: level.id,
       title: "Session di PHP",
       order: 9,
@@ -492,7 +492,7 @@ session_destroy();
       `,
     },
     {
-      id: 36,
+      id: 50,
       levelId: level.id,
       title: "Cookies di PHP",
       order: 10,
@@ -549,7 +549,7 @@ setcookie(
       `,
     },
     {
-      id: 37,
+      id: 51,
       levelId: level.id,
       title: "File Upload",
       order: 11,
@@ -598,7 +598,7 @@ echo "Upload berhasil";
       `,
     },
     {
-      id: 38,
+      id: 52,
       levelId: level.id,
       title: "Konsep CRUD",
       order: 12,
@@ -684,7 +684,7 @@ WHERE id=1
       `,
     },
     {
-      id: 39,
+      id: 53,
       levelId: level.id,
       title: "Database Connection",
       order: 13,
@@ -747,7 +747,7 @@ echo "Koneksi berhasil";
       `,
     },
     {
-      id: 40,
+      id: 54,
       levelId: level.id,
       title: "Authentication",
       order: 14,
@@ -860,3 +860,8 @@ header("Location: login.php");
 
   console.log("✅ Material Level 4 PHP seeding completed!");
 }
+
+const p = new PrismaClient();
+seedLevel4Material(p)
+  .catch(console.error)
+  .finally(() => p.$disconnect());

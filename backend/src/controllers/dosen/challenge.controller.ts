@@ -282,7 +282,7 @@ export class ChallengeController {
           isActive,
         },
         select: {
-          id: true,
+          //id: true,
           levelId: true,
           title: true,
           description: true,

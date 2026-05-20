@@ -11,8 +11,8 @@ export async function seedLevel3Material(prisma: PrismaClient) {
       description: "Interaktivitas dan logika pemrograman dengan JavaScript",
       iconName: "fa-js",
       easyNodes: 4,
-      mediumNodes: 7,
-      hardNodes: 5,
+      mediumNodes: 4,
+      hardNodes: 3,
     },
     create: {
       id: 3,
@@ -21,8 +21,8 @@ export async function seedLevel3Material(prisma: PrismaClient) {
       description: "Interaktivitas dan logika pemrograman dengan JavaScript",
       iconName: "fa-js",
       easyNodes: 4,
-      mediumNodes: 7,
-      hardNodes: 5,
+      mediumNodes: 4,
+      hardNodes: 3,
     },
   });
 
@@ -135,6 +135,21 @@ JavaScript akan mengecek apakah suatu kondisi bernilai <strong>true</strong> ata
     <li>else if</li>
     <li>switch</li>
 </ul>
+
+<h3>Operator Logika & Perbandingan</h3>
+<p>Dalam membuat kondisi, kita sering membandingkan nilai menggunakan operator berikut:</p>
+<ul>
+    <li><code>===</code> : Sama dengan (tipe data dan nilai harus persis sama)</li>
+    <li><code>!==</code> : Tidak sama dengan</li>
+    <li><code>></code> atau <code><</code> : Lebih besar / Lebih kecil</li>
+    <li><code>&&</code> : AND (Semua kondisi harus <strong>true</strong>)</li>
+    <li><code>||</code> : OR (Salah satu kondisi harus <strong>true</strong>)</li>
+</ul>
+
+<pre><code>// Contoh penggunaan operator AND (&&) dan Sama Dengan (===)
+if (username === "admin" && password === "123") {
+    console.log("Login Berhasil");
+}</code></pre>
 
 <h3>Contoh If</h3>
 
@@ -558,7 +573,7 @@ form.addEventListener("submit", function(event) {
 });
 </code></pre>
 
-<h3>Validasi Panjang Password</h3>
+        <h3>Validasi Panjang Password</h3>
 
 <pre><code>if (password.length < 8) {
     alert("Password minimal 8 karakter");
@@ -571,6 +586,85 @@ form.addEventListener("submit", function(event) {
     alert("Format email tidak valid");
 }
 </code></pre>
+      `,
+    },
+    {
+      id: 38,
+      levelId: level.id,
+      title: "DOM Manipulation Lanjutan",
+      order: 11,
+      content: `
+        <h3>Mengelola Class (classList)</h3>
+        <p>Properti <code>classList</code> sangat berguna untuk menambah, menghapus, atau mengganti class CSS pada sebuah elemen (misalnya untuk fitur Dark Mode).</p>
+        <pre><code>const box = document.getElementById("box");
+// Menambah class
+box.classList.add("dark");
+// Menghapus class
+box.classList.remove("dark");
+// Mengganti otomatis (jika ada dihapus, jika tidak ada ditambah)
+box.classList.toggle("dark");</code></pre>
+
+        <h3>Membuat & Memasukkan Elemen Baru</h3>
+        <p>Selain menggunakan <code>innerHTML</code>, kita bisa membuat elemen secara spesifik lalu memasukkannya ke dalam struktur HTML (seperti membuat Todo List).</p>
+        <pre><code>// 1. Buat elemen baru
+const li = document.createElement("li");
+li.innerText = "Belajar JavaScript";
+
+// 2. Masukkan ke dalam elemen parent (ul)
+const ul = document.getElementById("list");
+ul.appendChild(li);</code></pre>
+      `,
+    },
+    {
+      id: 39,
+      levelId: level.id,
+      title: "Array Method Lanjutan",
+      order: 12,
+      content: `
+        <h3>Method .map()</h3>
+        <p>Method <code>map()</code> membuat <strong>array baru</strong> dengan hasil dari pemanggilan fungsi pada setiap elemen array awal. Sangat berguna untuk mengubah format data.</p>
+        <pre><code>const angka = [1, 2, 3];
+const dikaliDua = angka.map(item => item * 2);
+console.log(dikaliDua); // Hasil: [2, 4, 6]</code></pre>
+
+        <h3>Method .filter()</h3>
+        <p>Method <code>filter()</code> membuat <strong>array baru</strong> yang hanya berisi elemen-elemen yang <strong>lulus uji</strong> dari kondisi tertentu.</p>
+        <pre><code>const angka = [1, 2, 3, 6, 7, 8];
+// Ambil angka yang lebih besar dari 5
+const hasil = angka.filter(item => item > 5);
+console.log(hasil); // Hasil: [6, 7, 8]</code></pre>
+      `,
+    },
+    {
+      id: 40,
+      levelId: level.id,
+      title: "Async JavaScript & Fetch API",
+      order: 13,
+      content: `
+        <h3>Pengertian Asynchronous</h3>
+        <p>JavaScript biasanya mengeksekusi kode baris per baris. Namun, operasi seperti mengambil data dari server membutuhkan waktu (Asynchronous). Kita menggunakan kata kunci <code>async</code> dan <code>await</code> agar JavaScript mau "menunggu" proses tersebut selesai sebelum melanjutkan ke baris berikutnya.</p>
+
+        <h3>Fetch API & JSON</h3>
+        <p><code>fetch()</code> digunakan untuk memanggil API. Format data balasan dari server umumnya berupa teks JSON, sehingga kita harus mengubahnya menjadi object JavaScript menggunakan <code>JSON.parse()</code> atau method <code>.json()</code>.</p>
+        <pre><code>async function getData() {
+    // 1. Tunggu data di-download
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts/1");
+    // 2. Tunggu konversi ke JSON selesai
+    const data = await response.json(); 
+    console.log(data.title);
+}</code></pre>
+
+        <h3>Error Handling (Try-Catch)</h3>
+        <p>Sangat penting menangani potensi kegagalan (seperti internet putus) saat menggunakan Fetch. Gunakan blok <code>try...catch</code>.</p>
+        <pre><code>async function getData() {
+    try {
+        const response = await fetch("url-api");
+        const data = await response.json();
+    } catch (error) {
+        // Blok ini dieksekusi jika terjadi error
+        console.log("Terjadi masalah: ", error);
+    }
+}</code></pre>
       `,
     },
   ];
@@ -589,3 +683,8 @@ form.addEventListener("submit", function(event) {
 
   console.log("✅ Material Level 3 JavaScript Basics seeding completed!");
 }
+
+const p = new PrismaClient();
+seedLevel3Material(p)
+  .catch(console.error)
+  .finally(() => p.$disconnect());

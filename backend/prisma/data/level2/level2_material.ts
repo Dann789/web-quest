@@ -10,8 +10,8 @@ export async function seedLevel2Material(prisma: PrismaClient) {
       xpRequired: 250,
       description: "Styling dan layout halaman web dengan CSS",
       iconName: "fa-css3",
-      easyNodes: 5,
-      mediumNodes: 8,
+      easyNodes: 4,
+      mediumNodes: 4,
       hardNodes: 3,
     },
     create: {
@@ -20,8 +20,8 @@ export async function seedLevel2Material(prisma: PrismaClient) {
       xpRequired: 250,
       description: "Styling dan layout halaman web dengan CSS",
       iconName: "fa-css3",
-      easyNodes: 5,
-      mediumNodes: 8,
+      easyNodes: 4,
+      mediumNodes: 4,
       hardNodes: 3,
     },
   });
@@ -131,12 +131,27 @@ export async function seedLevel2Material(prisma: PrismaClient) {
           <li><strong>Margin:</strong> Ruang spasi kosong terluar untuk memberi jarak antar-elemen.</li>
         </ol>
 
-        <h3>Contoh Implementasi Box Model</h3>
+        <h3>Shorthand (Penulisan Singkat)</h3>
+        <p>Margin dan Padding dapat ditulis secara singkat berdasarkan arah jarum jam (Atas, Kanan, Bawah, Kiri):</p>
+        <ul>
+          <li><code>margin: 10px;</code> (Semua sisi 10px)</li>
+          <li><code>padding: 10px 20px;</code> (Atas-Bawah 10px, Kiri-Kanan 20px)</li>
+          <li><code>margin: 10px 15px 20px 25px;</code> (Atas 10px, Kanan 15px, Bawah 20px, Kiri 25px)</li>
+          <li><code>margin: auto;</code> (Otomatis menempatkan elemen ke tengah secara horizontal)</li>
+        </ul>
+
+        <h3>Penting: Box-Sizing</h3>
+        <p>Secara default, penambahan <code>padding</code> dan <code>border</code> akan menambah ukuran lebar dan tinggi total dari suatu elemen. Agar ukuran elemen tetap konsisten persis seperti angka <code>width</code> yang Anda tentukan (meskipun diberi padding), sangat disarankan untuk selalu menambahkan kode ini di awal CSS:</p>
+        <pre><code>* {
+  box-sizing: border-box;
+}</code></pre>
+
+        <h3>Contoh Implementasi Lengkap</h3>
         <pre><code>.box {
   width: 300px;
-  padding: 20px;
+  padding: 10px 20px; /* Shorthand */
   border: 2px solid black;
-  margin: 15px;
+  margin: auto; /* Otomatis ke tengah layar */
 }</code></pre>
       `,
     },
@@ -680,3 +695,8 @@ Transition sering digunakan bersama hover agar animasi terlihat lebih smooth.
 
   console.log("✅ Material Level 2 CSS Styling seeding completed!");
 }
+
+const p = new PrismaClient();
+seedLevel2Material(p)
+  .catch(console.error)
+  .finally(() => p.$disconnect());

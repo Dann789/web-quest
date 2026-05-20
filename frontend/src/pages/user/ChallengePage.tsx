@@ -37,7 +37,7 @@ import ChallengeTutorial, {
   type TutorialStep,
 } from "@/components/user/ChallengeTutorial";
 import type { Challenge, DragItem } from "@/types";
-import { submitAnswer, runPhpCode, getChallengeSchema, runSqlCode } from "@/services/user/ChallengeService";
+import { submitAnswer, runPhpCode, getChallengeSchema, runSqlCode, getNodeChallenge } from "@/services/user/ChallengeService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -65,6 +65,38 @@ function detectLanguage(levelId: number): Language {
     5: "sql",
   };
   return languageMap[levelId] ?? "html";
+}
+
+/**
+ * Menentukan apakah challenge JavaScript ini HANYA melibatkan script.js
+ * (tanpa interaksi HTML/CSS dari tab lain).
+ *
+ * Jika true  → arahkan hasil run ke Console View
+ * Jika false → arahkan hasil run ke Live Preview (soal ada HTML/CSS)
+ */
+function isJsOnlyChallenge(challenge: Challenge): boolean {
+  // Jika starterCode berupa JSON multi-file, cek apakah html/css-nya berisi konten
+  try {
+    const starter = challenge.starterCode ?? "";
+    if (starter.trim().startsWith("{")) {
+      const parsed = JSON.parse(starter) as Record<string, string>;
+      const hasHtml = (parsed.html ?? "").trim().length > 0;
+      const hasCss  = (parsed.css  ?? "").trim().length > 0;
+      if (hasHtml || hasCss) return false; // ada konten HTML/CSS → bukan JS-only
+    }
+  } catch {}
+
+  // Cek kolom content (JSON) untuk keberadaan field correctAnswer / template yang menyertakan HTML
+  try {
+    const content = (challenge.content ?? {}) as any;
+    const correctAnswer = (content.correctAnswer ?? "") as string;
+    // Jika correctAnswer mengandung tag HTML
+    if (/<[a-z][\s\S]*>/i.test(correctAnswer)) return false;
+    // Jika content.language berbeda dari javascript
+    if (content.language && content.language !== "javascript") return false;
+  } catch {}
+
+  return true; // Hanya script.js → arahkan ke Console
 }
 
 function useTimer(isActive: boolean) {
@@ -396,19 +428,22 @@ export default function ChallengePage() {
     );
   }
 
-  const { assignmentId, isCompleted: alreadyCompleted, challenge, levelId } = state;
+  const { assignmentId, isCompleted: alreadyCompleted, challenge, levelId, nodeSlot } = state;
   const language = detectLanguage(levelId);
 
   return (
     <ChallengeView
+      key={challenge.id}
       challenge={challenge}
       assignmentId={assignmentId}
       alreadyCompleted={alreadyCompleted}
       language={language}
       navigate={navigate}
       levelId={levelId}
+      nodeSlot={nodeSlot}
     />
   );
+
 }
 
 // ─── ChallengeView (dipisah agar hooks tidak dipanggil secara kondisional) ───
@@ -419,6 +454,7 @@ function ChallengeView({
   language,
   navigate,
   levelId,
+  nodeSlot,
 }: {
   challenge: Challenge;
   assignmentId: number;
@@ -426,11 +462,18 @@ function ChallengeView({
   language: Language;
   navigate: ReturnType<typeof useNavigate>;
   levelId: number;
+  nodeSlot: number;
 }) {
   const { user, updateUser } = useAuth();
-  const [isTutorialActive, setIsTutorialActive] = useState(true);
+  
+  const tutorialKey = `web_quest_tutorial_completed_${challenge.method}`;
+  const [isTutorialActive, setIsTutorialActive] = useState(() => {
+    return localStorage.getItem(tutorialKey) !== "true";
+  });
+  
   const { formatted: timer, raw: timerSeconds } = useTimer(!isTutorialActive);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isNavigatingNext, setIsNavigatingNext] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
   // Info: node sudah pernah diselesaikan (hanya untuk tampilan banner, bukan kunci pengerjaan)
   const wasAlreadyCompleted = alreadyCompleted;
@@ -496,7 +539,9 @@ function ChallengeView({
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [showHint, setShowHint] = useState(false);
   const [activeTab, setActiveTab] = useState(language);
-  const [activePreviewTab, setActivePreviewTab] = useState(language === "javascript" ? "console" : "preview");
+  // Smart default: console jika JS-only (tidak melibatkan HTML/CSS), preview jika ada multi-file
+  const jsOnly = language === "javascript" && isJsOnlyChallenge(challenge);
+  const [activePreviewTab, setActivePreviewTab] = useState(jsOnly ? "console" : "preview");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [consoleEntries, setConsoleEntries] = useState<ConsoleEntry[]>([]);
   const [runTrigger, setRunTrigger] = useState(0);
@@ -598,9 +643,10 @@ function ChallengeView({
       setPreviewCodes(codesToPreview);
       setHasRunPreview(true);
       
-      // Setelah run: arahkan ke Console View jika JavaScript, Live Preview untuk lainnya
+      // Setelah run: arahkan ke Console View jika JS-only, Live Preview untuk lainnya
       setValidationErrors([]);
-      setActivePreviewTab(language === "javascript" ? "console" : "preview");
+      const shouldShowConsole = language === "javascript" && isJsOnlyChallenge(challenge);
+      setActivePreviewTab(shouldShowConsole ? "console" : "preview");
       
       if (challenge.method === "DRAG_AND_DROP") {
         const isCorrect = checkDragDropAnswer();
@@ -767,6 +813,38 @@ function ChallengeView({
   const handleTryAgain = () => {
     setShowResultDialog(false);
     setSubmitStatus("idle");
+  };
+
+  // ─── Next Node Handler ─────────────────────────────────────────────────────
+  // Total challenge nodes: easy + medium + hard (tanpa node materi)
+  // nodeSlot dimulai dari 1 (index-based dari LevelMapPage)
+  const handleNextNode = async () => {
+    const nextSlot = nodeSlot + 1;
+    if (!user?.id) return;
+    setIsNavigatingNext(true);
+    try {
+      const result = await getNodeChallenge(user.id, levelId, nextSlot);
+      if (!result.success || !result.data) {
+        toast.error(result.message || 'Gagal memuat soal berikutnya.');
+        navigate(-1); // Fallback ke map jika gagal
+        return;
+      }
+      navigate('/challenge', {
+        state: {
+          assignmentId: result.data.assignmentId,
+          isCompleted: result.data.isCompleted,
+          challenge: result.data.challenge,
+          levelId,
+          nodeSlot: nextSlot,
+        },
+        replace: true, // Ganti history entry agar tombol back tetap wajar
+      });
+    } catch {
+      toast.error('Terjadi kesalahan saat memuat node berikutnya.');
+      navigate(-1);
+    } finally {
+      setIsNavigatingNext(false);
+    }
   };
 
   // ─── Badge method ──────────────────────────────────────────────────────────
@@ -1302,12 +1380,27 @@ function ChallengeView({
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-6 flex justify-center sm:justify-center w-full relative z-10">
             {submitStatus === "success" ? (
-              <AlertDialogAction
-                onClick={handleBackToMap}
-                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white w-full sm:w-auto px-10 py-6 text-lg rounded-xl"
-              >
-                <MapPin className="h-6 w-6" /> Kembali ke Map
-              </AlertDialogAction>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
+                <AlertDialogAction
+                  onClick={handleBackToMap}
+                  className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 w-full sm:w-auto px-8 py-6 text-base rounded-xl transition-all"
+                >
+                  <MapPin className="h-5 w-5" /> Kembali ke Map
+                </AlertDialogAction>
+                <AlertDialogAction
+                  onClick={handleNextNode}
+                  disabled={isNavigatingNext}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white w-full sm:w-auto px-10 py-6 text-base rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all"
+                >
+                  {isNavigatingNext ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5" />
+                  )}
+                  {isNavigatingNext ? "Memuat..." : "Node Berikutnya"}
+                </AlertDialogAction>
+              </div>
+
             ) : (
               <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
                 <AlertDialogCancel
@@ -1338,8 +1431,14 @@ function ChallengeView({
       {isTutorialActive && (
         <ChallengeTutorial
           steps={tutorialSteps}
-          onComplete={() => setIsTutorialActive(false)}
-          onSkip={() => setIsTutorialActive(false)}
+          onComplete={() => {
+            localStorage.setItem(tutorialKey, "true");
+            setIsTutorialActive(false);
+          }}
+          onSkip={() => {
+            localStorage.setItem(tutorialKey, "true");
+            setIsTutorialActive(false);
+          }}
         />
       )}
     </div>

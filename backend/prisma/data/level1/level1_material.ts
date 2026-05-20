@@ -10,8 +10,8 @@ export async function seedLevel1Material(prisma: PrismaClient) {
       xpRequired: 0,
       description: "Belajar dasar HTML dan struktur web",
       iconName: "fa-html5",
-      easyNodes: 5,
-      mediumNodes: 6,
+      easyNodes: 4,
+      mediumNodes: 4,
       hardNodes: 3,
     },
     create: {
@@ -20,8 +20,8 @@ export async function seedLevel1Material(prisma: PrismaClient) {
       xpRequired: 0,
       description: "Belajar dasar HTML dan struktur web",
       iconName: "fa-html5",
-      easyNodes: 5,
-      mediumNodes: 6,
+      easyNodes: 4,
+      mediumNodes: 4,
       hardNodes: 3,
     },
   });
@@ -703,87 +703,10 @@ Attribute adalah informasi tambahan yang diberikan pada tag HTML.
     });
   }
 
-  // 3. Seed Challenges
-  const challenges = [
-    {
-      id: 101,
-      levelId: level.id,
-      title: "Membuat Heading HTML",
-      description:
-        "Buatlah sebuah heading level 1 (h1) dengan teks 'Belajar HTML'",
-      difficulty: Difficulty.EASY,
-      method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 120,
-      xpBase: 10,
-      hint: "Gunakan tag <h1> dan tutup dengan </h1>",
-      starterCode: "<!-- Tulis heading h1 Anda di bawah ini -->\n",
-      content: {
-        language: "html",
-        sandboxEnabled: false,
-        starterCode: "<!-- Tulis heading h1 Anda di bawah ini -->\n",
-        correctAnswer: "<h1>Belajar HTML</h1>",
-      },
-      testCases: [
-        {
-          input: null,
-          expectedOutput: "<h1>Belajar HTML</h1>",
-          isHidden: false,
-          weight: 100,
-        },
-      ],
-      isActive: true,
-    },
-    {
-      id: 102,
-      levelId: level.id,
-      title: "Membuat List HTML",
-      description:
-        "Buatlah unordered list (ul) dengan 3 item (li): HTML, CSS, dan JavaScript",
-      difficulty: Difficulty.MEDIUM,
-      method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 180,
-      xpBase: 20,
-      hint: "Gunakan tag <ul> lalu bungkus setiap item dengan tag <li>",
-      starterCode: "<!-- Tulis list Anda di bawah ini -->\n<ul>\n\n</ul>",
-      content: {
-        language: "html",
-        sandboxEnabled: false,
-        starterCode: "<!-- Tulis list Anda di bawah ini -->\n<ul>\n\n</ul>",
-        correctAnswer:
-          "<ul>\n  <li>HTML</li>\n  <li>CSS</li>\n  <li>JavaScript</li>\n</ul>",
-      },
-      testCases: [
-        {
-          input: null,
-          expectedOutput:
-            "<ul>\n  <li>HTML</li>\n  <li>CSS</li>\n  <li>JavaScript</li>\n</ul>",
-          isHidden: false,
-          weight: 100,
-        },
-      ],
-      isActive: true,
-    },
-  ];
-
-  for (const c of challenges) {
-    await prisma.challenge.upsert({
-      where: { id: c.id },
-      update: {
-        title: c.title,
-        description: c.description,
-        difficulty: c.difficulty,
-        method: c.method,
-        idealTime: c.idealTime,
-        xpBase: c.xpBase,
-        hint: c.hint,
-        starterCode: c.starterCode,
-        content: c.content,
-        testCases: c.testCases,
-        isActive: c.isActive,
-      },
-      create: c,
-    });
-  }
-
   console.log("✅ Material Level 1 HTML Basics seeding completed!");
 }
+
+const p = new PrismaClient();
+seedLevel1Material(p)
+  .catch(console.error)
+  .finally(() => p.$disconnect());

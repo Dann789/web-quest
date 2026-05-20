@@ -10,7 +10,7 @@ export async function seedLevel5Material(prisma: PrismaClient) {
       xpRequired: 2000,
       description: "Manajemen dan manipulasi database dengan SQL",
       iconName: "fa-database",
-      easyNodes: 3,
+      easyNodes: 4,
       mediumNodes: 4,
       hardNodes: 3,
     },
@@ -20,7 +20,7 @@ export async function seedLevel5Material(prisma: PrismaClient) {
       xpRequired: 2000,
       description: "Manajemen dan manipulasi database dengan SQL",
       iconName: "fa-database",
-      easyNodes: 3,
+      easyNodes: 4,
       mediumNodes: 4,
       hardNodes: 3,
     },
@@ -28,7 +28,7 @@ export async function seedLevel5Material(prisma: PrismaClient) {
 
   const materials = [
     {
-      id: 41,
+      id: 55,
       levelId: level.id,
       title: "Pengenalan Database & SQL",
       order: 1,
@@ -72,7 +72,7 @@ RDBMS (Relational Database Management System) adalah sistem manajemen database y
       `,
     },
     {
-      id: 42,
+      id: 56,
       levelId: level.id,
       title: "Primary dan Foreign Key",
       order: 2,
@@ -131,7 +131,7 @@ CREATE TABLE mahasiswa (
       `,
     },
     {
-      id: 43,
+      id: 57,
       levelId: level.id,
       title: "Relationship",
       order: 3,
@@ -196,7 +196,7 @@ FROM mahasiswa;
       `,
     },
     {
-      id: 44,
+      id: 58,
       levelId: level.id,
       title: "Perintah SELECT Dasar",
       order: 4,
@@ -214,7 +214,7 @@ FROM mahasiswa;
       `,
     },
     {
-      id: 45,
+      id: 59,
       levelId: level.id,
       title: "Memfilter Data dengan WHERE",
       order: 5,
@@ -237,7 +237,7 @@ WHERE role = 'DOSEN';</code></pre>
       `,
     },
     {
-      id: 46,
+      id: 60,
       levelId: level.id,
       title: "Menambahkan Data dengan INSERT",
       order: 6,
@@ -256,7 +256,7 @@ VALUES ('wildan', 'wildan@gmail.com', 'MAHASISWA');</code></pre>
       `,
     },
     {
-      id: 47,
+      id: 61,
       levelId: level.id,
       title: "Mengubah Data dengan UPDATE",
       order: 7,
@@ -276,7 +276,7 @@ WHERE id = 1;
       `,
     },
     {
-      id: 48,
+      id: 62,
       levelId: level.id,
       title: "Menghapus Data dengan DELETE",
       order: 8,
@@ -294,7 +294,7 @@ WHERE id = 1;</code></pre>
       `,
     },
     {
-      id: 49,
+      id: 63,
       levelId: level.id,
       title: "ORDER BY",
       order: 9,
@@ -321,7 +321,7 @@ ORDER BY nama DESC;
       `,
     },
     {
-      id: 50,
+      id: 64,
       levelId: level.id,
       title: "GROUP BY",
       order: 10,
@@ -341,7 +341,7 @@ GROUP BY jurusan;
       `,
     },
     {
-      id: 51,
+      id: 65,
       levelId: level.id,
       title: "JOIN",
       order: 11,
@@ -355,11 +355,11 @@ JOIN digunakan untuk menggabungkan data dari beberapa tabel.
 <h3>Jenis JOIN</h3>
 
 <ul>
-    <li>INNER JOIN</li>
-    <li>LEFT JOIN</li>
+    <li>INNER JOIN (Hanya mengambil data yang beririsan/cocok)</li>
+    <li>LEFT JOIN (Mengambil semua data kiri, dan data kanan yang cocok)</li>
 </ul>
 
-<h3>Contoh INNER JOIN</h3>
+<h3>Contoh INNER JOIN (2 Tabel)</h3>
 
 <pre><code>SELECT 
     mahasiswa.nama,
@@ -370,10 +370,32 @@ FROM mahasiswa
 INNER JOIN kelas
 ON mahasiswa.kelas_id = kelas.id;
 </code></pre>
+
+<h3>Menggabungkan 3 Tabel (Multi-Table JOIN)</h3>
+<p>
+Anda juga bisa menggabungkan 3 tabel atau lebih secara berurutan. Kuncinya adalah cukup menambahkan perintah <code>JOIN ... ON ...</code> baru di bawahnya yang merelasikan tabel sebelumnya dengan tabel yang baru.
+</p>
+
+<pre><code>SELECT 
+    mahasiswa.nama,
+    kelas.nama_kelas,
+    dosen.nama_dosen
+
+FROM mahasiswa
+
+INNER JOIN kelas
+ON mahasiswa.kelas_id = kelas.id
+
+INNER JOIN dosen
+ON kelas.dosen_id = dosen.id;
+</code></pre>
+<p>
+Pada contoh di atas, kita merelasikan tabel <strong>mahasiswa</strong> dengan <strong>kelas</strong>, lalu kita relasikan lagi tabel <strong>kelas</strong> dengan <strong>dosen</strong>.
+</p>
       `,
     },
     {
-      id: 52,
+      id: 66,
       levelId: level.id,
       title: "Aggregate Function",
       order: 12,
@@ -431,7 +453,7 @@ FROM mahasiswa;
       `,
     },
     {
-      id: 53,
+      id: 67,
       levelId: level.id,
       title: "Constraint",
       order: 13,
@@ -496,3 +518,8 @@ Constraint digunakan untuk membatasi dan menjaga validitas data pada database.
 
   console.log("✅ Material Level 5 Database SQL seeding completed!");
 }
+
+const p = new PrismaClient();
+seedLevel5Material(p)
+  .catch(console.error)
+  .finally(() => p.$disconnect());

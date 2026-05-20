@@ -36,7 +36,9 @@ INSERT INTO doctors (name, specialist, phone) VALUES
 INSERT INTO patients (name, dob, address) VALUES
   ('Bambang Susilo',  '1990-05-14', 'Jl. Merdeka No. 1, Jakarta'),
   ('Dewi Lestari',    '1995-08-22', 'Jl. Sudirman No. 10, Bandung'),
-  ('Faisal Rahman',   '2000-01-30', 'Jl. Diponegoro No. 5, Surabaya');
+  ('Faisal Rahman',   '2000-01-30', 'Jl. Diponegoro No. 5, Surabaya'),
+  ('Budi Tabudi', '2001-01-01', 'Jl. Mawar No. 1, Jakarta'),
+  ('Andi', '2001-01-01', 'Jl. Melati No. 1, Jakarta');
 
 -- Seed: Appointments
 INSERT INTO appointments (doctor_id, patient_id, schedule, complaint, status) VALUES

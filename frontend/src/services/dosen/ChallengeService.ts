@@ -94,3 +94,19 @@ export async function deleteChallenge(id: number): Promise<ApiResponse<void>> {
     return { success: false, message: 'Failed to delete challenge' };
   }
 }
+
+/**
+ * Mengambil SEMUA challenge (tanpa batasan pagination) untuk keperluan export.
+ * Gunakan limit besar agar seluruh data terambil dalam satu request.
+ */
+export async function exportAllChallenges(): Promise<ApiResponse<Challenge[]>> {
+  try {
+    const response = await fetch(`${API_BASE}/api/challenges?page=1&limit=9999`, {
+      headers: getAuthHeaders(),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    return { success: false, message: 'Failed to export challenges' };
+  }
+}

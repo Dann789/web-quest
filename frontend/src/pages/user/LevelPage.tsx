@@ -115,29 +115,33 @@ export default function LevelPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {level.map((level) => {
-          const isLocked = currentXP < level.xpRequired;
-          const actualProgress = isLocked ? 0 : (levelProgress[level.id] || 0); 
-          const displayedProgress = isLocked ? 0 : (animatedProgress[level.id] || 0); 
+        {level.map((lvl) => {
+          const hasUnfinishedPreviousLevel = level.some(prevLvl => 
+            prevLvl.order < lvl.order && (levelProgress[prevLvl.id] || 0) < 100
+          );
+          const isLocked = currentXP < lvl.xpRequired || hasUnfinishedPreviousLevel;
+          const actualProgress = isLocked ? 0 : (levelProgress[lvl.id] || 0); 
+          const displayedProgress = isLocked ? 0 : (animatedProgress[lvl.id] || 0); 
 
           return (
-            <Card key={level.id} className={`flex flex-col h-full transition-all duration-300 ${isLocked ? 'opacity-75 bg-muted/30' : 'hover:border-primary/50 hover:shadow-lg'}`}>
+            <Card key={lvl.id} className={`flex flex-col h-full transition-all duration-300 ${isLocked ? 'opacity-75 bg-muted/30' : 'hover:border-primary/50 hover:shadow-lg'}`}>
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
-                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${theme[(level.id - 1) % theme.length]}`}>
-                    <i className={`text-2xl ${level.iconName} ${level.iconName === 'fa-database' ? 'fa-solid' : 'fa-brands'}`}></i>
+                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${theme[(lvl.id - 1) % theme.length]}`}>
+                    <i className={`text-2xl ${lvl.iconName} ${lvl.iconName === 'fa-database' ? 'fa-solid' : 'fa-brands'}`}></i>
                   </div>
                   {isLocked ? (
                      <Badge variant="outline" className="gap-1 bg-background text-muted-foreground border-dashed">
-                       <Lock className="h-3 w-3" />Butuh {level.xpRequired} XP
+                       <Lock className="h-3 w-3" />
+                       {hasUnfinishedPreviousLevel ? "Selesaikan Level Sebelumnya" : `Butuh ${lvl.xpRequired} XP`}
                      </Badge>
                   ) : (
                      <Badge className="bg-emerald-500 hover:bg-emerald-600">Terbuka</Badge>
                   )}
                 </div>
-                <CardTitle className="mt-4 text-xl">{level.name}</CardTitle>
+                <CardTitle className="mt-4 text-xl">{lvl.name}</CardTitle>
                 <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                  {level.description}
+                  {lvl.description}
                 </p>
               </CardHeader>
               <CardContent className="pb-4 flex-1">
@@ -151,7 +155,9 @@ export default function LevelPage() {
                    </div>
                  ) : (
                    <div className="h-full flex items-center justify-center text-sm text-muted-foreground bg-muted/20 rounded-lg p-4 border border-dashed text-center">
-                     Kumpulkan {level.xpRequired - currentXP} XP lagi untuk membuka
+                     {hasUnfinishedPreviousLevel 
+                       ? "Selesaikan semua tantangan pada level sebelumnya terlebih dahulu untuk membuka level ini."
+                       : `Kumpulkan ${lvl.xpRequired - currentXP} XP lagi untuk membuka`}
                    </div>
                  )}
               </CardContent>
@@ -162,7 +168,7 @@ export default function LevelPage() {
                   </Button>
                 ) : (
                   <Button className="w-full gap-2 group" asChild>
-                    <Link to={`/level/${level.id}`}>
+                    <Link to={`/level/${lvl.id}`}>
                       {actualProgress === 100 ? 'Review Level' : 'Mulai Belajar'} 
                       <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
