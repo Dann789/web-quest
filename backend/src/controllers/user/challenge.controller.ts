@@ -255,13 +255,10 @@ export class ChallengeAttemptController {
       const normalizeCode = (code: string): string => {
         if (!code) return "";
         return code
-          .replace(/\r\n/g, "\n")
-          .replace(/\r/g, "\n")
-          .split(/;|\n/)
-          .map((line) => line.trim())
-          .filter((line) => line.length > 0)
-          .sort()
-          .join(";");
+          .replace(/\r\n?/g, "\n")
+          .replace(/>\s+</g, "><")
+          .replace(/\s+/g, " ")
+          .trim();
       };
 
       const compareCodes = (actual: string, expected: string): boolean => {
