@@ -1,7 +1,7 @@
 import type { ApiResponse, User, UserRole } from '@/types';
 
 // Base API URL
-const API_BASE = 'http://localhost:3000';
+const API_BASE = '/api';
 
 /**
  * Get auth token from localStorage

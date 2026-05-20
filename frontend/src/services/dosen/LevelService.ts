@@ -1,7 +1,7 @@
 import type { ApiResponse, Level, LevelCompletionItem } from "@/types";
 
 // Base API URL
-const API_BASE = "http://localhost:3000";
+const API_BASE = "/api";
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem("web_quest_token");
