@@ -257,10 +257,11 @@ export class ChallengeAttemptController {
         return code
           .replace(/\r\n/g, "\n")
           .replace(/\r/g, "\n")
-          .split("\n")
+          .split(/;|\n/)
           .map((line) => line.trim())
           .filter((line) => line.length > 0)
-          .join("\n");
+          .sort()
+          .join(";");
       };
 
       const compareCodes = (actual: string, expected: string): boolean => {
