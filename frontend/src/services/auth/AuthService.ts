@@ -1,6 +1,6 @@
 import type { ApiResponse, User, RegisterRequest, LoginRequest, LoginResponse } from "@/types";
 
-const API_BASE = "/api";
+const API_BASE = "";
 
 export const login = async (
   credentials: LoginRequest,
