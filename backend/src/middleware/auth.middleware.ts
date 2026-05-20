@@ -31,6 +31,11 @@ export const authMiddleware = new Elysia()
 export const adminOnly = new Elysia()
     .use(authMiddleware)
     .derive(({ user, set }) => {
+        if (!user) {
+            set.status = 401;
+            throw new Error("Unauthorized");
+        }
+
         if (user.role !== UserRole.ADMIN) {
             set.status = 403;
             throw new Error("Forbidden: Admin access required");
@@ -41,6 +46,11 @@ export const adminOnly = new Elysia()
 export const dosenOnly = new Elysia()
     .use(authMiddleware)
     .derive(({ user, set }) => {
+        if (!user) {
+            set.status = 401;
+            throw new Error("Unauthorized");
+        }
+
         if (user.role !== UserRole.DOSEN) {
             set.status = 403;
             throw new Error("Forbidden: Dosen access required");
@@ -52,6 +62,11 @@ export const dosenOnly = new Elysia()
 export const mahasiswaOnly = new Elysia()
     .use(authMiddleware)
     .derive(({ user, set }) => {
+        if (!user) {
+            set.status = 401;
+            throw new Error("Unauthorized");
+        }
+
         if (user.role !== UserRole.MAHASISWA) {
             set.status = 403;
             throw new Error("Forbidden: User access required");

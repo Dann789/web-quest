@@ -2,8 +2,10 @@ import { Elysia, t } from "elysia";
 import { UserController } from "../../controllers/admin/user.controller";
 import { type CreateUserRequest, type UpdateUserRequest } from "../../types";
 import { UserRole } from "@prisma/client";
+import { adminOnly } from "../../middleware/auth.middleware";
 
 export const userRoutes = new Elysia({ prefix: "/api/users" })
+    .use(adminOnly)
     .get('/active-today', () => UserController.getActiveStudentsToday())
     .get('/new-user', () => UserController.getNewUserThisWeek())
     .get('/', () => UserController.getAllUsers())

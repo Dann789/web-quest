@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia";
 import { LogController } from "../../controllers/admin/log.controller";
+import { adminOnly } from "../../middleware/auth.middleware";
 
 const logQuerySchema = {
   query: t.Object({
@@ -11,6 +12,7 @@ const logQuerySchema = {
 };
 
 export const logRoutes = new Elysia({ prefix: "/api/logs" })
+  .use(adminOnly)
   .get(
     "/dosen/levels",
     ({ query }) =>
