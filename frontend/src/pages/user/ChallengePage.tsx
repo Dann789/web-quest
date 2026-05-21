@@ -47,6 +47,7 @@ interface ChallengePageState {
   challenge: Challenge;
   levelId: number;
   nodeSlot: number;
+  totalNodes?: number;
 }
 
 interface DragDropContent {
@@ -348,11 +349,9 @@ function PreviewPanel({
     } else {
       const code = codes.html || "";
       previewHtml = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
-        <style>*{box-sizing:border-box}body{background:#ffffff;color:black;font-family:system-ui;padding:24px;margin:0}
-        h1{font-size:2em;color:black}h2{font-size:1.5em;color:black}p{color:black}
-        a{color:}button{background:#3b82f6;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer}
-        input,textarea{background:#334155;border:1px solid #475569;color:white;padding:8px 12px;border-radius:6px;width:100%}
-        table{border-collapse:collapse;width:100%}th,td{border:1px solid #475569;padding:12px;text-align:left}th{background:#334155}
+        <style>
+          body { background: #ffffff; color: black; padding: 24px; margin: 0; font-family: serif; }
+          input, textarea { border: 1px solid black; background: #ffffff; color: black; }
         </style></head><body>${code}</body></html>`;
     }
 
@@ -429,6 +428,7 @@ export default function ChallengePage() {
   }
 
   const { assignmentId, isCompleted: alreadyCompleted, challenge, levelId, nodeSlot } = state;
+  const totalNodes = state.totalNodes;
   const language = detectLanguage(levelId);
 
   return (
@@ -441,6 +441,7 @@ export default function ChallengePage() {
       navigate={navigate}
       levelId={levelId}
       nodeSlot={nodeSlot}
+      totalNodes={totalNodes}
     />
   );
 
@@ -455,6 +456,7 @@ function ChallengeView({
   navigate,
   levelId,
   nodeSlot,
+  totalNodes,
 }: {
   challenge: Challenge;
   assignmentId: number;
@@ -463,6 +465,7 @@ function ChallengeView({
   navigate: ReturnType<typeof useNavigate>;
   levelId: number;
   nodeSlot: number;
+  totalNodes?: number;
 }) {
   const { user, updateUser } = useAuth();
   
@@ -819,6 +822,7 @@ function ChallengeView({
   // Total challenge nodes: easy + medium + hard (tanpa node materi)
   // nodeSlot dimulai dari 1 (index-based dari LevelMapPage)
   const handleNextNode = async () => {
+    if (totalNodes && nodeSlot >= totalNodes) return;
     const nextSlot = nodeSlot + 1;
     if (!user?.id) return;
     setIsNavigatingNext(true);
@@ -836,6 +840,7 @@ function ChallengeView({
           challenge: result.data.challenge,
           levelId,
           nodeSlot: nextSlot,
+          totalNodes,
         },
         replace: true, // Ganti history entry agar tombol back tetap wajar
       });
@@ -1387,18 +1392,20 @@ function ChallengeView({
                 >
                   <MapPin className="h-5 w-5" /> Kembali ke Map
                 </AlertDialogAction>
-                <AlertDialogAction
-                  onClick={handleNextNode}
-                  disabled={isNavigatingNext}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white w-full sm:w-auto px-10 py-6 text-base rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all"
-                >
-                  {isNavigatingNext ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <ChevronRight className="h-5 w-5" />
-                  )}
-                  {isNavigatingNext ? "Memuat..." : "Node Berikutnya"}
-                </AlertDialogAction>
+                {(!totalNodes || nodeSlot < totalNodes) && (
+                  <AlertDialogAction
+                    onClick={handleNextNode}
+                    disabled={isNavigatingNext}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white w-full sm:w-auto px-10 py-6 text-base rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all"
+                  >
+                    {isNavigatingNext ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5" />
+                    )}
+                    {isNavigatingNext ? "Memuat..." : "Node Berikutnya"}
+                  </AlertDialogAction>
+                )}
               </div>
 
             ) : (

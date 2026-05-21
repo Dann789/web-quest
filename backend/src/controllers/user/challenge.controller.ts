@@ -251,20 +251,79 @@ export class ChallengeAttemptController {
 
       const challenge = assignment.challenge;
 
+      // Ambil objek content untuk mendapatkan jenis bahasa pemrograman utama soal
+      const contentObj = challenge.content as { language?: string } | null;
+      const language = contentObj?.language || "html";
+
       // Validate answer based on method
-      const normalizeCode = (code: string): string => {
+      const normalizeCodeByLanguage = (code: string, lang: string): string => {
         if (!code) return "";
-        return code
-          .replace(/\r\n?/g, "\n")
-          .replace(/>\s+</g, "><")
-          .replace(/\s+/g, " ")
-          .trim();
+        
+        // 1. Standarisasi newline
+        let normalized = code.replace(/\r\n?/g, "\n");
+
+        // 2. Hapus komentar berdasarkan bahasa pemrograman
+        if (lang === "html") {
+          normalized = normalized.replace(/<!--[\s\S]*?-->/g, "");
+        } else if (lang === "css") {
+          normalized = normalized.replace(/\/\*[\s\S]*?\*\//g, "");
+        } else if (lang === "javascript" || lang === "php") {
+          normalized = normalized.replace(/\/\*[\s\S]*?\*\//g, "");
+          normalized = normalized.replace(/\/\/.*$/gm, "");
+        } else if (lang === "sql") {
+          normalized = normalized.replace(/--.*$/gm, "");
+          normalized = normalized.replace(/\/\*[\s\S]*?\*\//g, "");
+        }
+
+        // 3. Amankan teks string literal agar spasi/tanda kutip di dalamnya tidak rusak
+        const strings: string[] = [];
+        const stringRegex = /(["'`])(?:\\.|[^\\])*?\1/g;
+        normalized = normalized.replace(stringRegex, (match) => {
+          let normalizedStr = match;
+          // Satukan tanda kutip satu ke kutip dua untuk standarisasi
+          if (match.startsWith("'") && match.endsWith("'")) {
+            const content = match.slice(1, -1).replace(/"/g, '\\"');
+            normalizedStr = `"${content}"`;
+          }
+          strings.push(normalizedStr);
+          return `__STR_PLACEHOLDER_${strings.length - 1}__`;
+        });
+
+        // 4. Hapus spasi di sekitar simbol dan operator
+        if (lang === "html") {
+          normalized = normalized.replace(/>\s+</g, "><");
+          normalized = normalized.replace(/\s*=\s*/g, "=");
+          normalized = normalized.replace(/\s+/g, " ");
+        } else if (lang === "css") {
+          normalized = normalized.replace(/\s*([{}():;])\s*/g, "$1");
+          normalized = normalized.replace(/;}/g, "}");
+          normalized = normalized.replace(/\s+/g, " ");
+        } else if (lang === "javascript" || lang === "php" || lang === "sql") {
+          normalized = normalized.replace(/\s*([{}()\[\];,+=:\-*\/><!?&|.])\s*/g, "$1");
+          normalized = normalized.replace(/\s+/g, " ");
+        }
+
+        // 5. Kembalikan isi string literal semula
+        normalized = normalized.replace(/__STR_PLACEHOLDER_(\d+)__/g, (match, idx) => {
+          return strings[parseInt(idx, 10)] ?? match;
+        });
+
+        return normalized.trim();
       };
 
       const compareCodes = (actual: string, expected: string): boolean => {
         const isJsonObj = (s: string) => {
           const t = s.trim();
           return t.startsWith("{") && t.endsWith("}");
+        };
+
+        const getFileLanguage = (key: string): string => {
+          if (key === "html") return "html";
+          if (key === "css") return "css";
+          if (key === "javascript" || key === "js") return "javascript";
+          if (key.startsWith("php")) return "php";
+          if (key === "sql") return "sql";
+          return language;
         };
 
         if (isJsonObj(actual) && isJsonObj(expected)) {
@@ -276,21 +335,24 @@ export class ChallengeAttemptController {
             if (keys.length === 0) return true;
 
             const result = keys.every((key) => {
-              const actualVal = normalizeCode(String(actualObj[key] ?? ""));
-              const expectedVal = normalizeCode(String(expectedObj[key] ?? ""));
+              const fileLang = getFileLanguage(key);
+              const actualVal = normalizeCodeByLanguage(String(actualObj[key] ?? ""), fileLang);
+              const expectedVal = normalizeCodeByLanguage(String(expectedObj[key] ?? ""), fileLang);
               return actualVal === expectedVal;
             });
 
             if (!result) {
               const firstFail = keys.find((key) => {
-                const a = normalizeCode(String(actualObj[key] ?? ""));
-                const e = normalizeCode(String(expectedObj[key] ?? ""));
+                const fileLang = getFileLanguage(key);
+                const a = normalizeCodeByLanguage(String(actualObj[key] ?? ""), fileLang);
+                const e = normalizeCodeByLanguage(String(expectedObj[key] ?? ""), fileLang);
                 return a !== e;
               });
               if (firstFail) {
-                console.log(`[submitAnswer] Mismatch di key "${firstFail}"`);
-                console.log(`  Actual   : ${normalizeCode(String(actualObj[firstFail] ?? "")).substring(0, 200)}`);
-                console.log(`  Expected : ${normalizeCode(String(expectedObj[firstFail] ?? "")).substring(0, 200)}`);
+                const fileLang = getFileLanguage(firstFail);
+                console.log(`[submitAnswer] Mismatch di key "${firstFail}" (Language: ${fileLang})`);
+                console.log(`  Actual   : ${normalizeCodeByLanguage(String(actualObj[firstFail] ?? ""), fileLang).substring(0, 200)}`);
+                console.log(`  Expected : ${normalizeCodeByLanguage(String(expectedObj[firstFail] ?? ""), fileLang).substring(0, 200)}`);
               }
             }
 
@@ -300,10 +362,10 @@ export class ChallengeAttemptController {
           }
         }
 
-        const a = normalizeCode(actual);
-        const e = normalizeCode(expected);
+        const a = normalizeCodeByLanguage(actual, language);
+        const e = normalizeCodeByLanguage(expected, language);
         if (a !== e) {
-          console.log(`[submitAnswer] String mismatch`);
+          console.log(`[submitAnswer] String mismatch (Language: ${language})`);
           console.log(`  Actual   : ${a.substring(0, 200)}`);
           console.log(`  Expected : ${e.substring(0, 200)}`);
         }

@@ -90,6 +90,8 @@ export default function LevelMapPage() {
         return;
       }
 
+      const totalNodes = (level?.easyNodes || 5) + (level?.mediumNodes || 8) + (level?.hardNodes || 4);
+
       // Navigasi ke ChallengePage dan kirim data soal via router state
       navigate('/challenge', {
         state: {
@@ -98,12 +100,13 @@ export default function LevelMapPage() {
           challenge: result.data.challenge,
           levelId: parsedLevelId,
           nodeSlot,
+          totalNodes,
         },
       });
     } finally {
       setLoadingNodeSlot(null);
     }
-  }, [user, levelId, loadingNodeSlot, navigate]);
+  }, [user, levelId, loadingNodeSlot, navigate, level]);
   
   // Drag to scroll state
   const [isDragging, setIsDragging] = useState(false);
