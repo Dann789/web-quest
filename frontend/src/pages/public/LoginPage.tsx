@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Eye, EyeOff, User, Lock, ArrowRight } from "lucide-react";
 import { login as loginService } from "@/services/auth/AuthService";
 import { toast } from "sonner";
-import logoTab from "@/assets/logo/logo-tab.png";
+import logoTab from "@/assets/logo/logo-tab.webp";
 
 /**
  * Login Page - Split layout with branding and form

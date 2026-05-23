@@ -453,7 +453,7 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
                 <Input
                   type="number"
                   min={30}
-                  max={600}
+                  max={1200}
                   value={formData.idealTime}
                   onChange={(e) => set('idealTime', parseInt(e.target.value) || 60)}
                 />

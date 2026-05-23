@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Eye, EyeOff, User, Lock, ArrowRight, Mail, IdCard } from "lucide-react";
 import { register } from "@/services/auth/AuthService";
+import logoTab from "@/assets/logo/logo-tab.webp";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -339,7 +340,7 @@ export default function RegisterPage() {
           {/* Logo */}
           <div>
             <img
-              src="/src/assets/logo/logo-tab.png"
+              src={logoTab}
               alt="Logo Web Quest"
               width={120}
               height={120}

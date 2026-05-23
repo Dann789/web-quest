@@ -7,10 +7,12 @@ import StarterKit from '@tiptap/starter-kit'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Image from '@tiptap/extension-image'
 import Highlight from '@tiptap/extension-highlight'
+import { TableKit } from '@tiptap/extension-table';
 import { createLowlight, common } from 'lowlight'
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { Material } from '@/types';
+import { toast } from 'sonner';
 import { useAuth } from "@/contexts/AuthContext";
 import { getMaterialsByLevelId } from '@/services/dosen/MaterialService';
 import { addProgressMaterial, updateStatusMaterial } from '@/services/user/ProgressService';
@@ -75,6 +77,24 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
         },
       }),
       Highlight,
+      TableKit.configure({
+        table: {
+          resizable: true,
+          HTMLAttributes: {
+            class: 'border-collapse table-auto w-full border border-slate-300 dark:border-slate-700',
+          },
+        },
+        tableHeader: {
+          HTMLAttributes: {
+            class: 'border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-2 font-bold text-left',
+          },
+        },
+        tableCell: {
+          HTMLAttributes: {
+            class: 'border border-slate-300 dark:border-slate-700 p-2',
+          },
+        },
+      }),
     ],
     content: '',
     editable: false,
@@ -119,13 +139,36 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
 
     try {
       let earnedXp = 0;
+      let allNewBadges: any[] = [];
+      let lastUnlockedLevel = null;
+      
       for (const materialId of viewedMaterial) {
         const res = await updateStatusMaterial(user.id, materialId);
         if (res.data?.xpAwarded) {
           earnedXp += res.data.xpAwarded;
         }
+        if (res.data?.newBadges?.length) {
+          allNewBadges = [...allNewBadges, ...res.data.newBadges];
+        }
+        if (res.data?.unlockedLevelName) {
+          lastUnlockedLevel = res.data.unlockedLevelName;
+        }
       }
       
+      if (allNewBadges.length > 0) {
+        setTimeout(() => {
+          allNewBadges.forEach((badge: any, index: number) => {
+            setTimeout(() => {
+              toast.success(`🏆 Badge Baru: ${badge.name}`, {
+                description: badge.description || "Pencapaian baru berhasil diraih!",
+                duration: 6000,
+              });
+            }, index * 800);
+          });
+        }, 500);
+      }
+
+
       if (earnedXp > 0) {
          updateUser({ ...user, totalXp: user.totalXp + earnedXp });
       }

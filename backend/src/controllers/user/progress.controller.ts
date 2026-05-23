@@ -117,7 +117,7 @@ export class UserProgressController {
           completedAt: new Date(),
         },
       });
-      await UserBadgeController.checkAndAward(userId, "MATERIAL");
+      const materialBadges = await UserBadgeController.checkAndAward(userId, "MATERIAL");
 
       const levelId = materialProgress.material.levelId;
 
@@ -147,12 +147,16 @@ export class UserProgressController {
             },
           },
         });
-        await this.checkLevelCompletion(userId, levelId);
+        const completionData = await this.checkLevelCompletion(userId, levelId);
         return {
           success: true,
           message:
             "Selamat! Semua materi di level ini tuntas. +15 XP didapatkan!",
-          data: { xpAwarded: 15 },
+          data: { 
+            xpAwarded: 15,
+            newBadges: [...materialBadges, ...(completionData.newBadges || [])],
+            unlockedLevelName: completionData.unlockedLevelName
+          },
         };
       }
 
@@ -160,6 +164,9 @@ export class UserProgressController {
         success: true,
         message:
           "Status materi berhasil diupdate, lanjutkan materi selanjutnya",
+        data: {
+          newBadges: materialBadges
+        }
       };
     } catch (error) {
       console.error("Error updating material status:", error);

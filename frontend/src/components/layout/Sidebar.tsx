@@ -21,7 +21,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import logoSidebar from "@/assets/logo/logo-sidebar.png";
+import logoSidebar from "@/assets/logo/logo-sidebar.webp";
 
 interface SidebarProps {
   className?: string;

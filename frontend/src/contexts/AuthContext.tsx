@@ -48,6 +48,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (storedToken && storedUser) {
       try {
         const user = JSON.parse(storedUser) as User;
+        // Validasi: pastikan data user memiliki field penting (role, id)
+        // Ini mencegah crash jika data localStorage sudah kadaluarsa / format lama
+        if (!user || !user.role || !user.id) {
+          throw new Error('Invalid user data in localStorage');
+        }
         setAuthState({
           user,
           token: storedToken,

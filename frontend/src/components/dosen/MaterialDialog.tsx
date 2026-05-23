@@ -10,6 +10,7 @@ import Image from '@tiptap/extension-image';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { createLowlight, common } from 'lowlight';
 import Highlight from '@tiptap/extension-highlight';
+import { TableKit } from '@tiptap/extension-table';
 import { Bold, Italic, Strikethrough, Code, ImageIcon, List, ListOrdered, Heading1, Heading2, Quote, Undo, Redo } from 'lucide-react';
 
 const lowlight = createLowlight(common);
@@ -181,6 +182,24 @@ export function MaterialDialog({ open, onOpenChange, material, onSubmit, levels,
         },
       }),
       Highlight,
+      TableKit.configure({
+        table: {
+          resizable: true,
+          HTMLAttributes: {
+            class: 'border-collapse table-auto w-full border border-slate-300 dark:border-slate-700',
+          },
+        },
+        tableHeader: {
+          HTMLAttributes: {
+            class: 'border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-2 font-bold text-left',
+          },
+        },
+        tableCell: {
+          HTMLAttributes: {
+            class: 'border border-slate-300 dark:border-slate-700 p-2',
+          },
+        },
+      }),
     ],
     content: '',
     onUpdate: ({ editor }) => {

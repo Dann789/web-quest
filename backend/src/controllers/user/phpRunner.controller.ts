@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
+import { getSandboxDB } from "../../db/sandbox.db";
+import type { Level } from "../../db/sandbox.db";
 
 export class PhpRunnerController {
   static async run(body: { 
@@ -38,12 +40,24 @@ export class PhpRunnerController {
       }
 
       // ============================================================
-      // LOGIC SANDBOX: Hanya salin jika sandboxEnabled = true
+      // LOGIC SANDBOX: Salin DB ke temp dir jika sandboxEnabled = true
+      // Jika file .db belum ada, otomatis inisialisasi dari template SQL (self-healing)
       // ============================================================
       if (sandboxEnabled && userId && templateName && level) {
         const BACKEND_ROOT = join(import.meta.dir, "..", "..", "..");
         const sourceDbPath = join(BACKEND_ROOT, "sandbox", level, `user_${userId}_template_${templateName}.db`);
         const targetDbPath = join(tempDirPath, "sandbox.db");
+
+        // Jika file .db belum ada, otomatis inisialisasi dari template SQL
+        if (!existsSync(sourceDbPath)) {
+          try {
+            const db = getSandboxDB(userId, templateName, level as Level);
+            db.close();
+            console.log(`[PhpRunner] Auto-initialized sandbox DB: user_${userId}_template_${templateName}.db`);
+          } catch (initErr: any) {
+            console.error(`[PhpRunner] Failed to auto-initialize sandbox DB:`, initErr.message);
+          }
+        }
 
         if (existsSync(sourceDbPath)) {
           await copyFile(sourceDbPath, targetDbPath);

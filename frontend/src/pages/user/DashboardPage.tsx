@@ -393,7 +393,7 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
-      {!hasCompletedEvaluation && (
+      {/* {!hasCompletedEvaluation && (
         <div className="w-full p-4 rounded-xl border border-primary/50 bg-primary/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/20 rounded-full">
@@ -409,7 +409,7 @@ export default function DashboardPage() {
           </div>
           <Button onClick={() => setIsEvaluationOpen(true)}>Mulai Penilaian</Button>
         </div>
-      )}
+      )} */}
 
       <EvaluationModal
         isOpen={isEvaluationOpen}
