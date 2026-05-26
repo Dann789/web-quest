@@ -203,7 +203,9 @@ export class UserBadgeController {
 
       if (category === "MATERIAL") {
         const b1 = await this.checkAllMaterialDone(userId, ownedIds);
+        const b2 = await this.check5DayStreak(userId, ownedIds);
         if (b1) newBadges.push(b1);
+        if (b2) newBadges.push(b2);
       }
 
       if (category === "LEADERBOARD") {
@@ -324,6 +326,62 @@ export class UserBadgeController {
     return null;
   }
 
+  static async awardWeeklyLeaderboardBadges() {
+    try {
+      console.log("[Cron] Memulai pembagian badge mingguan Top Performer...");
+      const now = new Date();
+      // Hitung startOfWeek (Senin)
+      const startOfWeek = new Date(now);
+      const diff = startOfWeek.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1);
+      startOfWeek.setDate(diff);
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      const weeklyLeaderboard = await prisma.attempt.groupBy({
+        by: ['userId'],
+        where: {
+          submittedAt: { gte: startOfWeek },
+          xpEarned: { gt: 0 },
+          user: { role: "MAHASISWA" }
+        },
+        _sum: { xpEarned: true },
+        orderBy: { _sum: { xpEarned: 'desc' } },
+        take: 3,
+      });
+
+      if (weeklyLeaderboard.length === 0) {
+        console.log("[Cron] Tidak ada data leaderboard minggu ini.");
+        return;
+      }
+
+      const xpRewards = [150, 125, 100];
+      
+      for (let i = 0; i < weeklyLeaderboard.length; i++) {
+        const entry = weeklyLeaderboard[i];
+        if (!entry) continue;
+        const userId = entry.userId;
+        const xpToAward = xpRewards[i] ?? 0;
+        
+        const userBadges = await prisma.userBadge.findMany({
+          where: { userId },
+          select: { badgeId: true },
+        });
+        const ownedIds = new Set(userBadges.map((ub) => ub.badgeId));
+
+        const awardedBadge = await this.awardIfNew(userId, "Top Performer", ownedIds);
+        if (awardedBadge) {
+          await prisma.user.update({
+            where: { id: userId },
+            data: { totalXp: { increment: xpToAward } },
+          });
+          console.log(`[Cron] User ${userId} mendapat badge Top Performer dan ${xpToAward} XP karena Rank ${i + 1}`);
+        }
+      }
+      console.log("[Cron] Selesai membagikan badge Top Performer.");
+    } catch (error) {
+      console.error("[Cron] Error saat membagikan badge Top Performer:", error);
+    }
+  }
+
   private static async checkTop3Leaderboard(
   userId: number,
   ownedIds: Set<number>
@@ -382,35 +440,71 @@ export class UserBadgeController {
     userId: number,
     ownedIds: Set<number>
   ): Promise<{ id: number; name: string; description: string; iconPath: string; rarity: string } | null> {
-    const attempts = await prisma.attempt.findMany({
-      where: { userId, xpEarned: { gt: 0 } },
-      select: { submittedAt: true },
-      orderBy: { submittedAt: "desc" },
-    });
+    const [attemptDates, materialDates] = await Promise.all([
+      prisma.attempt.findMany({
+        where: { userId },
+        select: { submittedAt: true },
+        distinct: ["submittedAt"],
+      }),
+      prisma.materialProgress.findMany({
+        where: {
+          userId,
+          isCompleted: true,
+          completedAt: { not: null },
+        },
+        select: { completedAt: true },
+      }),
+    ]);
 
-    const toDateStr = (d: Date) =>
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const toLocalDateString = (date: Date) => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    };
 
-    const uniqueDates = [
-      ...new Set(attempts.map((a) => toDateStr(a.submittedAt))),
-    ];
-    uniqueDates.sort((a, b) => (a > b ? -1 : 1));
+    const activityDateSet = new Set<string>();
 
-    let streak = 1;
-    for (let i = 0; i < uniqueDates.length - 1; i++) {
-      const curr = new Date(uniqueDates[i]!);
-      const prev = new Date(uniqueDates[i + 1]!);
-      const diffDays =
-        (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
-      if (diffDays === 1) {
-        streak++;
-        if (streak >= 5) break;
-      } else {
-        break;
+    for (const a of attemptDates) {
+      activityDateSet.add(toLocalDateString(a.submittedAt));
+    }
+    for (const m of materialDates) {
+      if (m?.completedAt) {
+        activityDateSet.add(toLocalDateString(m.completedAt));
       }
     }
 
-    if (streak >= 5) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStr = toLocalDateString(today);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = toLocalDateString(yesterday);
+
+    let streakCount = 0;
+    let checkDate: Date;
+
+    if (activityDateSet.has(todayStr)) {
+      checkDate = new Date(today);
+    } else if (activityDateSet.has(yesterdayStr)) {
+      checkDate = new Date(yesterday);
+    } else {
+      checkDate = new Date(today);
+    }
+
+    if (activityDateSet.has(todayStr) || activityDateSet.has(yesterdayStr)) {
+      while (true) {
+        const checkStr = toLocalDateString(checkDate);
+        if (activityDateSet.has(checkStr)) {
+          streakCount++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+    }
+
+    if (streakCount >= 5) {
       return await this.awardIfNew(userId, "Consistent Learner", ownedIds);
     }
     return null;

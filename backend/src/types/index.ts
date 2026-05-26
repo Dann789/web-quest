@@ -195,3 +195,10 @@ export interface SubmitEvaluationRequest {
   mrcWordId: number[];
   reason: string;
 }
+
+export interface SubmitUeqRequest {
+  answer: {
+    questionId: number;
+    value: number;
+  }[];
+}

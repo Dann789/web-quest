@@ -20,6 +20,9 @@ import LevelPage from "@/pages/user/LevelPage";
 import LevelDetailPage from "@/pages/user/LevelMapPage";
 import ChallengePage from "@/pages/user/ChallengePage";
 import ProfilePage from "@/pages/user/ProfilePage";
+import ListKuesioner from "@/pages/user/ListKuesioner";
+import UeqQuestionnairePage from "@/pages/user/ueqQuestionnaire";
+import MrcFormPage from "@/pages/user/mrcForm";
 
 // Dosen Pages
 import DosenDashboard from "@/pages/dosen/DosenDashboard";
@@ -100,6 +103,10 @@ const router = createBrowserRouter([
         element: <ProfilePage />,
       },
       {
+        path: "/kuesioner",
+        element: <ListKuesioner />,
+      },
+      {
         path: "/dosen",
         element: <DosenDashboard />,
       },
@@ -175,6 +182,14 @@ const router = createBrowserRouter([
         path: "/challenge",
         element: <ChallengePage />,
       },
+      {
+        path: "/kuesioner/ueq",
+        element: <UeqQuestionnairePage />
+      },
+      {
+        path: "/kuesioner/mrc",
+        element: <MrcFormPage />
+      }
     ],
   },
 ]);

@@ -134,3 +134,16 @@ export const ueqQuestionData = [
     category: UEQCategory.NOVELTY,  
   },
 ];
+
+await prisma.uEQQuestion.deleteMany();
+const sampleWord = [];
+for (const item of ueqQuestionData) {
+  const word = await prisma.uEQQuestion.create({
+    data: {
+      leftWord: item.leftWord,
+      rightWord: item.rightWord,
+      category: item.category,
+    },
+  });
+  sampleWord.push(word);
+}

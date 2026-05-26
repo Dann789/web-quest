@@ -31,9 +31,9 @@ export const challengeAttemptRoutes = new Elysia({ prefix: "/api/user/challenges
     SqlRunnerController.run(body as any), {
     body: t.Object({
       sql: t.String(),
-      userId: t.Numeric(),
-      templateName: t.String(),
-      level: t.Literal("db_level")
+      userId: t.Optional(t.Numeric()),
+      templateName: t.Optional(t.String()),
+      level: t.Optional(t.Literal("db_level"))
     })
   })
 

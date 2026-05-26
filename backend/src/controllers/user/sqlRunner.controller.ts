@@ -4,19 +4,23 @@ import { Database } from "bun:sqlite";
 export class SqlRunnerController {
   static async run(body: {
     sql: string;
-    userId: number;
-    templateName: string;
-    level: "db_level";
+    userId?: number;
+    templateName?: string;
+    level?: "db_level";
   }) {
     const { sql, userId, templateName, level } = body;
 
-    if (!sql || !userId || !templateName || !level) {
-      return { success: false, message: "Parameter tidak lengkap." };
+    if (!sql) {
+      return { success: false, message: "Query kosong." };
     }
 
     let db: Database | null = null;
     try {
-      db = getSandboxDB(userId, templateName, level);
+      if (userId && templateName && level) {
+        db = getSandboxDB(userId, templateName, level);
+      } else {
+        db = new Database(":memory:");
+      }
 
       const cleanSql = sql.trim();
       if (!cleanSql) {

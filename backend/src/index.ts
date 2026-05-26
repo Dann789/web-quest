@@ -14,6 +14,8 @@ import { mrcRoutes } from "./routes/user/mrc.routes";
 import { monitoringRoutes } from "./routes/public/monitoring.routes";
 import { sandboxRoutes } from "./routes/user/sandbox.routes";
 import { soalRoutes } from "./routes/user/soal.routes";
+import { cron } from "@elysiajs/cron";
+import { UserBadgeController } from "./controllers/user/badge.controller";
 
 const app = new Elysia()
   .use(corsPlugin)
@@ -31,6 +33,15 @@ const app = new Elysia()
   .use(monitoringRoutes)
   .use(sandboxRoutes)
   .use(soalRoutes)
+  .use(
+    cron({
+      name: 'weekly-leaderboard-badge',
+      pattern: '59 23 * * 5', // At 23:59 on Friday
+      run() {
+        UserBadgeController.awardWeeklyLeaderboardBadges();
+      }
+    })
+  )
   .get("/", () => ({
     message: "Web Quest API - Gamification Learning Platform",
     version: "1.0.0",
