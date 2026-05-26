@@ -246,7 +246,14 @@ export interface reason {
 export interface SubmitEvaluation {
   mrcWordId: number[];
   reason: string;
-} 
+}
+
+export interface SubmitUeq {
+  answer: {
+    questionId: number;
+    value: number;
+  }[];
+}
 
 // ============================================
 // API RESPONSE TYPES

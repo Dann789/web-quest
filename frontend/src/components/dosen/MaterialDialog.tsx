@@ -11,7 +11,8 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { createLowlight, common } from 'lowlight';
 import Highlight from '@tiptap/extension-highlight';
 import { TableKit } from '@tiptap/extension-table';
-import { Bold, Italic, Strikethrough, Code, ImageIcon, List, ListOrdered, Heading1, Heading2, Quote, Undo, Redo } from 'lucide-react';
+import { Bold, Italic, Strikethrough, Code, ImageIcon, List, ListOrdered, Heading1, Heading2, Quote, Undo, Redo, Terminal } from 'lucide-react';
+import { InteractiveCodeBlock } from '../extensions/InteractiveCodeBlock/InteractiveCodeBlockExtension';
 
 const lowlight = createLowlight(common);
 
@@ -128,6 +129,15 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         variant="ghost"
         size="sm"
+        onClick={() => editor.chain().focus().insertContent({ type: 'interactiveCodeBlock' }).run()}
+        title="Interactive Code Block"
+      >
+        <Terminal className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
         onClick={addImage}
       >
         <ImageIcon className="h-4 w-4" />
@@ -200,6 +210,7 @@ export function MaterialDialog({ open, onOpenChange, material, onSubmit, levels,
           },
         },
       }),
+      InteractiveCodeBlock,
     ],
     content: '',
     onUpdate: ({ editor }) => {

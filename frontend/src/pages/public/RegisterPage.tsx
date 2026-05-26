@@ -35,7 +35,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex bg-background">
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-linear-to-br from-background via-background to-muted/20">
         <div className="w-full max-w-lg ">
           {/* Form Card */}
           <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl p-8 shadow-2xl">
@@ -213,7 +213,7 @@ export default function RegisterPage() {
       {/* LEFT SIDE - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         {/* Animated Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="absolute inset-0 bg-linear-to-br from-background via-background to-muted/20">
           {/* Geometric mesh pattern using primary color */}
           <svg
             className="absolute inset-0 w-full h-full opacity-30"
@@ -349,7 +349,7 @@ export default function RegisterPage() {
           {/* Headline */}
           <h1 className="text-4xl xl:text-5xl font-bold text-foreground leading-tight">
             Web
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-400">
               Quest
             </span>
           </h1>

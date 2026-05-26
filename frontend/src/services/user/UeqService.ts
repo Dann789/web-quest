@@ -1,4 +1,4 @@
-import type { ApiResponse, SubmitEvaluation } from "@/types";
+import type { ApiResponse, SubmitUeq } from "@/types";
 
 const API_BASE = 'http://localhost:3000';
 
@@ -9,21 +9,21 @@ function getAuthHeaders(): HeadersInit {
   return headers;
 }
 
-export async function getMrcWords() {
+export async function getUeqQuestions() {
     try {
-    const response = await fetch(`${API_BASE}/api/mrc`, {
+    const response = await fetch(`${API_BASE}/api/ueq`, {
       method: 'GET',
       headers: getAuthHeaders(),
     });
     return await response.json();
   } catch (error) {
-    return { success: false, message: 'Failed to get mrc words' };
+    return { success: false, message: 'Failed to get ueq questions' };
   }
 }
 
-export async function submitEvaluation(userId: number, body: SubmitEvaluation): Promise<ApiResponse<SubmitEvaluation>> {
+export async function submitUeq(userId: number, body: SubmitUeq): Promise<ApiResponse<SubmitUeq>> {
   try {
-    const response = await fetch(`${API_BASE}/api/mrc/submit-eval/${userId}`, {
+    const response = await fetch(`${API_BASE}/api/ueq/${userId}`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(body)

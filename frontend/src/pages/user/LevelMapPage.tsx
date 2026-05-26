@@ -726,7 +726,7 @@ export default function LevelMapPage() {
       />
 
       {/* Guide Floating Action Button */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 pointer-events-auto">
+      <div className="fixed bottom-6 right-6 z-10 flex flex-col items-end gap-2 pointer-events-auto">
         {/* Popup/Modal Content */}
         {isGuideOpen && (
             <div className="bg-slate-900/95 backdrop-blur border border-slate-700 p-4 rounded-xl shadow-2xl w-80 mb-2 animate-in slide-in-from-bottom-2 fade-in duration-300">
