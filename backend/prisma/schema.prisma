@@ -24,6 +24,7 @@ model User {
   response         Response[]
   badges           UserBadge[]
   progress         Progress[]
+  UEQSession       UEQSession[]
 
   @@map("users")
 }
@@ -252,31 +253,28 @@ enum Rarity {
 }
 
 model UEQQuestion {
-  id          Int      @id @default(autoincrement())
-  leftWord    String
-  rightWord   String
-  category    UEQCategory
-
-  answers     UEQAnswer[]
+  id        Int         @id @default(autoincrement())
+  leftWord  String
+  rightWord String
+  category  UEQCategory
+  answers   UEQAnswer[]
 }
 
 model UEQSession {
-  id          Int      @id @default(autoincrement())
-  userId      Int      @map("user_id")
-  createdAt   DateTime @default(now())
-
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  answers     UEQAnswer[]
+  id        Int         @id @default(autoincrement())
+  userId    Int         @map("user_id")
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers   UEQAnswer[]
 }
 
 model UEQAnswer {
-  id          Int      @id @default(autoincrement())
-  sessionId   Int      @map("session_id")
-  questionId  Int      @map("question_id")
-  value       Int
-
-  session      UEQSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  question     UEQQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  id         Int         @id @default(autoincrement())
+  sessionId  Int         @map("session_id")
+  questionId Int         @map("question_id")
+  value      Int
+  session    UEQSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question   UEQQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 enum UEQCategory {
