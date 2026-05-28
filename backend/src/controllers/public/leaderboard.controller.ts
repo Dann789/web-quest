@@ -1,6 +1,13 @@
 import prisma from "../../config/database";
 import { UserRole } from "@prisma/client";
 
+interface CacheEntry {
+  data: any[];
+  timestamp: number;
+}
+const leaderboardCache: Record<string, CacheEntry> = {};
+const CACHE_TTL = 15000; // 15 seconds
+
 export class LeaderboardController {
   static async getLeaderboardData(timeframe: string, page: number = 1, limit: number = 10) {
     let startDate: Date | undefined;
@@ -25,79 +32,105 @@ export class LeaderboardController {
     }
 
     try {
-      const leaderboard = await prisma.user.findMany({
-        where: { role: UserRole.MAHASISWA },
-        select: {
-          id: true,
-          username: true,
-          name: true,
-          email: true,
-          role: true,
-          totalXp: true,
-          attempts: {
-            where:
-              startDate && endDate
-                ? {
-                    submittedAt: {
-                      gte: startDate,
-                      lt: endDate,
-                    },
-                  }
-                : undefined,
-            select: {
-              timeSpent: true,
-              xpEarned: true,
+      const cacheKey = timeframe;
+      const nowMs = Date.now();
+      let leaderboardWithAggregate: any[];
+
+      if (leaderboardCache[cacheKey] && (nowMs - leaderboardCache[cacheKey].timestamp < CACHE_TTL)) {
+        leaderboardWithAggregate = leaderboardCache[cacheKey].data;
+      } else {
+        const leaderboard = await prisma.user.findMany({
+          where: { 
+            role: UserRole.MAHASISWA,
+            UEQSession: {
+              some: {}
             },
+            response: {
+              some: {}
+            }
           },
-          materialProgress: {
-            where:
-              startDate && endDate
-                ? {
-                    isCompleted: true,
-                    completedAt: {
-                      gte: startDate,
-                      lt: endDate,
-                    },
-                  }
-                : { isCompleted: true },
-            select: {
-              material: {
-                select: { levelId: true },
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            email: true,
+            role: true,
+            totalXp: true,
+            attempts: {
+              where:
+                startDate && endDate
+                  ? {
+                      submittedAt: {
+                        gte: startDate,
+                        lt: endDate,
+                      },
+                    }
+                  : undefined,
+              select: {
+                timeSpent: true,
+                xpEarned: true,
+              },
+            },
+            materialProgress: {
+              where:
+                startDate && endDate
+                  ? {
+                      isCompleted: true,
+                      completedAt: {
+                        gte: startDate,
+                        lt: endDate,
+                      },
+                    }
+                  : { isCompleted: true },
+              select: {
+                material: {
+                  select: { levelId: true },
+                },
               },
             },
           },
-        },
-        orderBy: { totalXp: "desc" },
-      });
+          orderBy: { totalXp: "desc" },
+        });
 
-      const leaderboardWithAggregate = leaderboard
-        .map((user) => {
-          const totalTimeSpent = user.attempts.reduce(
-            (acc, a) => acc + (a.timeSpent || 0),
-            0,
-          );
+        leaderboardWithAggregate = leaderboard
+          .map((user) => {
+            const totalTimeSpent = user.attempts.reduce(
+              (acc, a) => acc + (a.timeSpent || 0),
+              0,
+            );
 
-          const completedLevelIds = new Set(
-            user.materialProgress.map((mp) => mp.material.levelId),
-          );
+            const completedLevelIds = new Set(
+              user.materialProgress.map((mp) => mp.material.levelId),
+            );
 
-          const displayXp =
-            startDate && endDate
-              ? user.attempts.reduce((acc, a) => acc + (a.xpEarned || 0), 0) +
-                completedLevelIds.size * 15
-              : user.totalXp;
+            const displayXp =
+              startDate && endDate
+                ? user.attempts.reduce((acc, a) => acc + (a.xpEarned || 0), 0) +
+                  completedLevelIds.size * 15
+                : user.totalXp;
 
-          return {
+            return {
+              id: user.id,
+              username: user.username,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              totalXp: displayXp,
+              totalTimeSpent,
+            };
+          })
+          .sort((a, b) => b.totalXp - a.totalXp)
+          .map((user, index) => ({
             ...user,
-            totalXp: displayXp,
-            totalTimeSpent,
-          };
-        })
-        .sort((a, b) => b.totalXp - a.totalXp)
-        .map((user, index) => ({
-          ...user,
-          rank: index + 1
-        }));
+            rank: index + 1
+          }));
+
+        // Simpan ke cache
+        leaderboardCache[cacheKey] = {
+          data: leaderboardWithAggregate,
+          timestamp: nowMs
+        };
+      }
 
       const topThree = leaderboardWithAggregate.slice(0, 3);
       const others = leaderboardWithAggregate.slice(3);

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
+import {
   ChevronRight,
   Flame,
   BookOpen,
@@ -9,34 +9,35 @@ import {
   TrendingUp,
   Medal,
   BookOpenText,
-  ClipboardCheck,
+  // ClipboardCheck,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useCallback } from 'react';
 import { getUserSummary } from '@/services/user/ProgressService';
-import type { LeaderboardItem } from '@/types';
 import { getLeaderboardData } from '@/services/public/LeaderboardService';
-import EvaluationModal from '@/components/user/EvaluationModal';
+import { getUserBadges } from '@/services/user/BadgeService';
+import type { BadgeItem } from '@/types';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const hasCompletedEvaluation = false;
-  const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
+  // const hasCompletedEvaluation = false;
+  // const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
   const [summary, setSummary] = useState<any>(null);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
-  const [,setLoading] = useState(true);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [earnedBadgesList, setEarnedBadgesList] = useState<any[]>([]);
+  const [, setLoading] = useState(true);
   const [, setError] = useState("");
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true)
       setError("")
-      const [summaryRes, leaderboardRes ] = await Promise.all([
+      const [summaryRes, leaderboardRes, badgesRes] = await Promise.all([
         getUserSummary(user?.id ?? 0),
-        getLeaderboardData("all_time")
+        getLeaderboardData("all_time"),
+        getUserBadges(user?.id ?? 0)
       ]);
 
       if (summaryRes.success && summaryRes.data) {
@@ -44,15 +45,16 @@ export default function DashboardPage() {
       }
 
       if (leaderboardRes.success && leaderboardRes.data) {
-        if (leaderboardRes.data.topThree) {
-          const combined = [
-            ...(leaderboardRes.data.topThree || []),
-            ...(leaderboardRes.data.paginatedOthers || [])
-          ];
-          setLeaderboard(combined);
-        } else {
-          setLeaderboard(leaderboardRes.data);
-        }
+        const combined = [
+          ...(leaderboardRes.data.topThree || []),
+          ...(leaderboardRes.data.paginatedOthers || [])
+        ];
+        setLeaderboard(combined);
+      }
+
+      if (badgesRes.success && badgesRes.data) {
+        const earnedOnly = badgesRes.data.all.filter((b: any) => b.isEarned);
+        setEarnedBadgesList(earnedOnly);
       }
 
     } catch (error) {
@@ -79,23 +81,23 @@ export default function DashboardPage() {
   ];
 
   const stats = [
-    { 
-      label: 'Challenge Selesai', 
-      value: summary?.completedChallenges ?? 0, 
+    {
+      label: 'Challenge Selesai',
+      value: summary?.completedChallenges ?? 0,
       icon: <Code className="w-5 h-5 text-blue-500" />,
       bg: 'bg-blue-500/10',
       border: 'hover:border-blue-500/50'
     },
-    { 
-      label: 'Level Selesai', 
-      value: `${summary?.completedLevels ?? 0} / ${summary?.totalLevels ?? 0}`, 
+    {
+      label: 'Level Selesai',
+      value: `${summary?.completedLevels ?? 0} / ${summary?.totalLevels ?? 0}`,
       icon: <BookOpen className="w-5 h-5 text-purple-500" />,
       bg: 'bg-purple-500/10',
       border: 'hover:border-purple-500/50'
     },
-    { 
-      label: 'Badge Didapat', 
-      value: summary?.earnedBadges ?? 0, 
+    {
+      label: 'Badge Didapat',
+      value: summary?.earnedBadges ?? 0,
       icon: <Medal className="w-5 h-5 text-amber-500" />,
       bg: 'bg-amber-500/10',
       border: 'hover:border-amber-500/50'
@@ -109,11 +111,11 @@ export default function DashboardPage() {
   const currentLevelTitle = summary?.currentLevel?.name ?? 'Loading...';
   const currentLevelId = summary?.currentLevel?.id ?? 1;
   const xpInCurrentLevel = totalXp - (summary?.currentLevel?.xpRequired ?? 0);
-  const xpNeededForNext = nextLevelInfo 
+  const xpNeededForNext = nextLevelInfo
     ? (nextLevelInfo.xpRequired - (summary?.currentLevel?.xpRequired ?? 0))
     : 100; // Default if no next level
-  
-  const xpProgressPercentage = nextLevelInfo 
+
+  const xpProgressPercentage = nextLevelInfo
     ? Math.min(100, Math.round((xpInCurrentLevel / xpNeededForNext) * 100))
     : 100;
 
@@ -203,10 +205,10 @@ export default function DashboardPage() {
               </div>
 
               <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-medium">
+                <div className="flex justify-between text-xs font-medium">
                   <span className="text-muted-foreground">XP Progress</span>
                   <span className="text-primary">
-                    {totalXp} XP 
+                    {summary?.isQuestionnaireCompleted ? `${totalXp} XP` : "🔒 Terkunci"}
                   </span>
                 </div>
                 <div className="h-3 bg-secondary rounded-full overflow-hidden">
@@ -218,7 +220,9 @@ export default function DashboardPage() {
                   />
                 </div>
                 <p className="text-[10px] text-right text-muted-foreground">
-                  {nextLevelInfo ? `+${nextLevelInfo.xpRequired - totalXp} XP to level up` : `You are at the top!`}
+                  {summary?.isQuestionnaireCompleted 
+                    ? (nextLevelInfo ? `+${nextLevelInfo.xpRequired - totalXp} XP to level up` : `You are at the top!`)
+                    : "Lengkapi kuesioner untuk membuka detail XP"}
                 </p>
               </div>
             </CardContent>
@@ -252,146 +256,281 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* 3. BOTTOM SECTION: Study Chart & Leaderboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* STUDY TIME CHART (66%) */}
-        <div className="lg:col-span-2">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Waktu Belajar
-              </CardTitle>
-              <CardDescription>
-                Aktivitas belajar kamu dalam 7 hari terakhir
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={studyData}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="colorMinutes"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis
-                    dataKey="day"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{
-                      fill: "hsl(var(--muted-foreground))",
-                      fontSize: 12,
-                    }}
-                    dy={10}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{
-                      fill: "hsl(var(--muted-foreground))",
-                      fontSize: 12,
-                    }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "8px",
-                      border: "none",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                    }}
-                    cursor={{
-                      stroke: "hsl(var(--primary))",
-                      strokeWidth: 1,
-                      strokeDasharray: "4 4",
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="minutes"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={3}
-                    fillOpacity={1}
-                    fill="url(#colorMinutes)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* LEADERBOARD COMPACT (33%) */}
+      {/* 3. LOG SECTIONS: Aktivitas, Badge, & Peringkat (3 Columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* COLUMN 1: LOG AKTIVITAS TERBARU */}
         <div className="lg:col-span-1">
           <Card className="h-full flex flex-col">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  Peringkat 5 Besar
+                  <ChevronRight className="w-5 h-5 text-indigo-500" />
+                  Log Aktivitas Terbaru
                 </CardTitle>
-                <Link
-                  to="/leaderboard"
-                  className="text-xs text-primary hover:underline"
-                >
-                  Lihat Semua
-                </Link>
               </div>
             </CardHeader>
             <CardContent className="flex-1 space-y-4">
-              {leaderboard.slice(0, 5).map((p, i) => {
-                const isMe = p.id === user?.id;
-                const initials = p.name
-                  ?.split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2) || "??";
+              {summary?.recentActivityLog && summary.recentActivityLog.length > 0 ? (
+                summary.recentActivityLog.map((activity: any, i: number) => {
+                  const dateStr = new Date(activity.completedAt).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
 
-                return (
-                  <div
-                    key={p.id}
-                    className={`flex items-center gap-3 p-2 rounded-xl transition-colors ${
-                      isMe
-                        ? "bg-primary/10 border border-primary/20"
-                        : "hover:bg-secondary/50 border border-transparent"
-                    }`}
-                  >
+                  return (
                     <div
-                      className={`font-bold w-6 text-center text-sm ${
-                        i < 3 ? "text-amber-500" : "text-muted-foreground"
-                      }`}
+                      key={i}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-secondary/30 transition-all hover:scale-[1.01]"
                     >
-                      {i < 3 ? ["🥇", "🥈", "🥉"][i] : `#${i + 1}`}
-                    </div>
-                    <Avatar className="w-8 h-8 border border-border">
-                      <AvatarFallback className="text-xs font-bold">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-bold truncate ${
-                          isMe ? "text-primary" : ""
+                      <div
+                        className={`relative w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                          activity.type === 'challenge'
+                            ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                            : 'bg-purple-500/10 text-purple-500 border-purple-500/20'
                         }`}
                       >
-                        {isMe ? "You" : p.name}
-                      </p>
+                        {activity.type === 'challenge' ? (
+                          <Code className="w-5 h-5" />
+                        ) : (
+                          <BookOpen className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">
+                          {activity.type === 'challenge' ? 'Challenge Selesai' : 'Materi Dibaca'}
+                        </p>
+                        <p className="text-sm font-bold truncate text-foreground leading-tight">
+                          {activity.title}
+                        </p>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                        {dateStr}
+                      </span>
                     </div>
-                    <span className="font-mono text-xs font-bold">
-                      {p.totalXp} XP 
-                    </span>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <div className="flex flex-col items-center justify-center h-48 text-muted-foreground space-y-2">
+                  <BookOpen className="w-8 h-8 opacity-40 animate-pulse" />
+                  <p className="text-sm font-medium">Belum ada aktivitas belajar</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
+
+        {/* COLUMN 2: LOG BADGE DIDAPAT */}
+        <div className="lg:col-span-1">
+          <Card className="h-full flex flex-col">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Medal className="w-5 h-5 text-amber-500" />
+                Koleksi Badge Terbaru
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-4">
+              {earnedBadgesList && earnedBadgesList.length > 0 ? (
+                earnedBadgesList.slice(0, 5).map((b: BadgeItem, i: number) => {
+                  const initials = b.name?.substring(0, 2).toUpperCase() || "BD";
+                  const rarityColors: any = {
+                    COMMON: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+                    RARE: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                    EPIC: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+                    LEGENDARY: 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_10px_rgba(251,191,36,0.1)]',
+                  };
+
+                  return (
+                    <div
+                      key={b.id || i}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-secondary/30 transition-all hover:scale-[1.01]"
+                    >
+                      <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-primary/10 border border-border flex items-center justify-center shrink-0">
+                        {b.iconPath ? (
+                          <img
+                            src={b.iconPath}
+                            alt={b.name}
+                            className="w-8 h-8 object-contain"
+                          />
+                        ) : (
+                          <span className="text-xs font-bold text-primary">{initials}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-bold truncate text-foreground leading-tight">
+                            {b.name}
+                          </p>
+                          <span className={`text-[8px] px-1.5 py-0.5 rounded-full border font-black uppercase tracking-wider ${rarityColors[b.rarity] || 'bg-slate-500/10'}`}>
+                            {b.rarity}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">
+                          {b.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="flex flex-col items-center justify-center h-48 text-muted-foreground space-y-2">
+                  <Medal className="w-8 h-8 opacity-40 animate-pulse" />
+                  <p className="text-sm font-medium">Belum ada badge didapatkan</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* COLUMN 3: LEADERBOARD 5 BESAR */}
+        <div className="lg:col-span-1">
+          <Card className="h-full flex flex-col relative overflow-hidden">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <TrendingUp className="w-5 h-5 text-yellow-500" />
+                  Peringkat 5 Besar
+                </CardTitle>
+                {summary?.isQuestionnaireCompleted && (
+                  <Link
+                    to="/leaderboard"
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Lihat Semua
+                  </Link>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-4 relative">
+              {summary?.isQuestionnaireCompleted ? (
+                leaderboard.slice(0, 5).map((p, i) => {
+                  const isMe = p.id === user?.id;
+                  const initials = p.name
+                    ?.split(" ")
+                    .map((n: any) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2) || "??";
+
+                  return (
+                    <div
+                      key={p.id}
+                      className={`flex items-center gap-3 p-3 rounded-xl transition-all hover:scale-[1.01] ${
+                        isMe
+                          ? "bg-primary/10 border border-primary/20"
+                          : "hover:bg-secondary/50 border border-transparent"
+                      }`}
+                    >
+                      <div
+                        className={`font-bold w-6 text-center text-sm ${
+                          i < 3 ? "text-amber-500" : "text-muted-foreground"
+                        }`}
+                      >
+                        {i < 3 ? ["🥇", "🥈", "🥉"][i] : `#${i + 1}`}
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
+                        {initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-bold truncate ${isMe ? "text-primary" : ""}`}>
+                          {isMe ? "You" : p.name}
+                        </p>
+                      </div>
+                      <span className="font-mono text-xs font-bold">{p.totalXp} XP</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 px-4 text-center space-y-3">
+                  <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-500/20 animate-pulse">
+                    <i className="fa-solid fa-lock text-2xl"></i>
+                  </div>
+                  <h4 className="font-bold text-sm text-foreground">Papan Peringkat Terkunci</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[200px]">
+                    Selesaikan semua level belajar lalu lengkapi kuesioner evaluasi untuk melihat peringkat Anda.
+                  </p>
+                  <Button className="rounded-full px-5 h-9 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-md shrink-0 transition-transform active:scale-95 mt-2" asChild>
+                    <Link to="/level">Pergi ke Kuesioner</Link>
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* 4. FULL WIDTH STUDY CHART SECTION */}
+      <div className="w-full">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Waktu Belajar
+            </CardTitle>
+            <CardDescription>
+              Aktivitas belajar kamu dalam 7 hari terakhir
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={studyData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient
+                    id="colorMinutes"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor="#8884d8" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{
+                    fill: "hsl(var(--muted-foreground))",
+                    fontSize: 12,
+                  }}
+                  dy={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{
+                    fill: "hsl(var(--muted-foreground))",
+                    fontSize: 12,
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "none",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  }}
+                  cursor={{
+                    stroke: "hsl(var(--primary))",
+                    strokeWidth: 1,
+                    strokeDasharray: "4 4",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="minutes"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#colorMinutes)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
       {/* {!hasCompletedEvaluation && (
         <div className="w-full p-4 rounded-xl border border-primary/50 bg-primary/10 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -409,13 +548,13 @@ export default function DashboardPage() {
           </div>
           <Button onClick={() => setIsEvaluationOpen(true)}>Mulai Penilaian</Button>
         </div>
-      )} */}
+      )}  */}
 
-      <EvaluationModal
+      {/* <EvaluationModal
         isOpen={isEvaluationOpen}
         onClose={() => setIsEvaluationOpen(false)}
-      />
+      /> */}
     </div>
-    
+
   );
 }

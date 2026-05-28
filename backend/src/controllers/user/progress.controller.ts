@@ -388,7 +388,20 @@ export class UserProgressController {
       const sevenDaysAgo = new Date(today);
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
-      const [user, completedChallenges, completedLevels, totalLevels, earnedBadges, recentAttempts, attemptDates, materialDates] = await Promise.all([
+      const [
+        user,
+        completedChallenges,
+        completedLevels,
+        totalLevels,
+        earnedBadges,
+        recentAttempts,
+        attemptDates,
+        materialDates,
+        ueqCount,
+        mrcCount,
+        recentChallenges,
+        recentMaterials,
+      ] = await Promise.all([
         prisma.user.findUnique({
           where: { id: userId },
           select: { totalXp: true, name: true }
@@ -425,6 +438,24 @@ export class UserProgressController {
             completedAt: { not: null }
           },
           select: { completedAt: true },
+        }),
+        prisma.uEQSession.count({
+          where: { userId }
+        }),
+        prisma.response.count({
+          where: { userId }
+        }),
+        prisma.assignment.findMany({
+          where: { userId, isCompleted: true },
+          orderBy: { completedAt: 'desc' },
+          take: 5,
+          include: { challenge: { select: { title: true } } }
+        }),
+        prisma.materialProgress.findMany({
+          where: { userId, isCompleted: true },
+          orderBy: { completedAt: 'desc' },
+          take: 5,
+          include: { material: { select: { title: true } } }
         }),
       ]);
 
@@ -521,6 +552,24 @@ export class UserProgressController {
         select: { id: true, name: true, xpRequired: true }
       });
 
+      const isQuestionnaireCompleted = ueqCount > 0 && mrcCount > 0;
+
+      const recentActivityLog = [
+        ...recentChallenges.map(rc => ({
+          type: 'challenge',
+          title: rc.challenge.title,
+          completedAt: rc.completedAt,
+        })),
+        ...recentMaterials.map(rm => ({
+          type: 'material',
+          title: rm.material.title,
+          completedAt: rm.completedAt,
+        }))
+      ]
+      .filter(act => act.completedAt !== null)
+      .sort((a, b) => (b.completedAt as Date).getTime() - (a.completedAt as Date).getTime())
+      .slice(0, 5);
+
       return {
         success: true,
         message: "User summary retrieved successfully",
@@ -535,6 +584,8 @@ export class UserProgressController {
           nextLevel: nextLevelData || null,
           studyActivity,
           streakCount,
+          isQuestionnaireCompleted,
+          recentActivityLog,
         }
       };
     } catch (error) {
