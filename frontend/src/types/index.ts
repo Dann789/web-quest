@@ -248,6 +248,13 @@ export interface SubmitEvaluation {
   reason: string;
 }
 
+export interface ueqItem {
+  id: number;
+  leftWord: string;
+  rightWord: string;
+  category: string;
+}
+
 export interface SubmitUeq {
   answer: {
     questionId: number;

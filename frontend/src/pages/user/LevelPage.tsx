@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { Level } from '@/types/index';
 import { useEffect, useState } from 'react';
 import { getLevels } from '@/services/dosen/LevelService';
-import { getProgressLevel } from '@/services/user/ProgressService';
+import { getProgressLevel, getQuestionnaireStatus } from '@/services/user/ProgressService';
 
 export default function LevelPage() {
   const { user } = useAuth();
@@ -15,6 +15,8 @@ export default function LevelPage() {
   const [level, setLevels] = useState<Level[]>([]);
   const [levelProgress, setLevelProgress] = useState<Record<number, number>>({});
   const [animatedProgress, setAnimatedProgress] = useState<Record<number, number>>({});
+  const [questionnaireProgress, setQuestionnaireProgress] = useState(0);
+  const [animatedQProgress, setAnimatedQProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -74,6 +76,13 @@ export default function LevelPage() {
           });
 
           setLevelProgress(newProgressMap);
+
+          // Get questionnaire progress
+          const qRes = await getQuestionnaireStatus(user.id);
+          if (qRes.success && qRes.data) {
+            const completedCount = (qRes.data.ueqCompleted ? 1 : 0) + (qRes.data.mrcCompleted ? 1 : 0);
+            setQuestionnaireProgress(Math.round((completedCount / 2) * 100));
+          }
         } else {
           setError(result.message || 'Failed to fetch levels');
         }
@@ -92,9 +101,11 @@ export default function LevelPage() {
     // Delay sedikit sebelum mengisi bar supaya transisi animasinya terlihat mulus bergerak dari kiri
     const timer = setTimeout(() => {
       setAnimatedProgress(levelProgress);
+      setAnimatedQProgress(questionnaireProgress);
     }, 300);
     return () => clearTimeout(timer);
-  }, [levelProgress]);
+  }, [levelProgress, questionnaireProgress]);
+
 
   return loading ? (
     <div className="flex items-center justify-center h-64">
@@ -180,7 +191,7 @@ export default function LevelPage() {
                     <span>Progress</span>
                     <span className="text-foreground">{actualProgress}%</span>
                   </div>
-                  <Progress value={displayedProgress} className="h-1.5 bg-black/10 dark:bg-white/10 [&>div]:bg-emerald-500" />
+                  <Progress value={displayedProgress} className="h-2 bg-black/10 dark:bg-white/10 [&>div]:bg-emerald-500" />
                 </div>
               </div>
 
@@ -211,8 +222,8 @@ export default function LevelPage() {
 
         {/* Kuesioner Sistem Card */}
         {(() => {
-          // const allLevelsCompleted = level.length > 0 && level.every(l => levelProgress[l.id] === 100);
-          const allLevelsCompleted = true;
+          const allLevelsCompleted = level.length > 0 && level.every(l => levelProgress[l.id] === 100);
+          // const allLevelsCompleted = true;
 
           return (
             <Card className={`group overflow-hidden rounded-4xl border-0 shadow-sm ring-1 ring-border/50 transition-all duration-300 hover:shadow-xl hover:ring-2 hover:ring-emerald-500 hover:-translate-y-1 hover:scale-[1.02] flex flex-col h-full ${!allLevelsCompleted ? 'grayscale opacity-80' : ''}`}>
@@ -247,9 +258,9 @@ export default function LevelPage() {
                 <div className="z-10 mt-auto pt-5 space-y-3">
                   <div className="flex justify-between items-center text-sm font-semibold text-muted-foreground">
                     <span>Progress</span>
-                    <span className="text-foreground">{allLevelsCompleted ? '100' : '0'}%</span>
+                    <span className="text-foreground">{questionnaireProgress}%</span>
                   </div>
-                  <Progress value={allLevelsCompleted ? 100 : 0} className="h-2 bg-black/10 dark:bg-white/10 [&>div]:bg-emerald-500" />
+                  <Progress value={animatedQProgress} className="h-2 bg-black/10 dark:bg-white/10 [&>div]:bg-emerald-500" />
                 </div>
               </div>
 
@@ -265,7 +276,7 @@ export default function LevelPage() {
                 ) : (
                   <Button className="rounded-full px-8 h-12 text-sm font-semibold bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95" asChild>
                     <Link to="/kuesioner">
-                      Mulai
+                      {questionnaireProgress === 100 ? 'Review' : 'Mulai'}
                     </Link>
                   </Button>
                 )}

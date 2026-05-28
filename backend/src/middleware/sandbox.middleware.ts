@@ -4,7 +4,7 @@ import { UserRole } from "@prisma/client";
 // Middleware khusus untuk sandbox — mahasiswa dan dosen bisa akses
 export const sandboxMiddleware = new Elysia()
     .use(authMiddleware)
-    .derive({as: 'global'}, ({ user, set }) => {
+    .derive({ as: 'global' }, ({ user, set }) => {
         if (
             user.role !== UserRole.MAHASISWA &&
             user.role !== UserRole.DOSEN

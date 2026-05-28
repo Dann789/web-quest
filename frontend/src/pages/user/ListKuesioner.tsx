@@ -1,10 +1,35 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, CheckCircle2, Clock, HelpCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock, HelpCircle, Loader2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getQuestionnaireStatus } from '@/services/user/ProgressService';
 
 export default function ListKuesioner() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [completedStatus, setCompletedStatus] = useState({ ueqCompleted: false, mrcCompleted: false });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const fetchStatus = async () => {
+      try {
+        const res = await getQuestionnaireStatus(user.id);
+        if (res.success && res.data) {
+          setCompletedStatus(res.data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStatus();
+  }, [user?.id]);
+
   const questionnaires = [
     {
       id: 'ueq',
@@ -12,7 +37,7 @@ export default function ListKuesioner() {
       description: 'Bantu kami meningkatkan kualitas platform ini dengan memberikan penilaian Anda terhadap pengalaman penggunaan sistem. Jawaban Anda sangat berarti bagi pengembangan lebih lanjut.',
       estimatedTime: '5 Menit',
       questionCount: 26,
-      isCompleted: false,
+      isCompleted: completedStatus.ueqCompleted,
       iconName: 'fa-clipboard-list',
       colorTheme: 'emerald'
     },
@@ -22,11 +47,21 @@ export default function ListKuesioner() {
       description: 'Bantu kami meningkatkan kualitas platform ini dengan memberikan penilaian Anda terhadap pengalaman penggunaan sistem. Jawab dengan memilih kata yang paling menggambarkan perasaan anda setelah menggunakan platform ini.',
       estimatedTime: '3 Menit',
       questionCount: 2,
-      isCompleted: false,
+      isCompleted: completedStatus.mrcCompleted,
       iconName: 'fa-microsoft',
       colorTheme: 'emerald'
     }
   ];
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="h-10 w-10 animate-spin text-emerald-600" />
+        <p className="text-muted-foreground animate-pulse font-medium">Memuat status kuesioner...</p>
+      </div>
+    );
+  }
+
 
   return (
     <div className="space-y-10 pb-8 relative w-full">
@@ -35,6 +70,14 @@ export default function ListKuesioner() {
       
       {/* Header Section */}
       <div className="relative z-10">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate('/level')} 
+          className="mb-4 -ml-4 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Kembali ke Level
+        </Button>
         <h1 className="text-4xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
           Daftar Kuesioner
         </h1>

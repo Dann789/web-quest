@@ -16,6 +16,7 @@ import { sandboxRoutes } from "./routes/user/sandbox.routes";
 import { soalRoutes } from "./routes/user/soal.routes";
 import { cron } from "@elysiajs/cron";
 import { UserBadgeController } from "./controllers/user/badge.controller";
+import { ueqRoutes } from "./routes/user/ueq.routes";
 
 const app = new Elysia()
   .use(corsPlugin)
@@ -31,6 +32,7 @@ const app = new Elysia()
   .use(leaderboardRoutes)
   .use(mrcRoutes)
   .use(monitoringRoutes)
+  .use(ueqRoutes)
   .use(sandboxRoutes)
   .use(soalRoutes)
   .use(

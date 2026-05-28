@@ -41,4 +41,9 @@ export const progressRoutes = new Elysia({ prefix: "/api/progress" })
     params: t.Object({
       userId: t.Numeric()
     })
+  })
+  .get("/:userId/questionnaire-status", ({ params: { userId } }) => UserProgressController.getQuestionnaireStatus(userId), {
+    params: t.Object({
+      userId: t.Numeric()
+    })
   });

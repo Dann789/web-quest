@@ -63,7 +63,12 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
     }
   };
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === "/level" && location.pathname.startsWith("/kuesioner")) {
+      return true;
+    }
+    return location.pathname === path;
+  };
 
   return (
     <div

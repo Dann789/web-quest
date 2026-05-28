@@ -545,4 +545,29 @@ export class UserProgressController {
       };
     }
   }
+
+  static async getQuestionnaireStatus(userId: number) {
+    try {
+      const [ueqCount, mrcCount] = await Promise.all([
+        prisma.uEQSession.count({ where: { userId } }),
+        prisma.response.count({ where: { userId } }),
+      ]);
+
+      return {
+        success: true,
+        message: "Status kuesioner berhasil diambil",
+        data: {
+          ueqCompleted: ueqCount > 0,
+          mrcCompleted: mrcCount > 0,
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching questionnaire status:", error);
+      return {
+        success: false,
+        message: "Failed to fetch questionnaire status",
+      };
+    }
+  }
 }
+
