@@ -78,3 +78,15 @@ export async function getUserSummary(userId: number) {
     return { success: false, message: 'Failed to get user summary' };
   }
 }
+
+export async function getQuestionnaireStatus(userId: number) {
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/progress/${userId}/questionnaire-status`,
+      { method: 'GET', headers: getAuthHeaders() }
+    );
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Failed to get questionnaire status' };
+  }
+}
