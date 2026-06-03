@@ -51,9 +51,9 @@ export async function submitAnswer(
 export async function runPhpCode(
   codes: Record<string, string>,
   userId?: number,
-  templateName?: string,
-  level?: string,
-  sandboxEnabled?: boolean
+  templateName?: string | null,
+  level?: string | null,
+  sandboxEnabled?: boolean | null
 ): Promise<ApiResponse<any>> {
   try {
     const response = await fetch(`${API_BASE}/api/user/challenges/run-php`, {
@@ -61,10 +61,10 @@ export async function runPhpCode(
       headers: getAuthHeaders(),
       body: JSON.stringify({ 
         codes, 
-        userId, 
-        templateName, 
-        level,
-        sandboxEnabled
+        userId: userId || undefined, 
+        templateName: templateName || undefined, 
+        level: level || undefined,
+        sandboxEnabled: sandboxEnabled ?? undefined
       }),
     });
     return await response.json();
@@ -92,13 +92,13 @@ export async function getChallengeSchema(
 }
 
 /**
- * Menjalankan query SQL di server terhadap SQLite sandbox mahasiswa.
+ * Menjalankan query SQL di server terhadap SQLite sandbox mahasiswa (atau in-memory jika kosong).
  */
 export async function runSqlCode(
   sql: string,
-  userId: number,
-  templateName: string,
-  level: string
+  userId?: number,
+  templateName?: string,
+  level?: string
 ): Promise<ApiResponse<any>> {
   try {
     const response = await fetch(`${API_BASE}/api/user/challenges/run-sql`, {
@@ -106,9 +106,9 @@ export async function runSqlCode(
       headers: getAuthHeaders(),
       body: JSON.stringify({ 
         sql, 
-        userId, 
-        templateName, 
-        level 
+        userId: userId || undefined, 
+        templateName: templateName || undefined, 
+        level: level || undefined 
       }),
     });
     return await response.json();
