@@ -28,7 +28,7 @@ export async function seedLevel2Material(prisma: PrismaClient) {
 
   const materials = [
     {
-      id: 16,
+      id: 15,
       levelId: level.id,
       title: "Pengenalan CSS",
       order: 1,
@@ -61,10 +61,11 @@ export async function seedLevel2Material(prisma: PrismaClient) {
             <pre><code>&lt;link rel="stylesheet" href="style.css"&gt;</code></pre>
           </li>
         </ol>
+        <interactive-code-block language="css" codecontent="p { color: green; }" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;p style=&quot;color: blue;&quot;&gt;Teks ini biru karena inline CSS.&lt;/p&gt;&#10;  &lt;p&gt;Teks ini hijau karena external/internal CSS.&lt;/p&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 17,
+      id: 16,
       levelId: level.id,
       title: "CSS Selector Dasar",
       order: 2,
@@ -90,10 +91,11 @@ export async function seedLevel2Material(prisma: PrismaClient) {
         <pre><code>#header-utama {
   font-weight: bold;
 }</code></pre>
+        <interactive-code-block language="css" codecontent="p { color: navy; font-size: 16px; }&#10;.highlight { background-color: yellow; }&#10;#header-utama { font-weight: bold; }" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;p id=&quot;header-utama&quot;&gt;Ini adalah Header (ID Selector)&lt;/p&gt;&#10;  &lt;p&gt;Ini paragraf biasa (Element Selector)&lt;/p&gt;&#10;  &lt;p class=&quot;highlight&quot;&gt;Ini paragraf highlight (Class Selector)&lt;/p&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 18,
+      id: 17,
       levelId: level.id,
       title: "CSS Colors & Backgrounds",
       order: 3,
@@ -113,10 +115,11 @@ export async function seedLevel2Material(prisma: PrismaClient) {
   color: #333333; /* Warna teks gelap */
   background-color: rgb(240, 240, 240); /* Latar belakang abu-abu terang */
 }</code></pre>
+        <interactive-code-block language="css" codecontent=".box-warna {&#10;  color: #333333;&#10;  background-color: rgb(240, 240, 240);&#10;  padding: 20px;&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;div class=&quot;box-warna&quot;&gt;&#10;    Ini adalah kotak dengan warna teks gelap dan latar abu-abu.&#10;  &lt;/div&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 19,
+      id: 18,
       levelId: level.id,
       title: "CSS Box Model",
       order: 4,
@@ -153,10 +156,11 @@ export async function seedLevel2Material(prisma: PrismaClient) {
   border: 2px solid black;
   margin: auto; /* Otomatis ke tengah layar */
 }</code></pre>
+        <interactive-code-block language="css" codecontent="* { box-sizing: border-box; }&#10;.box {&#10;  width: 300px;&#10;  padding: 10px 20px;&#10;  border: 2px solid black;&#10;  margin: auto;&#10;  background-color: lightgreen;&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;div class=&quot;box&quot;&gt;Kotak dengan padding, border, dan margin auto&lt;/div&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 20,
+      id: 19,
       levelId: level.id,
       title: "CSS Typography",
       order: 5,
@@ -201,10 +205,11 @@ export async function seedLevel2Material(prisma: PrismaClient) {
             </tr>
           </tbody>
         </table>
+        <interactive-code-block language="css" codecontent=".teks-keren {&#10;  font-family: sans-serif;&#10;  font-size: 20px;&#10;  font-weight: bold;&#10;  text-align: center;&#10;  line-height: 1.5;&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;p class=&quot;teks-keren&quot;&gt;Teks ini ditata menggunakan properti Typography CSS! Coba ubah ukurannya.&lt;/p&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 21,
+      id: 20,
       levelId: level.id,
       title: "CSS Display",
       order: 6,
@@ -295,10 +300,11 @@ Display sangat penting dalam mengatur layout dan posisi elemen pada halaman web.
     background-color: lightblue;
 }
 </code></pre>
+        <interactive-code-block language="css" codecontent=".box {&#10;  display: inline-block;&#10;  width: 150px;&#10;  height: 100px;&#10;  background-color: lightblue;&#10;  margin: 5px;&#10;}&#10;.hidden {&#10;  display: none;&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;div class=&quot;box&quot;&gt;Box Pertama&lt;/div&gt;&#10;  &lt;div class=&quot;box&quot;&gt;Box Kedua&lt;/div&gt;&#10;  &lt;div class=&quot;box hidden&quot;&gt;Box Ketiga (Sembunyi)&lt;/div&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 22,
+      id: 21,
       levelId: level.id,
       title: "CSS Position",
       order: 7,
@@ -381,11 +387,11 @@ Property <strong>position</strong> digunakan untuk mengatur posisi elemen pada h
     &lt;/div&gt;
 &lt;/div&gt;
 </code></pre>
-
+        <interactive-code-block language="css" codecontent=".parent {&#10;  position: relative;&#10;  width: 200px;&#10;  height: 200px;&#10;  background-color: #ddd;&#10;}&#10;.child {&#10;  position: absolute;&#10;  top: 0;&#10;  right: 0;&#10;  background-color: red;&#10;  color: white;&#10;  padding: 10px;&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;div class=&quot;parent&quot;&gt;&#10;    Parent (Relative)&#10;    &lt;div class=&quot;child&quot;&gt;Child (Absolute top-right)&lt;/div&gt;&#10;  &lt;/div&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 23,
+      id: 22,
       levelId: level.id,
       title: "CSS Flexbox Dasar",
       order: 8,
@@ -400,10 +406,11 @@ Property <strong>position</strong> digunakan untuk mengatur posisi elemen pada h
           <li><code>justify-content</code>: Mengatur perataan elemen secara horizontal (e.g. <code>center</code>, <code>space-between</code>).</li>
           <li><code>align-items</code>: Mengatur perataan elemen secara vertikal (e.g. <code>center</code>, <code>stretch</code>).</li>
         </ul>
+        <interactive-code-block language="css" codecontent=".container {&#10;  display: flex;&#10;  flex-direction: row;&#10;  justify-content: space-between;&#10;  align-items: center;&#10;  background-color: #eee;&#10;  padding: 10px;&#10;}&#10;.item {&#10;  background-color: tomato;&#10;  color: white;&#10;  padding: 20px;&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;div class=&quot;container&quot;&gt;&#10;    &lt;div class=&quot;item&quot;&gt;1&lt;/div&gt;&#10;    &lt;div class=&quot;item&quot;&gt;2&lt;/div&gt;&#10;    &lt;div class=&quot;item&quot;&gt;3&lt;/div&gt;&#10;  &lt;/div&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 24,
+      id: 23,
       levelId: level.id,
       title: "Pengenalan CSS Grid",
       order: 9,
@@ -479,10 +486,11 @@ Grid sangat cocok digunakan untuk membuat dashboard, galeri, layout website, dan
     text-align: center;
 }
 </code></pre>
+        <interactive-code-block language="css" codecontent=".container {&#10;  display: grid;&#10;  grid-template-columns: repeat(3, 1fr);&#10;  gap: 15px;&#10;}&#10;.item {&#10;  background-color: lightblue;&#10;  padding: 20px;&#10;  text-align: center;&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;div class=&quot;container&quot;&gt;&#10;    &lt;div class=&quot;item&quot;&gt;1&lt;/div&gt;&#10;    &lt;div class=&quot;item&quot;&gt;2&lt;/div&gt;&#10;    &lt;div class=&quot;item&quot;&gt;3&lt;/div&gt;&#10;    &lt;div class=&quot;item&quot;&gt;4&lt;/div&gt;&#10;  &lt;/div&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 25,
+      id: 24,
       levelId: level.id,
       title: "Responsive Design/Media Query",
       order: 10,
@@ -542,10 +550,11 @@ Media query digunakan untuk memberikan style CSS berbeda berdasarkan ukuran laya
     &lt;div class="item"&gt;Item 3&lt;/div&gt;
 &lt;/div&gt;
 </code></pre>
+        <interactive-code-block language="css" codecontent=".container {&#10;  display: grid;&#10;  grid-template-columns: repeat(3, 1fr);&#10;  gap: 20px;&#10;}&#10;.item { background-color: pink; padding: 20px; }&#10;@media screen and (max-width: 500px) {&#10;  .container {&#10;    grid-template-columns: 1fr;&#10;  }&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;p&gt;Ubah ukuran layar preview untuk melihat efeknya!&lt;/p&gt;&#10;  &lt;div class=&quot;container&quot;&gt;&#10;    &lt;div class=&quot;item&quot;&gt;Item 1&lt;/div&gt;&#10;    &lt;div class=&quot;item&quot;&gt;Item 2&lt;/div&gt;&#10;    &lt;div class=&quot;item&quot;&gt;Item 3&lt;/div&gt;&#10;  &lt;/div&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 26,
+      id: 25,
       levelId: level.id,
       title: "Hover",
       order: 11,
@@ -599,10 +608,11 @@ Hover biasanya digunakan pada:
     transform: scale(1.05);
 }
 </code></pre>
+        <interactive-code-block language="css" codecontent=".btn {&#10;  background-color: blue;&#10;  color: white;&#10;  padding: 10px 20px;&#10;  border: none;&#10;  cursor: pointer;&#10;}&#10;.btn:hover {&#10;  background-color: darkblue;&#10;}&#10;.card { padding: 20px; border: 1px solid #ccc; transition: 0.3s; margin-top: 10px; }&#10;.card:hover { transform: scale(1.05); }" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;button class=&quot;btn&quot;&gt;Arahkan Mouse Kesini!&lt;/button&gt;&#10;  &lt;div class=&quot;card&quot;&gt;Arahkan mouse ke card ini&lt;/div&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 27,
+      id: 26,
       levelId: level.id,
       title: "Transition",
       order: 12,
@@ -677,6 +687,7 @@ Transition sering digunakan bersama hover agar animasi terlihat lebih smooth.
     Card Hover
 &lt;/div&gt;
 </code></pre>
+        <interactive-code-block language="css" codecontent=".card {&#10;  width: 200px;&#10;  padding: 20px;&#10;  background-color: teal;&#10;  color: white;&#10;  transition: transform 0.3s ease, background-color 0.3s ease;&#10;}&#10;.card:hover {&#10;  transform: translateY(-10px);&#10;  background-color: orange;&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;div class=&quot;card&quot;&gt;Hover untuk melihat transisi yang halus!&lt;/div&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
   ];
@@ -689,7 +700,13 @@ Transition sering digunakan bersama hover agar animasi terlihat lebih smooth.
         content: m.content,
         order: m.order,
       },
-      create: m,
+      create: {
+        id: m.id,
+        levelId: m.levelId,
+        title: m.title,
+        content: m.content,
+        order: m.order,
+      },
     });
   }
 

@@ -28,7 +28,7 @@ export async function seedLevel3Material(prisma: PrismaClient) {
 
   const materials = [
     {
-      id: 28,
+      id: 27,
       levelId: level.id,
       title: "Pengenalan JavaScript",
       order: 1,
@@ -56,10 +56,11 @@ export async function seedLevel3Material(prisma: PrismaClient) {
             <pre><code>&lt;script src="script.js"&gt;&lt;/script&gt;</code></pre>
           </li>
         </ol>
+        <interactive-code-block language="javascript" codecontent="console.log(&quot;Halo dari JavaScript!&quot;);&#10;console.log(&quot;Selamat datang di JavaScript!&quot;);" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;h1&gt;Coba buka Console atau lihat Popup!&lt;/h1&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 29,
+      id: 28,
       levelId: level.id,
       title: "Variabel & Tipe Data",
       order: 2,
@@ -109,10 +110,11 @@ export async function seedLevel3Material(prisma: PrismaClient) {
             </tr>
           </tbody>
         </table>
+        <interactive-code-block language="javascript" codecontent="let nama = &quot;John Doe&quot;;&#10;const umur = 25;&#10;let sudahMenikah = false;&#10;&#10;console.log(&quot;Nama:&quot;, nama);&#10;console.log(&quot;Umur:&quot;, umur);&#10;console.log(&quot;Menikah:&quot;, sudahMenikah);" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;h1&gt;Cek Console Output&lt;/h1&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 30,
+      id: 29,
       levelId: level.id,
       title: "Conditional",
       order: 3,
@@ -201,10 +203,11 @@ switch (hari) {
         console.log("Hari biasa");
 }
 </code></pre>
+        <interactive-code-block language="javascript" codecontent="let nilai = 85;&#10;if (nilai &gt;= 90) {&#10;  console.log(&quot;Grade A&quot;);&#10;} else if (nilai &gt;= 80) {&#10;  console.log(&quot;Grade B&quot;);&#10;} else {&#10;  console.log(&quot;Grade C&quot;);&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 31,
+      id: 30,
       levelId: level.id,
       title: "Looping",
       order: 4,
@@ -259,10 +262,11 @@ for (let item of buah) {
     console.log(item);
 }
 </code></pre>
+        <interactive-code-block language="javascript" codecontent="for (let i = 1; i &lt;= 5; i++) {&#10;  console.log(&quot;Angka ke-&quot; + i);&#10;}" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 32,
+      id: 31,
       levelId: level.id,
       title: "Array",
       order: 5,
@@ -312,10 +316,11 @@ angka.forEach(function(item) {
     console.log(item);
 });
 </code></pre>
+        <interactive-code-block language="javascript" codecontent="let buah = [&quot;Apel&quot;, &quot;Mangga&quot;];&#10;buah.push(&quot;Jeruk&quot;);&#10;buah.forEach(item =&gt; console.log(item));" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 33,
+      id: 32,
       levelId: level.id,
       title: "Function Dasar",
       order: 6,
@@ -360,10 +365,11 @@ console.log(tambah(5, 3));
 
 console.log(kali(4, 2));
 </code></pre>
+        <interactive-code-block language="javascript" codecontent="function tambah(a, b) {&#10;  return a + b;&#10;}&#10;console.log(&quot;Hasil 5 + 3 =&quot;, tambah(5, 3));" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 34,
+      id: 33,
       levelId: level.id,
       title: "Object",
       order: 7,
@@ -408,10 +414,11 @@ console.log(mahasiswa);
 
 user.salam();
 </code></pre>
+        <interactive-code-block language="javascript" codecontent="let user = {&#10;  nama: &quot;Andi&quot;,&#10;  umur: 20,&#10;  salam: function() {&#10;    console.log(&quot;Hello, nama saya &quot; + this.nama);&#10;  }&#10;};&#10;user.salam();" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 35,
+      id: 34,
       levelId: level.id,
       title: "DOM Manipulation",
       order: 8,
@@ -464,10 +471,11 @@ document.querySelector(".box");
 <pre><code>document.getElementById("judul").innerHTML = 
     "Hello JavaScript";
 </code></pre>
+        <interactive-code-block language="javascript" codecontent="document.getElementById(&quot;judul&quot;).innerHTML = &quot;Teks ini diubah oleh JavaScript!&quot;;&#10;document.getElementById(&quot;judul&quot;).style.color = &quot;blue&quot;;" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;h1 id=&quot;judul&quot;&gt;Teks Asli (Tunggu sebentar...)&lt;/h1&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 36,
+      id: 35,
       levelId: level.id,
       title: "Event Handling",
       order: 9,
@@ -518,10 +526,11 @@ box.addEventListener("mouseover", function() {
     box.style.backgroundColor = "red";
 });
 </code></pre>
+        <interactive-code-block language="javascript" codecontent="const tombol = document.querySelector(&quot;button&quot;);&#10;tombol.addEventListener(&quot;click&quot;, function() {&#10;  console.log(&quot;Tombol berhasil ditekan!&quot;);&#10;  document.body.style.backgroundColor = &quot;lightgreen&quot;;&#10;});" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;button&gt;Klik Saya&lt;/button&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 37,
+      id: 36,
       levelId: level.id,
       title: "Form Validation",
       order: 10,
@@ -586,10 +595,11 @@ form.addEventListener("submit", function(event) {
     alert("Format email tidak valid");
 }
 </code></pre>
+        <interactive-code-block language="javascript" codecontent="const form = document.getElementById(&quot;formLogin&quot;);&#10;form.addEventListener(&quot;submit&quot;, function(e) {&#10;  e.preventDefault();&#10;  const username = document.getElementById(&quot;username&quot;).value;&#10;  const pesan = document.getElementById(&quot;pesan&quot;);&#10;  if (username === &quot;&quot;) {&#10;    pesan.innerText = &quot;Username tidak boleh kosong!&quot;;&#10;    pesan.style.color = &quot;red&quot;;&#10;  } else {&#10;    pesan.innerText = &quot;Login sukses untuk: &quot; + username;&#10;    pesan.style.color = &quot;green&quot;;&#10;  }&#10;});" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;form id=&quot;formLogin&quot;&gt;&#10;    &lt;input type=&quot;text&quot; id=&quot;username&quot; placeholder=&quot;Username&quot;&gt;&#10;    &lt;button type=&quot;submit&quot;&gt;Login&lt;/button&gt;&#10;  &lt;/form&gt;&#10;  &lt;div id=&quot;pesan&quot; style=&quot;margin-top: 10px; font-weight: bold;&quot;&gt;&lt;/div&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 38,
+      id: 37,
       levelId: level.id,
       title: "DOM Manipulation Lanjutan",
       order: 11,
@@ -613,10 +623,11 @@ li.innerText = "Belajar JavaScript";
 // 2. Masukkan ke dalam elemen parent (ul)
 const ul = document.getElementById("list");
 ul.appendChild(li);</code></pre>
+        <interactive-code-block language="javascript" codecontent="const ul = document.getElementById(&quot;list&quot;);&#10;const liBaru = document.createElement(&quot;li&quot;);&#10;liBaru.innerText = &quot;Item Baru dari JS&quot;;&#10;liBaru.classList.add(&quot;highlight&quot;);&#10;ul.appendChild(liBaru);" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;ul id=&quot;list&quot;&gt;&#10;    &lt;li&gt;Item Lama&lt;/li&gt;&#10;  &lt;/ul&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" csscontent=".highlight { color: red; font-weight: bold; }"></interactive-code-block>
       `,
     },
     {
-      id: 39,
+      id: 38,
       levelId: level.id,
       title: "Array Method Lanjutan",
       order: 12,
@@ -633,10 +644,11 @@ console.log(dikaliDua); // Hasil: [2, 4, 6]</code></pre>
 // Ambil angka yang lebih besar dari 5
 const hasil = angka.filter(item => item > 5);
 console.log(hasil); // Hasil: [6, 7, 8]</code></pre>
+        <interactive-code-block language="javascript" codecontent="const angka = [1, 2, 3, 6, 7, 8];&#10;const hasil = angka.filter(item =&gt; item &gt; 5);&#10;console.log(&quot;Lebih besar dari 5:&quot;, hasil);&#10;&#10;const dikaliDua = angka.map(item =&gt; item * 2);&#10;console.log(&quot;Dikali dua:&quot;, dikaliDua);" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 40,
+      id: 39,
       levelId: level.id,
       title: "Async JavaScript & Fetch API",
       order: 13,
@@ -665,6 +677,7 @@ console.log(hasil); // Hasil: [6, 7, 8]</code></pre>
         console.log("Terjadi masalah: ", error);
     }
 }</code></pre>
+        <interactive-code-block language="javascript" codecontent="async function getJoke() {&#10;  try {&#10;    const res = await fetch(&quot;https://official-joke-api.appspot.com/random_joke&quot;);&#10;    const data = await res.json();&#10;    document.getElementById(&quot;joke&quot;).innerText = data.setup + &quot; ... &quot; + data.punchline;&#10;  } catch (e) {&#10;    document.getElementById(&quot;joke&quot;).innerText = &quot;Gagal memuat joke&quot;;&#10;  }&#10;}&#10;getJoke();" htmlcontent="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;h1&gt;Random Joke:&lt;/h1&gt;&#10;  &lt;p id=&quot;joke&quot;&gt;Loading...&lt;/p&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"></interactive-code-block>
       `,
     },
   ];
@@ -677,7 +690,13 @@ console.log(hasil); // Hasil: [6, 7, 8]</code></pre>
         content: m.content,
         order: m.order,
       },
-      create: m,
+      create: {
+        id: m.id,
+        levelId: m.levelId,
+        title: m.title,
+        content: m.content,
+        order: m.order,
+      },
     });
   }
 

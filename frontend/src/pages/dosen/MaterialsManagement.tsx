@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, Trash, FileText } from 'lucide-react';
+import { Plus, Edit, Trash, FileText, Download } from 'lucide-react';
 import { MaterialDialog } from '@/components/dosen/MaterialDialog';
 import { DeleteMaterialDialog } from '@/components/dosen/DeleteMaterialDialog';
 import { getLevels } from '@/services/dosen/LevelService';
@@ -182,6 +182,47 @@ export default function MaterialsManagement() {
     setIsDeleteOpen(true);
   };
 
+  const handleExportJSON = async () => {
+    try {
+      setLoading(true);
+      const levelId = filterLevel === 'all' ? undefined : Number(filterLevel);
+      // Fetch up to 10000 materials for the export to ensure we get everything
+      const response = await getMaterials(1, 10000, levelId);
+      
+      if (response.success && response.data) {
+        let jsonString = JSON.stringify(response.data, null, 2);
+        // Menghapus tanda petik dua pada nama key/kolom agar sesuai format object JavaScript/TypeScript
+        jsonString = jsonString.replace(/^(\s*)"([^"]+)":/gm, '$1$2:');
+        
+        // Export file can be .ts or .json. We will use .ts since it's formatted as a JS object.
+        const blob = new Blob([jsonString], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        
+        const levelName = filterLevel === 'all' 
+          ? 'semua_level' 
+          : levels.find(l => l.id === Number(filterLevel))?.name.replace(/\s+/g, '_').toLowerCase() || 'level';
+          
+        a.download = `export_materi_${levelName}_${new Date().getTime()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast.success('Berhasil mengekspor materi ke JSON!');
+      } else {
+        toast.error('Gagal mengambil data untuk ekspor.');
+      }
+    } catch (err) {
+      toast.error('Terjadi kesalahan saat mengekspor data.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -193,9 +234,14 @@ export default function MaterialsManagement() {
           </h1>
           <p className="text-muted-foreground mt-2">Kelola materi pembelajaran untuk setiap level</p>
         </div>
-        <Button className="gap-2" onClick={() => setIsCreateOpen(true)}>
-          <Plus className="h-4 w-4" /> Tambah Materi
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleExportJSON}>
+            <Download className="h-4 w-4" /> Export JSON
+          </Button>
+          <Button className="gap-2" onClick={() => setIsCreateOpen(true)}>
+            <Plus className="h-4 w-4" /> Tambah Materi
+          </Button>
+        </div>
       </div>
 
       {loading && (

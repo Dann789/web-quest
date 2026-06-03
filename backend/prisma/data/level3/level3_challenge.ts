@@ -4,1256 +4,564 @@ export async function seedLevel3Challenge(prisma: PrismaClient) {
   console.log("🌱 Seeding Challenge Level 3: JavaScript...");
 
   const javascriptChallenges = [
+    // --- EASY ---
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Menampilkan Hello World",
-      description: "Tampilkan Hello World menggunakan console.log",
-      difficulty: Difficulty.EASY,
-      method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 80,
-      xpBase: 10,
-      hint: "Gunakan console.log()",
-      isActive: true,
-      starterCode: "console.log();",
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        starterCode: '{"html":"","css":"","javascript":"console.log();"}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"","css":"","javascript":"console.log(\'Hello World\');"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"console.log(\'Hello World\');"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Variabel JavaScript",
-      description: "Buat variabel bernama nama dengan isi Andi",
+      title: "Membuat Variabel JavaScript",
+      description: "Buat sebuah variabel bernama 'playerName' menggunakan let dan isi nilainya dengan 'Andi'. Lalu buat konstanta 'level' menggunakan const dengan nilai 1.",
       difficulty: Difficulty.EASY,
       method: ChallengeMethod.CODING_MANUAL,
       idealTime: 90,
       xpBase: 10,
-      hint: "Gunakan let",
+      hint: "Gunakan 'let playerName = ...;' dan 'const level = ...;'",
       isActive: true,
-      starterCode: "let nama;",
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
+      starterCode: JSON.stringify({
+        html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Belajar Variabel</h1>\n    <p>Lihat Console untuk hasilnya.</p>\n</body>\n</html>",
+        css: "/* Tidak ada CSS tambahan */\n",
+        javascript: "/* \n Buatlah sebuah variabel dengan nama 'playerName' menggunakan let, \n dan isi nilainya dengan string \"Andi\".\n Lalu, buat konstanta 'level' menggunakan const dengan nilai 1.\n*/\n"
+      }),
       content: {
         language: "javascript",
-        starterCode: '{"html":"","css":"","javascript":"let nama;"}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"","css":"","javascript":"let nama = \'Andi\';"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        starterCode: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Belajar Variabel</h1>\n    <p>Lihat Console untuk hasilnya.</p>\n</body>\n</html>",
+          css: "/* Tidak ada CSS tambahan */\n",
+          javascript: "/* \n Buatlah sebuah variabel dengan nama 'playerName' menggunakan let, \n dan isi nilainya dengan string \"Andi\".\n Lalu, buat konstanta 'level' menggunakan const dengan nilai 1.\n*/\n"
+        }),
+        correctAnswer: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Belajar Variabel</h1>\n    <p>Lihat Console untuk hasilnya.</p>\n</body>\n</html>",
+          css: "/* Tidak ada CSS tambahan */\n",
+          javascript: "/* \n Buatlah sebuah variabel dengan nama 'playerName' menggunakan let, \n dan isi nilainya dengan string \"Andi\".\n Lalu, buat konstanta 'level' menggunakan const dengan nilai 1.\n*/\nlet playerName = \"Andi\";\nconst level = 1;"
+        })
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"let nama = \'Andi\';"}',
-        },
-      ],
+          expectedOutput: JSON.stringify({
+            html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Belajar Variabel</h1>\n    <p>Lihat Console untuk hasilnya.</p>\n</body>\n</html>",
+            css: "/* Tidak ada CSS tambahan */\n",
+            javascript: "/* \n Buatlah sebuah variabel dengan nama 'playerName' menggunakan let, \n dan isi nilainya dengan string \"Andi\".\n Lalu, buat konstanta 'level' menggunakan const dengan nilai 1.\n*/\nlet playerName = \"Andi\";\nconst level = 1;"
+          })
+        }
+      ]
     },
-
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Penjumlahan JavaScript",
-      description: "Jumlahkan dua angka menggunakan JavaScript",
+      title: "Pengkondisian Umur",
+      description: "Lengkapi kondisi if-else untuk mengecek apakah seseorang cukup umur membuat SIM.",
       difficulty: Difficulty.EASY,
       method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 90,
+      idealTime: 120,
       xpBase: 10,
-      hint: "Gunakan operator +",
+      hint: "Gunakan if (umur >= 17) { ... } else { ... }",
       isActive: true,
-      starterCode: "let a = 5;\nlet b = 3;",
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
+      starterCode: JSON.stringify({
+        html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Pengecekan Umur</h1>\n    <p>Buka console untuk melihat hasil.</p>\n</body>\n</html>",
+        css: "/* Tidak ada CSS tambahan */\n",
+        javascript: "let umur = 15;\n/* \n Buat kondisi if-else. \n Jika umur >= 17, console.log(\"Bisa membuat SIM\");\n Jika tidak (else), console.log(\"Belum cukup umur\");\n*/\n"
+      }),
       content: {
         language: "javascript",
-        starterCode:
-          '{"html":"","css":"","javascript":"let a = 5;\\nlet b = 3;"}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"","css":"","javascript":"let a = 5;\\nlet b = 3;\\nconsole.log(a + b);"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        starterCode: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Pengecekan Umur</h1>\n    <p>Buka console untuk melihat hasil.</p>\n</body>\n</html>",
+          css: "/* Tidak ada CSS tambahan */\n",
+          javascript: "let umur = 15;\n/* \n Buat kondisi if-else. \n Jika umur >= 17, console.log(\"Bisa membuat SIM\");\n Jika tidak (else), console.log(\"Belum cukup umur\");\n*/\n"
+        }),
+        correctAnswer: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Pengecekan Umur</h1>\n    <p>Buka console untuk melihat hasil.</p>\n</body>\n</html>",
+          css: "/* Tidak ada CSS tambahan */\n",
+          javascript: "let umur = 15;\n/* \n Buat kondisi if-else. \n Jika umur >= 17, console.log(\"Bisa membuat SIM\");\n Jika tidak (else), console.log(\"Belum cukup umur\");\n*/\nif (umur >= 17) {\n  console.log(\"Bisa membuat SIM\");\n} else {\n  console.log(\"Belum cukup umur\");\n}"
+        })
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"let a = 5;\\nlet b = 3;\\nconsole.log(a + b);"}',
-        },
-      ],
+          expectedOutput: JSON.stringify({
+            html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Pengecekan Umur</h1>\n    <p>Buka console untuk melihat hasil.</p>\n</body>\n</html>",
+            css: "/* Tidak ada CSS tambahan */\n",
+            javascript: "let umur = 15;\n/* \n Buat kondisi if-else. \n Jika umur >= 17, console.log(\"Bisa membuat SIM\");\n Jika tidak (else), console.log(\"Belum cukup umur\");\n*/\nif (umur >= 17) {\n  console.log(\"Bisa membuat SIM\");\n} else {\n  console.log(\"Belum cukup umur\");\n}"
+          })
+        }
+      ]
     },
-
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Susun Console Log",
-      description: "Susun kode console.log berikut",
-      difficulty: Difficulty.EASY,
-      method: ChallengeMethod.DRAG_AND_DROP,
-      idealTime: 80,
-      xpBase: 10,
-      hint: "Gunakan console.log",
-      isActive: true,
-      starterCode: null,
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: ["console.log('Halo');", "<script>", "</script>"],
-      expectedOrder: ["<script>", "console.log('Halo');", "</script>"],
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        blocks: ["console.log('Halo');", "<script>", "</script>"],
-        expectedOrder: ["<script>", "console.log('Halo');", "</script>"],
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput: "<script>\\nconsole.log('Halo');\\n</script>",
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Susun Variabel",
-      description: "Susun deklarasi variabel JavaScript",
-      difficulty: Difficulty.EASY,
-      method: ChallengeMethod.DRAG_AND_DROP,
-      idealTime: 80,
-      xpBase: 10,
-      hint: "Gunakan let",
-      isActive: true,
-      starterCode: null,
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: ["console.log(nama);", "let nama = 'Budi';"],
-      expectedOrder: ["let nama = 'Budi';", "console.log(nama);"],
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        blocks: ["console.log(nama);", "let nama = 'Budi';"],
-        expectedOrder: ["let nama = 'Budi';", "console.log(nama);"],
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput: "let nama = 'Budi';\\nconsole.log(nama);",
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Susun If Statement",
-      description: "Susun percabangan if berikut",
+      title: "Menyusun Looping For",
+      description: "Susun blok kode berikut agar membentuk perulangan 'for' yang menghitung dari 1 sampai 5.",
       difficulty: Difficulty.EASY,
       method: ChallengeMethod.DRAG_AND_DROP,
       idealTime: 90,
       xpBase: 10,
-      hint: "Gunakan if",
+      hint: "Strukturnya adalah: for(...) { ... }",
       isActive: true,
-      starterCode: null,
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: ["console.log('Lulus');", "if(nilai >= 75) {", "}"],
-      expectedOrder: ["if(nilai >= 75) {", "console.log('Lulus');", "}"],
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
       content: {
         language: "javascript",
-        blocks: ["console.log('Lulus');", "if(nilai >= 75) {", "}"],
-        expectedOrder: ["if(nilai >= 75) {", "console.log('Lulus');", "}"],
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        blocks: [
+          "}",
+          "for (let i = 1; i <= 5; i++) {",
+          "  console.log(\"Angka: \" + i);"
+        ],
+        expectedOrder: [
+          "for (let i = 1; i <= 5; i++) {",
+          "  console.log(\"Angka: \" + i);",
+          "}"
+        ]
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput: "if(nilai >= 75) {\\nconsole.log('Lulus');\\n}",
-        },
-      ],
+          expectedOutput: "for (let i = 1; i <= 5; i++) {\n  console.log(\"Angka: \" + i);\n}"
+        }
+      ]
     },
-
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Perbaiki Function",
-      description: "Perbaiki syntax function berikut",
+      title: "Typo Array Push",
+      description: "Kode berikut bertujuan menambahkan item ke dalam array, tapi method-nya salah ketik. Perbaiki menjadi method yang benar.",
       difficulty: Difficulty.EASY,
       method: ChallengeMethod.FIX_THE_BUG,
-      idealTime: 80,
+      idealTime: 60,
       xpBase: 10,
-      hint: "Keyword function salah",
+      hint: "Method untuk menambah ke array adalah push()",
       isActive: true,
-      starterCode: "funtion test() {\n console.log('Hello');\n}",
-      correctAnswer: null,
-      buggyCode: "funtion test() {\n console.log('Hello');\n}",
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
       content: {
         language: "javascript",
-        buggyCode: "funtion test() {\n console.log('Hello');\n}",
-        correctAnswer:
-          '{"html":"","css":"","javascript":"function test() {\\n console.log(\'Hello\');\\n}"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        buggyCode: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Array Push</h1>\n</body>\n</html>",
+          css: "/* CSS kosong */\n",
+          javascript: "/* Perbaiki penulisan method push di bawah ini */\nlet buah = [\"Apel\", \"Mangga\"];\nbuah.psuh(\"Jeruk\");\nconsole.log(buah);"
+        }),
+        correctAnswer: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Array Push</h1>\n</body>\n</html>",
+          css: "/* CSS kosong */\n",
+          javascript: "/* Perbaiki penulisan method push di bawah ini */\nlet buah = [\"Apel\", \"Mangga\"];\nbuah.push(\"Jeruk\");\nconsole.log(buah);"
+        })
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"function test() {\\n console.log(\'Hello\');\\n}"}',
-        },
-      ],
+          expectedOutput: JSON.stringify({
+            html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Array Push</h1>\n</body>\n</html>",
+            css: "/* CSS kosong */\n",
+            javascript: "/* Perbaiki penulisan method push di bawah ini */\nlet buah = [\"Apel\", \"Mangga\"];\nbuah.push(\"Jeruk\");\nconsole.log(buah);"
+          })
+        }
+      ]
     },
-
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Perbaiki Console Log",
-      description: "Perbaiki method console berikut",
+      title: "Fungsi Perkalian",
+      description: "Buatlah sebuah function bernama 'kali' yang menerima 2 parameter (a dan b), lalu mengembalikan (return) hasil a dikali b.",
       difficulty: Difficulty.EASY,
-      method: ChallengeMethod.FIX_THE_BUG,
-      idealTime: 70,
-      xpBase: 10,
-      hint: "Method console salah",
-      isActive: true,
-      starterCode: "console.logs('Halo');",
-      correctAnswer: null,
-      buggyCode: "console.logs('Halo');",
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        buggyCode: "console.logs('Halo');",
-        correctAnswer:
-          '{"html":"","css":"","javascript":"console.log(\'Halo\');"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"console.log(\'Halo\');"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Perbaiki Query Selector",
-      description: "Perbaiki querySelector berikut",
-      difficulty: Difficulty.EASY,
-      method: ChallengeMethod.FIX_THE_BUG,
-      idealTime: 80,
-      xpBase: 10,
-      hint: "Method salah penulisan",
-      isActive: true,
-      starterCode: "document.queryselecter('p');",
-      correctAnswer: null,
-      buggyCode: "document.queryselecter('p');",
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        buggyCode: "document.queryselecter('p');",
-        correctAnswer:
-          '{"html":"<p>Hello</p>","css":"","javascript":"document.querySelector(\'p\');"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"<p>Hello</p>","css":"","javascript":"document.querySelector(\'p\');"}',
-        },
-      ],
-    },
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Mengubah Text DOM",
-      description: "Ubah isi heading menggunakan JavaScript",
-      difficulty: Difficulty.MEDIUM,
       method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 140,
-      xpBase: 20,
-      hint: "Gunakan innerText",
+      idealTime: 120,
+      xpBase: 10,
+      hint: "Gunakan kata kunci function, berikan nama kali, dan gunakan return a * b;",
       isActive: true,
-      starterCode:
-        '{"html":"<h1 id=\\"judul\\">Halo</h1>","css":"","javascript":""}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
+      starterCode: JSON.stringify({
+        html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Function Perkalian</h1>\n</body>\n</html>",
+        css: "/* CSS kosong */\n",
+        javascript: "/*\n Buat sebuah function bernama 'kali' yang menerima 2 parameter (a dan b).\n Function ini harus mengembalikan (return) hasil a dikali b.\n*/\n"
+      }),
       content: {
         language: "javascript",
-        starterCode:
-          '{"html":"<h1 id=\\"judul\\">Halo</h1>","css":"","javascript":""}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"<h1 id=\\"judul\\">Halo</h1>","css":"","javascript":"document.getElementById(\'judul\').innerText = \'Belajar JavaScript\';"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        starterCode: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Function Perkalian</h1>\n</body>\n</html>",
+          css: "/* CSS kosong */\n",
+          javascript: "/*\n Buat sebuah function bernama 'kali' yang menerima 2 parameter (a dan b).\n Function ini harus mengembalikan (return) hasil a dikali b.\n*/\n"
+        }),
+        correctAnswer: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Function Perkalian</h1>\n</body>\n</html>",
+          css: "/* CSS kosong */\n",
+          javascript: "/*\n Buat sebuah function bernama 'kali' yang menerima 2 parameter (a dan b).\n Function ini harus mengembalikan (return) hasil a dikali b.\n*/\nfunction kali(a, b) {\n  return a * b;\n}"
+        })
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput:
-            '{"html":"<h1 id=\\"judul\\">Halo</h1>","css":"","javascript":"document.getElementById(\'judul\').innerText = \'Belajar JavaScript\';"}',
-        },
-      ],
+          expectedOutput: JSON.stringify({
+            html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Function Perkalian</h1>\n</body>\n</html>",
+            css: "/* CSS kosong */\n",
+            javascript: "/*\n Buat sebuah function bernama 'kali' yang menerima 2 parameter (a dan b).\n Function ini harus mengembalikan (return) hasil a dikali b.\n*/\nfunction kali(a, b) {\n  return a * b;\n}"
+          })
+        }
+      ]
     },
 
+    // --- MEDIUM ---
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
       title: "Membuat Object Sederhana",
-      description: "Buatlah object mahasiswa dengan properti nama dan jurusan",
+      description: "Buat object bernama 'user' dengan properti nama, umur, dan role.",
       difficulty: Difficulty.MEDIUM,
       method: ChallengeMethod.CODING_MANUAL,
       idealTime: 120,
       xpBase: 20,
-      hint: "Gunakan kurung kurawal {}",
+      hint: "Gunakan tanda kurung kurawal {} dan pisahkan dengan koma.",
       isActive: true,
-      starterCode: '{"html":"","css":"","javascript":"let mahasiswa = ;"}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
+      starterCode: JSON.stringify({
+        html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Belajar Object</h1>\n</body>\n</html>",
+        css: "",
+        javascript: "/*\n Buat object bernama 'user' dengan properti:\n - nama (isi dengan \"Budi\")\n - umur (isi dengan 20)\n - role (isi dengan \"Admin\")\n*/\n"
+      }),
       content: {
         language: "javascript",
-        starterCode: '{"html":"","css":"","javascript":"let mahasiswa = ;"}',
-        sandboxLevel: null,
-        correctAnswer: '{"html":"","css":"","javascript":"let mahasiswa = {\\n  nama: \'Budi\',\\n  jurusan: \'Informatika\'\\n};"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        starterCode: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Belajar Object</h1>\n</body>\n</html>",
+          css: "",
+          javascript: "/*\n Buat object bernama 'user' dengan properti:\n - nama (isi dengan \"Budi\")\n - umur (isi dengan 20)\n - role (isi dengan \"Admin\")\n*/\n"
+        }),
+        correctAnswer: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Belajar Object</h1>\n</body>\n</html>",
+          css: "",
+          javascript: "/*\n Buat object bernama 'user' dengan properti:\n - nama (isi dengan \"Budi\")\n - umur (isi dengan 20)\n - role (isi dengan \"Admin\")\n*/\nlet user = {\n  nama: \"Budi\",\n  umur: 20,\n  role: \"Admin\"\n};"
+        })
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput: '{"html":"","css":"","javascript":"let mahasiswa = {\\n  nama: \'Budi\',\\n  jurusan: \'Informatika\'\\n};"}',
-        },
-      ],
+          expectedOutput: JSON.stringify({
+            html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1>Belajar Object</h1>\n</body>\n</html>",
+            css: "",
+            javascript: "/*\n Buat object bernama 'user' dengan properti:\n - nama (isi dengan \"Budi\")\n - umur (isi dengan 20)\n - role (isi dengan \"Admin\")\n*/\nlet user = {\n  nama: \"Budi\",\n  umur: 20,\n  role: \"Admin\"\n};"
+          })
+        }
+      ]
     },
-
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Counter Sederhana",
-      description: "Buat counter sederhana menggunakan JavaScript",
+      title: "Manipulasi DOM InnerText",
+      description: "Ambil elemen dengan id 'judul' lalu ubah teksnya menggunakan JavaScript.",
       difficulty: Difficulty.MEDIUM,
       method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 180,
-      xpBase: 20,
-      hint: "Gunakan variabel count",
-      isActive: true,
-      starterCode:
-        '{"html":"<p id=\\"count\\">0</p>","css":"","javascript":"let count = 0;"}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        starterCode:
-          '{"html":"<p id=\\"count\\">0</p>","css":"","javascript":"let count = 0;"}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"<p id=\\"count\\">0</p>","css":"","javascript":"let count = 0;\\ncount++;\\ndocument.getElementById(\'count\').innerText = count;"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"<p id=\\"count\\">0</p>","css":"","javascript":"let count = 0;\\ncount++;\\ndocument.getElementById(\'count\').innerText = count;"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Event Click Button",
-      description: "Tambahkan event click pada button",
-      difficulty: Difficulty.MEDIUM,
-      method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 160,
-      xpBase: 20,
-      hint: "Gunakan addEventListener",
-      isActive: true,
-      starterCode:
-        '{"html":"<button id=\\"btn\\">Klik</button>","css":"","javascript":""}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        starterCode:
-          '{"html":"<button id=\\"btn\\">Klik</button>","css":"","javascript":""}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"<button id=\\"btn\\">Klik</button>","css":"","javascript":"document.getElementById(\'btn\').addEventListener(\'click\', function() {\\n console.log(\'Button diklik\');\\n});"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"<button id=\\"btn\\">Klik</button>","css":"","javascript":"document.getElementById(\'btn\').addEventListener(\'click\', function() {\\n console.log(\'Button diklik\');\\n});"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Susun Event Listener",
-      description: "Susun event listener JavaScript",
-      difficulty: Difficulty.MEDIUM,
-      method: ChallengeMethod.DRAG_AND_DROP,
       idealTime: 120,
       xpBase: 20,
-      hint: "Gunakan addEventListener",
+      hint: "Gunakan document.getElementById() dan property .innerText",
       isActive: true,
-      starterCode: null,
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: [
-        "button.addEventListener('click', klik);",
-        "const button = document.querySelector('button');",
-        "function klik() {}",
-      ],
-      expectedOrder: [
-        "const button = document.querySelector('button');",
-        "function klik() {}",
-        "button.addEventListener('click', klik);",
-      ],
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
+      starterCode: JSON.stringify({
+        html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1 id=\"judul\">Teks Lama</h1>\n</body>\n</html>",
+        css: "",
+        javascript: "/*\n Ambil elemen dengan id 'judul' menggunakan document.getElementById().\n Lalu ubah innerText-nya menjadi \"Belajar DOM JavaScript\".\n*/\n"
+      }),
       content: {
         language: "javascript",
-        blocks: [
-          "button.addEventListener('click', klik);",
-          "const button = document.querySelector('button');",
-          "function klik() {}",
-        ],
-        expectedOrder: [
-          "const button = document.querySelector('button');",
-          "function klik() {}",
-          "button.addEventListener('click', klik);",
-        ],
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        starterCode: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1 id=\"judul\">Teks Lama</h1>\n</body>\n</html>",
+          css: "",
+          javascript: "/*\n Ambil elemen dengan id 'judul' menggunakan document.getElementById().\n Lalu ubah innerText-nya menjadi \"Belajar DOM JavaScript\".\n*/\n"
+        }),
+        correctAnswer: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1 id=\"judul\">Teks Lama</h1>\n</body>\n</html>",
+          css: "",
+          javascript: "/*\n Ambil elemen dengan id 'judul' menggunakan document.getElementById().\n Lalu ubah innerText-nya menjadi \"Belajar DOM JavaScript\".\n*/\ndocument.getElementById(\"judul\").innerText = \"Belajar DOM JavaScript\";"
+        })
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput:
-            "const button = document.querySelector('button');\\nfunction klik() {}\\nbutton.addEventListener('click', klik);",
-        },
-      ],
+          expectedOutput: JSON.stringify({
+            html: "<!DOCTYPE html>\n<html>\n<body>\n    <h1 id=\"judul\">Teks Lama</h1>\n</body>\n</html>",
+            css: "",
+            javascript: "/*\n Ambil elemen dengan id 'judul' menggunakan document.getElementById().\n Lalu ubah innerText-nya menjadi \"Belajar DOM JavaScript\".\n*/\ndocument.getElementById(\"judul\").innerText = \"Belajar DOM JavaScript\";"
+          })
+        }
+      ]
     },
-
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Susun For Loop",
-      description: "Susun perulangan for JavaScript",
-      difficulty: Difficulty.MEDIUM,
-      method: ChallengeMethod.DRAG_AND_DROP,
-      idealTime: 120,
-      xpBase: 20,
-      hint: "Gunakan for loop",
-      isActive: true,
-      starterCode: null,
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: ["console.log(i);", "for(let i = 0; i < 5; i++) {", "}"],
-      expectedOrder: ["for(let i = 0; i < 5; i++) {", "console.log(i);", "}"],
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        blocks: ["console.log(i);", "for(let i = 0; i < 5; i++) {", "}"],
-        expectedOrder: ["for(let i = 0; i < 5; i++) {", "console.log(i);", "}"],
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput: "for(let i = 0; i < 5; i++) {\\nconsole.log(i);\\n}",
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Perbaiki addEventListener",
-      description: "Perbaiki syntax addEventListener berikut",
-      difficulty: Difficulty.MEDIUM,
-      method: ChallengeMethod.FIX_THE_BUG,
-      idealTime: 100,
-      xpBase: 20,
-      hint: "Method salah penulisan",
-      isActive: true,
-      starterCode: "button.addEventlistner('click', test);",
-      correctAnswer: null,
-      buggyCode: "button.addEventlistner('click', test);",
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        buggyCode: "button.addEventlistner('click', test);",
-        correctAnswer:
-          '{"html":"<button>Test</button>","css":"","javascript":"button.addEventListener(\'click\', test);"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"<button>Test</button>","css":"","javascript":"button.addEventListener(\'click\', test);"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Perbaiki Array Push",
-      description: "Perbaiki method push berikut",
+      title: "Event Listener Typo",
+      description: "Terdapat kesalahan penulisan (typo) pada event listener di bawah. Perbaiki agar fungsi click berjalan.",
       difficulty: Difficulty.MEDIUM,
       method: ChallengeMethod.FIX_THE_BUG,
       idealTime: 90,
       xpBase: 20,
-      hint: "Method push salah",
+      hint: "Method yang benar menggunakan 'L' besar: addEventListener",
       isActive: true,
-      starterCode: "data.psuh('HTML');",
-      correctAnswer: null,
-      buggyCode: "data.psuh('HTML');",
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
       content: {
         language: "javascript",
-        buggyCode: "data.psuh('HTML');",
-        correctAnswer:
-          '{"html":"","css":"","javascript":"data.push(\'HTML\');"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        buggyCode: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <button id=\"tombol\">Klik Saya</button>\n</body>\n</html>",
+          css: "",
+          javascript: "/* Terdapat kesalahan penulisan (typo) pada metode addEventListener */\nconst btn = document.getElementById(\"tombol\");\n\nbtn.addEventlistener(\"click\", function() {\n  console.log(\"Tombol ditekan\");\n});"
+        }),
+        correctAnswer: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <button id=\"tombol\">Klik Saya</button>\n</body>\n</html>",
+          css: "",
+          javascript: "/* Terdapat kesalahan penulisan (typo) pada metode addEventListener */\nconst btn = document.getElementById(\"tombol\");\n\nbtn.addEventListener(\"click\", function() {\n  console.log(\"Tombol ditekan\");\n});"
+        })
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"data.push(\'HTML\');"}',
-        },
-      ],
+          expectedOutput: JSON.stringify({
+            html: "<!DOCTYPE html>\n<html>\n<body>\n    <button id=\"tombol\">Klik Saya</button>\n</body>\n</html>",
+            css: "",
+            javascript: "/* Terdapat kesalahan penulisan (typo) pada metode addEventListener */\nconst btn = document.getElementById(\"tombol\");\n\nbtn.addEventListener(\"click\", function() {\n  console.log(\"Tombol ditekan\");\n});"
+          })
+        }
+      ]
     },
-
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Dark Mode Sederhana",
-      description: "Buat fitur dark mode menggunakan classList",
+      title: "Filter Array Sederhana",
+      description: "Susun kode berikut agar menggunakan method array filter() dengan benar untuk mengambil nilai >= 75.",
       difficulty: Difficulty.MEDIUM,
-      method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 180,
-      xpBase: 20,
-      hint: "Gunakan classList.toggle",
-      isActive: true,
-      starterCode:
-        '{"html":"<button onclick=\\"darkMode()\\">Dark Mode</button>","css":".dark { background-color: black; color: white; }","javascript":""}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        starterCode:
-          '{"html":"<button onclick=\\"darkMode()\\">Dark Mode</button>","css":".dark { background-color: black; color: white; }","javascript":""}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"<button onclick=\\"darkMode()\\">Dark Mode</button>","css":".dark { background-color: black; color: white; }","javascript":"function darkMode() {\\n document.body.classList.toggle(\'dark\');\\n}"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"<button onclick=\\"darkMode()\\">Dark Mode</button>","css":".dark { background-color: black; color: white; }","javascript":"function darkMode() {\\n document.body.classList.toggle(\'dark\');\\n}"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Menampilkan Data Array",
-      description: "Tampilkan isi array ke console",
-      difficulty: Difficulty.MEDIUM,
-      method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 150,
-      xpBase: 20,
-      hint: "Gunakan for of",
-      isActive: true,
-      starterCode:
-        '{"html":"","css":"","javascript":"const data = [\'HTML\', \'CSS\', \'JS\'];"}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        starterCode:
-          '{"html":"","css":"","javascript":"const data = [\'HTML\', \'CSS\', \'JS\'];"}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"","css":"","javascript":"const data = [\'HTML\', \'CSS\', \'JS\'];\\nfor(let item of data) {\\n console.log(item);\\n}"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"const data = [\'HTML\', \'CSS\', \'JS\'];\\nfor(let item of data) {\\n console.log(item);\\n}"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Perbaiki Arrow Function",
-      description: "Perbaiki syntax arrow function berikut",
-      difficulty: Difficulty.MEDIUM,
-      method: ChallengeMethod.FIX_THE_BUG,
+      method: ChallengeMethod.DRAG_AND_DROP,
       idealTime: 100,
       xpBase: 20,
-      hint: "Arrow function salah syntax",
+      hint: "Mulai dari inisialisasi filter, lalu kondisinya, dan penutup.",
       isActive: true,
-      starterCode: "const test = () = > {\\n console.log('Hello');\\n}",
-      correctAnswer: null,
-      buggyCode: "const test = () = > {\\n console.log('Hello');\\n}",
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
       content: {
         language: "javascript",
-        buggyCode: "const test = () = > {\\n console.log('Hello');\\n}",
-        correctAnswer:
-          '{"html":"","css":"","javascript":"const test = () => {\\n console.log(\'Hello\');\\n}"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        blocks: [
+          "  return n >= 75;",
+          "const lulus = nilai.filter(function(n) {",
+          "});",
+          "const nilai = [60, 75, 80, 90, 50];"
+        ],
+        expectedOrder: [
+          "const nilai = [60, 75, 80, 90, 50];",
+          "const lulus = nilai.filter(function(n) {",
+          "  return n >= 75;",
+          "});"
+        ]
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"const test = () => {\\n console.log(\'Hello\');\\n}"}',
-        },
-      ],
+          expectedOutput: "const nilai = [60, 75, 80, 90, 50];\nconst lulus = nilai.filter(function(n) {\n  return n >= 75;\n});"
+        }
+      ]
     },
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Todo List Sederhana",
-      description: "Tambahkan item todo ke dalam list",
+      title: "Mencegah Default Form",
+      description: "Setiap form HTML memiliki sifat bawaan me-refresh halaman ketika tombol submit diklik. Hentikan sifat bawaan ini.",
+      difficulty: Difficulty.MEDIUM,
+      method: ChallengeMethod.CODING_MANUAL,
+      idealTime: 120,
+      xpBase: 20,
+      hint: "Gunakan method event.preventDefault(); di dalam function callback.",
+      isActive: true,
+      starterCode: JSON.stringify({
+        html: "<!DOCTYPE html>\n<html>\n<body>\n    <form id=\"loginForm\">\n        <button type=\"submit\">Kirim</button>\n    </form>\n</body>\n</html>",
+        css: "",
+        javascript: "const form = document.getElementById(\"loginForm\");\n\nform.addEventListener(\"submit\", function(event) {\n  /*\n   Cegah form agar tidak melakukan refresh halaman secara otomatis \n   saat di-submit. \n  */\n  \n  // Ketikkan event.preventDefault(); pada baris di bawah ini:\n  \n});"
+      }),
+      content: {
+        language: "javascript",
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        starterCode: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <form id=\"loginForm\">\n        <button type=\"submit\">Kirim</button>\n    </form>\n</body>\n</html>",
+          css: "",
+          javascript: "const form = document.getElementById(\"loginForm\");\n\nform.addEventListener(\"submit\", function(event) {\n  /*\n   Cegah form agar tidak melakukan refresh halaman secara otomatis \n   saat di-submit. \n  */\n  \n  // Ketikkan event.preventDefault(); pada baris di bawah ini:\n  \n});"
+        }),
+        correctAnswer: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <form id=\"loginForm\">\n        <button type=\"submit\">Kirim</button>\n    </form>\n</body>\n</html>",
+          css: "",
+          javascript: "const form = document.getElementById(\"loginForm\");\n\nform.addEventListener(\"submit\", function(event) {\n  /*\n   Cegah form agar tidak melakukan refresh halaman secara otomatis \n   saat di-submit. (Gunakan event.preventDefault())\n  */\n  event.preventDefault();\n});"
+        })
+      },
+      testCases: [
+        {
+          input: null,
+          weight: 100,
+          isHidden: false,
+          expectedOutput: JSON.stringify({
+            html: "<!DOCTYPE html>\n<html>\n<body>\n    <form id=\"loginForm\">\n        <button type=\"submit\">Kirim</button>\n    </form>\n</body>\n</html>",
+            css: "",
+            javascript: "const form = document.getElementById(\"loginForm\");\n\nform.addEventListener(\"submit\", function(event) {\n  /*\n   Cegah form agar tidak melakukan refresh halaman secara otomatis \n   saat di-submit. (Gunakan event.preventDefault())\n  */\n  event.preventDefault();\n});"
+          })
+        }
+      ]
+    },
+
+    // --- HARD ---
+    {
+      levelId: 3,
+      title: "Menambah Elemen DOM Baru",
+      description: "Buat elemen <li> baru menggunakan JavaScript, dan tambahkan ke dalam ul yang sudah ada.",
       difficulty: Difficulty.HARD,
       method: ChallengeMethod.CODING_MANUAL,
       idealTime: 240,
       xpBase: 30,
-      hint: "Gunakan createElement dan appendChild",
+      hint: "Gunakan document.createElement(), atur innerText, dan gunakan appendChild() ke ul.",
       isActive: true,
-      starterCode:
-        '{"html":"<input id=\\"todo\\">\\n<button onclick=\\"tambahTodo()\\">Tambah</button>\\n<ul id=\\"list\\"></ul>","css":"","javascript":""}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
+      starterCode: JSON.stringify({
+        html: "<!DOCTYPE html>\n<html>\n<body>\n    <ul id=\"daftar-tugas\">\n        <li>Tugas 1</li>\n    </ul>\n</body>\n</html>",
+        css: "",
+        javascript: "/*\n 1. Buat elemen <li> baru menggunakan document.createElement().\n 2. Isi text elemen tersebut dengan \"Tugas 2\".\n 3. Masukkan elemen baru tersebut ke dalam <ul id=\"daftar-tugas\"> \n    menggunakan appendChild().\n*/\n\n// 1. const liBaru = document.createElement(\"...\");\n\n// 2. liBaru.innerText = \"...\";\n\n// 3. Ambil elemen ul dengan document.getElementById, lalu gunakan .appendChild(liBaru);\n"
+      }),
       content: {
         language: "javascript",
-        starterCode:
-          '{"html":"<input id=\\"todo\\">\\n<button onclick=\\"tambahTodo()\\">Tambah</button>\\n<ul id=\\"list\\"></ul>","css":"","javascript":""}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"<input id=\\"todo\\">\\n<button onclick=\\"tambahTodo()\\">Tambah</button>\\n<ul id=\\"list\\"></ul>","css":"","javascript":"function tambahTodo() {\\n const text = document.getElementById(\'todo\').value;\\n const li = document.createElement(\'li\');\\n li.innerText = text;\\n document.getElementById(\'list\').appendChild(li);\\n}"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        starterCode: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <ul id=\"daftar-tugas\">\n        <li>Tugas 1</li>\n    </ul>\n</body>\n</html>",
+          css: "",
+          javascript: "/*\n 1. Buat elemen <li> baru menggunakan document.createElement().\n 2. Isi text elemen tersebut dengan \"Tugas 2\".\n 3. Masukkan elemen baru tersebut ke dalam <ul id=\"daftar-tugas\"> \n    menggunakan appendChild().\n*/\n\n// 1. const liBaru = document.createElement(\"...\");\n\n// 2. liBaru.innerText = \"...\";\n\n// 3. Ambil elemen ul dengan document.getElementById, lalu gunakan .appendChild(liBaru);\n"
+        }),
+        correctAnswer: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <ul id=\"daftar-tugas\">\n        <li>Tugas 1</li>\n    </ul>\n</body>\n</html>",
+          css: "",
+          javascript: "/*\n 1. Buat elemen <li> baru menggunakan document.createElement().\n 2. Isi text elemen tersebut dengan \"Tugas 2\".\n 3. Masukkan elemen baru tersebut ke dalam <ul id=\"daftar-tugas\"> \n    menggunakan appendChild().\n*/\nconst liBaru = document.createElement(\"li\");\nliBaru.innerText = \"Tugas 2\";\ndocument.getElementById(\"daftar-tugas\").appendChild(liBaru);"
+        })
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput:
-            '{"html":"<input id=\\"todo\\">\\n<button onclick=\\"tambahTodo()\\">Tambah</button>\\n<ul id=\\"list\\"></ul>","css":"","javascript":"function tambahTodo() {\\n const text = document.getElementById(\'todo\').value;\\n const li = document.createElement(\'li\');\\n li.innerText = text;\\n document.getElementById(\'list\').appendChild(li);\\n}"}',
-        },
-      ],
+          expectedOutput: JSON.stringify({
+            html: "<!DOCTYPE html>\n<html>\n<body>\n    <ul id=\"daftar-tugas\">\n        <li>Tugas 1</li>\n    </ul>\n</body>\n</html>",
+            css: "",
+            javascript: "/*\n 1. Buat elemen <li> baru menggunakan document.createElement().\n 2. Isi text elemen tersebut dengan \"Tugas 2\".\n 3. Masukkan elemen baru tersebut ke dalam <ul id=\"daftar-tugas\"> \n    menggunakan appendChild().\n*/\nconst liBaru = document.createElement(\"li\");\nliBaru.innerText = \"Tugas 2\";\ndocument.getElementById(\"daftar-tugas\").appendChild(liBaru);"
+          })
+        }
+      ]
     },
-
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Fetch API Sederhana",
-      description: "Ambil data menggunakan fetch API",
+      title: "Toggle Fitur Dark Mode",
+      description: "Gunakan classList.toggle untuk menambahkan dan menghapus class 'dark' pada elemen body saat tombol diklik.",
       difficulty: Difficulty.HARD,
       method: ChallengeMethod.CODING_MANUAL,
       idealTime: 240,
       xpBase: 30,
-      hint: "Gunakan fetch()",
+      hint: "Gunakan addEventListener('click', function(){}) lalu panggil document.body.classList.toggle('dark');",
       isActive: true,
-      starterCode:
-        '{"html":"<button onclick=\\"getData()\\">Load</button>","css":"","javascript":""}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
+      starterCode: JSON.stringify({
+        html: "<!DOCTYPE html>\n<html>\n<body>\n    <button id=\"toggleBtn\">Ubah Tema</button>\n</body>\n</html>",
+        css: ".dark {\n  background-color: black;\n  color: white;\n}\n",
+        javascript: "const btn = document.getElementById(\"toggleBtn\");\n\n/*\n Tambahkan event listener 'click' pada 'btn'.\n Di dalamnya, gunakan document.body.classList.toggle('dark') \n untuk memanipulasi class CSS.\n*/\n"
+      }),
       content: {
         language: "javascript",
-        starterCode:
-          '{"html":"<button onclick=\\"getData()\\">Load</button>","css":"","javascript":""}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"<button onclick=\\"getData()\\">Load</button>","css":"","javascript":"async function getData() {\\n const response = await fetch(\'https://jsonplaceholder.typicode.com/posts/1\');\\n const data = await response.json();\\n console.log(data);\\n}"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
+        starterCode: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <button id=\"toggleBtn\">Ubah Tema</button>\n</body>\n</html>",
+          css: ".dark {\n  background-color: black;\n  color: white;\n}\n",
+          javascript: "const btn = document.getElementById(\"toggleBtn\");\n\n/*\n Tambahkan event listener 'click' pada 'btn'.\n Di dalamnya, gunakan document.body.classList.toggle('dark') \n untuk memanipulasi class CSS.\n*/\n"
+        }),
+        correctAnswer: JSON.stringify({
+          html: "<!DOCTYPE html>\n<html>\n<body>\n    <button id=\"toggleBtn\">Ubah Tema</button>\n</body>\n</html>",
+          css: ".dark {\n  background-color: black;\n  color: white;\n}\n",
+          javascript: "const btn = document.getElementById(\"toggleBtn\");\n\n/*\n Tambahkan event listener 'click' pada 'btn'.\n Di dalamnya, gunakan document.body.classList.toggle('dark') \n untuk memanipulasi class CSS.\n*/\nbtn.addEventListener(\"click\", function() {\n  document.body.classList.toggle(\"dark\");\n});"
+        })
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput:
-            '{"html":"<button onclick=\\"getData()\\">Load</button>","css":"","javascript":"async function getData() {\\n const response = await fetch(\'https://jsonplaceholder.typicode.com/posts/1\');\\n const data = await response.json();\\n console.log(data);\\n}"}',
-        },
-      ],
+          expectedOutput: JSON.stringify({
+            html: "<!DOCTYPE html>\n<html>\n<body>\n    <button id=\"toggleBtn\">Ubah Tema</button>\n</body>\n</html>",
+            css: ".dark {\n  background-color: black;\n  color: white;\n}\n",
+            javascript: "const btn = document.getElementById(\"toggleBtn\");\n\n/*\n Tambahkan event listener 'click' pada 'btn'.\n Di dalamnya, gunakan document.body.classList.toggle('dark') \n untuk memanipulasi class CSS.\n*/\nbtn.addEventListener(\"click\", function() {\n  document.body.classList.toggle(\"dark\");\n});"
+          })
+        }
+      ]
     },
-
     {
       levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Filter Array",
-      description: "Gunakan filter untuk mengambil angka lebih dari 5",
-      difficulty: Difficulty.HARD,
-      method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 220,
-      xpBase: 30,
-      hint: "Gunakan filter()",
-      isActive: true,
-      starterCode:
-        '{"html":"","css":"","javascript":"const angka = [1,2,3,6,7,8];"}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        starterCode:
-          '{"html":"","css":"","javascript":"const angka = [1,2,3,6,7,8];"}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"","css":"","javascript":"const angka = [1,2,3,6,7,8];\\nconst hasil = angka.filter(item => item > 5);\\nconsole.log(hasil);"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"const angka = [1,2,3,6,7,8];\\nconst hasil = angka.filter(item => item > 5);\\nconsole.log(hasil);"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Susun Async Function",
-      description: "Susun async function JavaScript",
+      title: "Menyusun Async Fetch API",
+      description: "Susun baris kode berikut agar membentuk satu fungsi asinkron (async/await) yang men-download dan mengubah data JSON dengan benar.",
       difficulty: Difficulty.HARD,
       method: ChallengeMethod.DRAG_AND_DROP,
-      idealTime: 180,
+      idealTime: 200,
       xpBase: 30,
-      hint: "Gunakan async dan await",
+      hint: "Susun async function, fetch(), lalu .json()",
       isActive: true,
-      starterCode: null,
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: [
-        "const data = await fetch(url);",
-        "async function getData() {",
-        "}",
-      ],
-      expectedOrder: [
-        "async function getData() {",
-        "const data = await fetch(url);",
-        "}",
-      ],
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
       content: {
         language: "javascript",
+        sandboxEnabled: true,
+        sandboxLevel: "html_css_js",
         blocks: [
-          "const data = await fetch(url);",
-          "async function getData() {",
+          "  const response = await fetch(\"https://api.example.com/data\");",
+          "  console.log(data);",
           "}",
+          "  const data = await response.json();",
+          "async function ambilData() {"
         ],
         expectedOrder: [
-          "async function getData() {",
-          "const data = await fetch(url);",
-          "}",
-        ],
-        sandboxEnabled: false,
-        sandboxTemplate: null,
+          "async function ambilData() {",
+          "  const response = await fetch(\"https://api.example.com/data\");",
+          "  const data = await response.json();",
+          "  console.log(data);",
+          "}"
+        ]
       },
       testCases: [
         {
           input: null,
           weight: 100,
           isHidden: false,
-          expectedOutput:
-            "async function getData() {\\nconst data = await fetch(url);\\n}",
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Susun Try Catch",
-      description: "Susun blok try catch JavaScript",
-      difficulty: Difficulty.HARD,
-      method: ChallengeMethod.DRAG_AND_DROP,
-      idealTime: 160,
-      xpBase: 30,
-      hint: "Gunakan try catch",
-      isActive: true,
-      starterCode: null,
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: ["console.log(error);", "try {", "} catch(error) {", "}"],
-      expectedOrder: ["try {", "} catch(error) {", "console.log(error);", "}"],
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        blocks: ["console.log(error);", "try {", "} catch(error) {", "}"],
-        expectedOrder: [
-          "try {",
-          "} catch(error) {",
-          "console.log(error);",
-          "}",
-        ],
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput: "try {\\n} catch(error) {\\nconsole.log(error);\\n}",
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Susun Map Array",
-      description: "Susun penggunaan map array",
-      difficulty: Difficulty.HARD,
-      method: ChallengeMethod.DRAG_AND_DROP,
-      idealTime: 160,
-      xpBase: 30,
-      hint: "Gunakan map()",
-      isActive: true,
-      starterCode: null,
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: [
-        "const hasil = angka.map(item => item * 2);",
-        "const angka = [1,2,3];",
-      ],
-      expectedOrder: [
-        "const angka = [1,2,3];",
-        "const hasil = angka.map(item => item * 2);",
-      ],
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        blocks: [
-          "const hasil = angka.map(item => item * 2);",
-          "const angka = [1,2,3];",
-        ],
-        expectedOrder: [
-          "const angka = [1,2,3];",
-          "const hasil = angka.map(item => item * 2);",
-        ],
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            "const angka = [1,2,3];\\nconst hasil = angka.map(item => item * 2);",
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Perbaiki JSON Parse",
-      description: "Perbaiki method JSON berikut",
-      difficulty: Difficulty.HARD,
-      method: ChallengeMethod.FIX_THE_BUG,
-      idealTime: 100,
-      xpBase: 30,
-      hint: "Method JSON salah",
-      isActive: true,
-      starterCode: "JSON.parsing(data);",
-      correctAnswer: null,
-      buggyCode: "JSON.parsing(data);",
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        buggyCode: "JSON.parsing(data);",
-        correctAnswer: '{"html":"","css":"","javascript":"JSON.parse(data);"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"JSON.parse(data);"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Perbaiki Await",
-      description: "Perbaiki penggunaan await berikut",
-      difficulty: Difficulty.HARD,
-      method: ChallengeMethod.FIX_THE_BUG,
-      idealTime: 100,
-      xpBase: 30,
-      hint: "await harus berada di dalam async function",
-      isActive: true,
-      starterCode: "function test() {\\n await fetch(url);\\n}",
-      correctAnswer: null,
-      buggyCode: "function test() {\\n await fetch(url);\\n}",
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        buggyCode: "function test() {\\n await fetch(url);\\n}",
-        correctAnswer:
-          '{"html":"","css":"","javascript":"async function test() {\\n await fetch(url);\\n}"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"","css":"","javascript":"async function test() {\\n await fetch(url);\\n}"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Validasi Login",
-      description: "Buat validasi login sederhana",
-      difficulty: Difficulty.HARD,
-      method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 260,
-      xpBase: 30,
-      hint: "Gunakan if dan value",
-      isActive: true,
-      starterCode:
-        '{"html":"<input id=\\"username\\">\\n<input id=\\"password\\">\\n<button onclick=\\"login()\\">Login</button>","css":"","javascript":""}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        starterCode:
-          '{"html":"<input id=\\"username\\">\\n<input id=\\"password\\">\\n<button onclick=\\"login()\\">Login</button>","css":"","javascript":""}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"<input id=\\"username\\">\\n<input id=\\"password\\">\\n<button onclick=\\"login()\\">Login</button>","css":"","javascript":"function login() {\\n const username = document.getElementById(\'username\').value;\\n const password = document.getElementById(\'password\').value;\\n\\n if(username === \'admin\' && password === \'123\') {\\n  alert(\'Login berhasil\');\\n } else {\\n  alert(\'Login gagal\');\\n }\\n}"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"<input id=\\"username\\">\\n<input id=\\"password\\">\\n<button onclick=\\"login()\\">Login</button>","css":"","javascript":"function login() {\\n const username = document.getElementById(\'username\').value;\\n const password = document.getElementById(\'password\').value;\\n\\n if(username === \'admin\' && password === \'123\') {\\n  alert(\'Login berhasil\');\\n } else {\\n  alert(\'Login gagal\');\\n }\\n}"}',
-        },
-      ],
-    },
-
-    {
-      levelId: 3,
-      levelName: "JavaScript Novice",
-      title: "Manipulasi DOM Lengkap",
-      description: "Manipulasi DOM menggunakan JavaScript",
-      difficulty: Difficulty.HARD,
-      method: ChallengeMethod.CODING_MANUAL,
-      idealTime: 300,
-      xpBase: 30,
-      hint: "Gunakan DOM dan event listener",
-      isActive: true,
-      starterCode:
-        '{"html":"<!DOCTYPE html>\\n<html lang=\\"id\\">\\n<head>\\n<meta charset=\\"UTF-8\\">\\n<title>Latihan DOM</title>\\n</head>\\n<body>\\n<h1 id=\\"judul\\">Halo Dunia!</h1>\\n<p class=\\"teks\\">Teks ini akan diubah oleh JavaScript.</p>\\n<button id=\\"tombol\\">Ubah Halaman</button>\\n<script src=\\"script.js\\"></script>\\n</body>\\n</html>","css":"","javascript":""}',
-      correctAnswer: null,
-      buggyCode: null,
-      blocks: null,
-      expectedOrder: null,
-      sandboxEnabled: false,
-      sandboxTemplate: null,
-      sandboxLevel: null,
-      content: {
-        language: "javascript",
-        starterCode:
-          '{"html":"<!DOCTYPE html>\\n<html lang=\\"id\\">\\n<head>\\n<meta charset=\\"UTF-8\\">\\n<title>Latihan DOM</title>\\n</head>\\n<body>\\n<h1 id=\\"judul\\">Halo Dunia!</h1>\\n<p class=\\"teks\\">Teks ini akan diubah oleh JavaScript.</p>\\n<button id=\\"tombol\\">Ubah Halaman</button>\\n<script src=\\"script.js\\"></script>\\n</body>\\n</html>","css":"","javascript":""}',
-        sandboxLevel: null,
-        correctAnswer:
-          '{"html":"<!DOCTYPE html>\\n<html lang=\\"id\\">\\n<head>\\n<meta charset=\\"UTF-8\\">\\n<title>Latihan DOM</title>\\n</head>\\n<body>\\n<h1 id=\\"judul\\">Halo Dunia!</h1>\\n<p class=\\"teks\\">Teks ini akan diubah oleh JavaScript.</p>\\n<button id=\\"tombol\\">Ubah Halaman</button>\\n<script src=\\"script.js\\"></script>\\n</body>\\n</html>","css":"","javascript":"const judul = document.getElementById(\'judul\');\\nconst paragraf = document.querySelector(\'.teks\');\\nconst tombol = document.getElementById(\'tombol\');\\n\\njudul.textContent = \'Belajar DOM\';\\njudul.style.color = \'blue\';\\n\\ntombol.addEventListener(\'click\', function() {\\n paragraf.textContent = \'Teks berhasil diubah\';\\n paragraf.style.backgroundColor = \'yellow\';\\n});"}',
-        sandboxEnabled: false,
-        sandboxTemplate: null,
-      },
-      testCases: [
-        {
-          input: null,
-          weight: 100,
-          isHidden: false,
-          expectedOutput:
-            '{"html":"<!DOCTYPE html>\\n<html lang=\\"id\\">\\n<head>\\n<meta charset=\\"UTF-8\\">\\n<title>Latihan DOM</title>\\n</head>\\n<body>\\n<h1 id=\\"judul\\">Halo Dunia!</h1>\\n<p class=\\"teks\\">Teks ini akan diubah oleh JavaScript.</p>\\n<button id=\\"tombol\\">Ubah Halaman</button>\\n<script src=\\"script.js\\"></script>\\n</body>\\n</html>","css":"","javascript":"const judul = document.getElementById(\'judul\');\\nconst paragraf = document.querySelector(\'.teks\');\\nconst tombol = document.getElementById(\'tombol\');\\n\\njudul.textContent = \'Belajar DOM\';\\njudul.style.color = \'blue\';\\n\\ntombol.addEventListener(\'click\', function() {\\n paragraf.textContent = \'Teks berhasil diubah\';\\n paragraf.style.backgroundColor = \'yellow\';\\n});"}',
-        },
-      ],
-    },
+          expectedOutput: "async function ambilData() {\n  const response = await fetch(\"https://api.example.com/data\");\n  const data = await response.json();\n  console.log(data);\n}"
+        }
+      ]
+    }
   ];
 
   for (const c of javascriptChallenges) {
-    // 1. Cari apakah tantangan dengan judul dan level yang sama sudah ada di DB
     const existing = await prisma.challenge.findFirst({
-      where: {
-        levelId: c.levelId,
-        title: c.title,
-      },
+      where: { levelId: c.levelId, title: c.title },
     });
-
-    // 2. Saring data agar hanya kolom yang valid di schema Prisma yang dikirim
-    const challengeData = {
-      levelId: c.levelId,
-      title: c.title,
-      description: c.description,
-      difficulty: c.difficulty,
-      method: c.method,
-      idealTime: c.idealTime,
-      xpBase: c.xpBase,
-      isActive: c.isActive !== undefined ? c.isActive : true,
-      hint: c.hint || null,
-      starterCode: c.starterCode || null,
-      content: c.content ? (c.content as any) : null,
-      testCases: c.testCases ? (c.testCases as any) : null,
-    };
-
+    
+    // Validasi & strip out unused fields agar tidak error di Prisma
+    const challengeData = { ...c, content: c.content as any, testCases: c.testCases as any };
+    
     if (existing) {
-      // Jika data sudah ada, lakukan update
-      await prisma.challenge.update({
-        where: { id: existing.id },
-        data: challengeData,
-      });
+      await prisma.challenge.update({ where: { id: existing.id }, data: challengeData });
     } else {
-      // Jika data belum ada, buat baru (ID akan diisi oleh auto-increment database)
-      await prisma.challenge.create({
-        data: challengeData,
-      });
+      await prisma.challenge.create({ data: challengeData });
     }
   }
+  
+  // Clean up unused challenges
+  const activeTitles = javascriptChallenges.map(c => c.title);
+  await prisma.challenge.deleteMany({
+    where: {
+      levelId: 3,
+      title: { notIn: activeTitles }
+    }
+  });
 
   console.log("✅ Challenge Level 3 JavaScript seeding completed!");
 }
-
-const p = new PrismaClient();
-seedLevel3Challenge(p)
-  .catch(console.error)
-  .finally(() => p.$disconnect());

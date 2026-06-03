@@ -335,7 +335,7 @@ const mrcSeeder = [
   },
   {
     word: "Overwhelming",
-    indo: "(Membingungkan/Berlebihan)",
+    indo: "(Berlebihan)",
     desc: "Terlalu banyak informasi atau fitur visual yang disajikan secara bersamaan.",
   },
   {

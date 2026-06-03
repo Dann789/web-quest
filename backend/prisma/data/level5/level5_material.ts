@@ -128,6 +128,7 @@ CREATE TABLE mahasiswa (
     REFERENCES kelas(id)
 );
 </code></pre>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE kelas (&#10;    id INT PRIMARY KEY,&#10;    nama_kelas VARCHAR(100)&#10;);&#10;&#10;CREATE TABLE mahasiswa (&#10;    id INT PRIMARY KEY,&#10;    nama VARCHAR(100),&#10;    kelas_id INT,&#10;    FOREIGN KEY (kelas_id) REFERENCES kelas(id)&#10;);&#10;&#10;-- Mari kita lihat daftar tabel yang berhasil dibuat:&#10;SELECT name FROM sqlite_master WHERE type='table';"></interactive-code-block>
       `,
     },
     {
@@ -193,6 +194,7 @@ SELECT digunakan untuk mengambil data dari database.
 <pre><code>SELECT nama, jurusan
 FROM mahasiswa;
 </code></pre>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE dosen (&#10;    id INT PRIMARY KEY,&#10;    nama VARCHAR(100)&#10;);&#10;&#10;CREATE TABLE mahasiswa (&#10;    id INT PRIMARY KEY,&#10;    nama VARCHAR(100),&#10;    dosen_wali_id INT,&#10;    FOREIGN KEY (dosen_wali_id) REFERENCES dosen(id)&#10;);&#10;&#10;INSERT INTO dosen VALUES (1, 'Pak Budi');&#10;INSERT INTO mahasiswa VALUES (1, 'Andi', 1);&#10;&#10;-- Tampilkan data mahasiswa:&#10;SELECT * FROM mahasiswa;"></interactive-code-block>
       `,
     },
     {
@@ -211,6 +213,7 @@ FROM mahasiswa;
         <h3>2. Mengambil Kolom Spesifik</h3>
         <p>Untuk efisiensi performa, disarankan hanya mengambil kolom-kolom tertentu yang memang dibutuhkan.</p>
         <pre><code>SELECT username, email FROM users;</code></pre>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE users (username VARCHAR, email VARCHAR, role VARCHAR);&#10;INSERT INTO users VALUES ('dosen_budi', 'budi@univ.edu', 'DOSEN'), ('mhs_andi', 'andi@univ.edu', 'MAHASISWA');&#10;&#10;-- Coba tampilkan kolom username dan email saja:&#10;SELECT username, email FROM users;"></interactive-code-block>
       `,
     },
     {
@@ -234,6 +237,7 @@ WHERE role = 'DOSEN';</code></pre>
           <li><code>LIKE</code> : Mencari pola teks tertentu menggunakan wildcard % (e.g. <code>WHERE name LIKE 'A%'</code> untuk nama yang diawali huruf A)</li>
           <li><code>AND</code>, <code>OR</code>, <code>NOT</code> : Operator logika untuk menggabungkan kondisi</li>
         </ul>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE users (username VARCHAR, email VARCHAR, role VARCHAR);&#10;INSERT INTO users VALUES ('dosen_budi', 'budi@univ.edu', 'DOSEN'), ('mhs_andi', 'andi@univ.edu', 'MAHASISWA');&#10;&#10;-- Menampilkan data yang memiliki role MAHASISWA:&#10;SELECT * FROM users WHERE role = 'MAHASISWA';"></interactive-code-block>
       `,
     },
     {
@@ -253,6 +257,7 @@ VALUES (nilai1, nilai2, nilai3);</code></pre>
         <pre><code>INSERT INTO users (username, email, role)
 VALUES ('wildan', 'wildan@gmail.com', 'MAHASISWA');</code></pre>
         <p><em>Catatan: Urutan nilai di dalam bagian <code>VALUES</code> harus sama persis dengan urutan nama kolom yang didefinisikan sebelumnya. Nilai bertipe string wajib dibungkus dengan tanda kutip tunggal (<code>'</code>).</em></p>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE users (username VARCHAR, email VARCHAR, role VARCHAR);&#10;&#10;-- Masukkan data baru:&#10;INSERT INTO users (username, email, role) VALUES ('wildan', 'wildan@gmail.com', 'MAHASISWA');&#10;&#10;-- Cek apakah data berhasil masuk:&#10;SELECT * FROM users;"></interactive-code-block>
       `,
     },
     {
@@ -273,6 +278,7 @@ UPDATE digunakan untuk mengubah data pada tabel.
 SET nama = 'Andi'
 WHERE id = 1;
 </code></pre>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE mahasiswa (id INT, nama VARCHAR);&#10;INSERT INTO mahasiswa VALUES (1, 'Budi');&#10;&#10;-- Ubah nama Budi menjadi Andi:&#10;UPDATE mahasiswa SET nama = 'Andi' WHERE id = 1;&#10;&#10;SELECT * FROM mahasiswa;"></interactive-code-block>
       `,
     },
     {
@@ -291,6 +297,7 @@ WHERE kondisi;</code></pre>
         <h3>Contoh Penerapan</h3>
         <pre><code>DELETE FROM mahasiswa
 WHERE id = 1;</code></pre>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE mahasiswa (id INT, nama VARCHAR);&#10;INSERT INTO mahasiswa VALUES (1, 'Budi'), (2, 'Andi');&#10;&#10;-- Hapus data dengan id 1 (Budi):&#10;DELETE FROM mahasiswa WHERE id = 1;&#10;&#10;SELECT * FROM mahasiswa;"></interactive-code-block>
       `,
     },
     {
@@ -318,6 +325,7 @@ ORDER BY nama ASC;
 FROM mahasiswa
 ORDER BY nama DESC;
 </code></pre>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE mahasiswa (id INT, nama VARCHAR);&#10;INSERT INTO mahasiswa VALUES (1, 'Zahra'), (2, 'Andi'), (3, 'Budi');&#10;&#10;-- Urutkan nama sesuai abjad A-Z:&#10;SELECT * FROM mahasiswa ORDER BY nama ASC;"></interactive-code-block>
       `,
     },
     {
@@ -338,6 +346,7 @@ GROUP BY digunakan untuk mengelompokkan data.
 FROM mahasiswa
 GROUP BY jurusan;
 </code></pre>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE mahasiswa (id INT, nama VARCHAR, jurusan VARCHAR);&#10;INSERT INTO mahasiswa VALUES (1, 'Andi', 'TI'), (2, 'Budi', 'TI'), (3, 'Citra', 'SI');&#10;&#10;-- Kelompokkan dan hitung jumlah mahasiswa per jurusan:&#10;SELECT jurusan, COUNT(*) as jumlah FROM mahasiswa GROUP BY jurusan;"></interactive-code-block>
       `,
     },
     {
@@ -392,6 +401,7 @@ ON kelas.dosen_id = dosen.id;
 <p>
 Pada contoh di atas, kita merelasikan tabel <strong>mahasiswa</strong> dengan <strong>kelas</strong>, lalu kita relasikan lagi tabel <strong>kelas</strong> dengan <strong>dosen</strong>.
 </p>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE kelas (id INT, nama_kelas VARCHAR);&#10;INSERT INTO kelas VALUES (101, 'Pemrograman Web');&#10;&#10;CREATE TABLE mahasiswa (id INT, nama VARCHAR, kelas_id INT);&#10;INSERT INTO mahasiswa VALUES (1, 'Andi', 101), (2, 'Budi', 101);&#10;&#10;-- Gabungkan data mahasiswa dan kelas:&#10;SELECT mahasiswa.nama, kelas.nama_kelas FROM mahasiswa INNER JOIN kelas ON mahasiswa.kelas_id = kelas.id;"></interactive-code-block>
       `,
     },
     {
@@ -450,6 +460,7 @@ FROM mahasiswa;
 <pre><code>SELECT AVG(nilai) AS rata_rata
 FROM mahasiswa;
 </code></pre>
+        <interactive-code-block language="sql" codecontent="CREATE TABLE nilai (id INT, mata_kuliah VARCHAR, skor INT);&#10;INSERT INTO nilai VALUES (1, 'Basis Data', 80), (2, 'Basis Data', 90), (3, 'Pemrograman', 85);&#10;&#10;-- Hitung rata-rata skor semua mata kuliah:&#10;SELECT AVG(skor) AS rata_rata FROM nilai;"></interactive-code-block>
       `,
     },
     {

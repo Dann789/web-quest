@@ -279,7 +279,7 @@ export async function seedLevel5Challenge(prisma: PrismaClient) {
     "levelId": 5,
     "levelName": "Database",
     "title": "Join Data Peminjaman Buku",
-    "description": "Tampilkan nama member dan judul buku yang sedang dipinjam.",
+    "description": "Gabungkan 3 tabel (loans, members, books). Jangan lupa tambahkan klausa kondisional WHERE loans.returned = 0 agar hanya menampilkan buku yang statusnya belum dikembalikan. Tampilkan members.name dan books.title.",
     "difficulty": Difficulty.HARD,
     "method": ChallengeMethod.CODING_MANUAL,
     "idealTime": 720,
@@ -778,7 +778,7 @@ export async function seedLevel5Challenge(prisma: PrismaClient) {
   "levelId": 5,
   "levelName": "Database",
   "title": "Join Buku dan Member",
-  "description": "Tampilkan nama member dan tanggal peminjaman buku.",
+  "description": "Asumsikan tabel 'members' punya kolom (id, name) dan tabel 'loans' punya kolom (member_id, loan_date). Lakukan operasi JOIN di antara keduanya untuk menampilkan nama member dan tanggal peminjaman buku.",
   "difficulty": Difficulty.HARD,
   "method": ChallengeMethod.CODING_MANUAL,
   "idealTime": 720,
@@ -1113,7 +1113,12 @@ export async function seedLevel5Challenge(prisma: PrismaClient) {
       isActive: c.isActive !== undefined ? c.isActive : true,
       hint: c.hint || null,
       starterCode: c.starterCode || null,
-      content: c.content ? (c.content as any) : null,
+      content: c.content ? {
+        ...(c.content as any),
+        ...(c.blocks ? { blocks: c.blocks } : {}),
+        ...(c.expectedOrder ? { expectedOrder: c.expectedOrder } : {}),
+        ...(c.buggyCode ? { buggyCode: c.buggyCode } : {})
+      } : null,
       testCases: c.testCases ? (c.testCases as any) : null,
     };
 
@@ -1133,3 +1138,8 @@ export async function seedLevel5Challenge(prisma: PrismaClient) {
 
   console.log("✅ Challenge Level 5 Database SQL seeding completed!");
 }
+
+const p = new PrismaClient();
+seedLevel5Challenge(p)
+  .catch(console.error)
+  .finally(() => p.$disconnect());

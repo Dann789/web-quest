@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { seedUsers } from './data/user';
 import { seedBadges } from './data/badges';
+import { ueqQuestionData } from './data/ueqQuestion';
 
 // Level 1 (HTML)
 import { seedLevel1Material } from './data/level1/level1_material';
@@ -67,6 +68,15 @@ async function main() {
   // ============================================
   console.log('\n🗣️  Seeding MRC Words...');
   await import('./data/mrcWords');
+
+  // ============================================
+  // 5. SEED UEQ QUESTIONS
+  // ============================================
+  console.log('\n📊  Seeding UEQ Questions...');
+  await prisma.$executeRawUnsafe('TRUNCATE TABLE "UEQQuestion" RESTART IDENTITY CASCADE;');
+  await prisma.uEQQuestion.createMany({
+    data: ueqQuestionData,
+  });
 
   console.log('\n🎉 ========================================');
   console.log('🎉 WEB-QUEST DATABASE SEEDING COMPLETED!');

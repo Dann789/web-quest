@@ -82,10 +82,10 @@ function isJsOnlyChallenge(challenge: Challenge): boolean {
     if (starter.trim().startsWith("{")) {
       const parsed = JSON.parse(starter) as Record<string, string>;
       const hasHtml = (parsed.html ?? "").trim().length > 0;
-      const hasCss  = (parsed.css  ?? "").trim().length > 0;
+      const hasCss = (parsed.css ?? "").trim().length > 0;
       if (hasHtml || hasCss) return false; // ada konten HTML/CSS → bukan JS-only
     }
-  } catch {}
+  } catch { }
 
   // Cek kolom content (JSON) untuk keberadaan field correctAnswer / template yang menyertakan HTML
   try {
@@ -95,7 +95,7 @@ function isJsOnlyChallenge(challenge: Challenge): boolean {
     if (/<[a-z][\s\S]*>/i.test(correctAnswer)) return false;
     // Jika content.language berbeda dari javascript
     if (content.language && content.language !== "javascript") return false;
-  } catch {}
+  } catch { }
 
   return true; // Hanya script.js → arahkan ke Console
 }
@@ -201,7 +201,7 @@ function PreviewPanel({
     let previewHtml = "";
     // Baca kode terbaru dari ref (bukan dari closure) agar updatePreview tetap stabil
     const codes = codesRef.current;
-    
+
     if (primaryLanguage === "css" || primaryLanguage === "javascript") {
       const { html, css, javascript } = codes;
       // Tentukan apakah hanya JS murni (tanpa HTML boilerplate) untuk console-only mode
@@ -255,7 +255,7 @@ function PreviewPanel({
       setIsRunning(true);
       try {
         const response = await runPhpCode(codes, userId, templateName, levelFolder, sandboxEnabled);
-        
+
         if (response.success && response.data) {
           const { stdout, stderr } = response.data;
           previewHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{background:#ffffff;color:black;padding:20px;font-family:system-ui}</style></head><body>
@@ -287,10 +287,10 @@ function PreviewPanel({
         setIsRunning(true);
         try {
           const response = await runSqlCode(codes.sql || "", userId || 0, templateName || "", levelFolder || "db_level");
-          
+
           if (response.success && response.data) {
             const { type, columns, rows, message } = response.data;
-            
+
             if (type === "select") {
               if (rows.length === 0) {
                 previewHtml = `<!DOCTYPE html><html><body style="background:#ffffff;color:#64748b;padding:24px;font-family:system-ui">
@@ -305,7 +305,7 @@ function PreviewPanel({
                   const cells = columns.map((col: string) => `<td style="border:1px solid #e2e8f0;padding:10px;font-size:12px;color:#334155">${row[col] !== null ? row[col] : "<span style='color:#94a3b8;font-style:italic'>NULL</span>"}</td>`).join("");
                   return `<tr style="border-bottom:1px solid #e2e8f0;background:#ffffff">${cells}</tr>`;
                 }).join("");
-                
+
                 previewHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
                   body{background:#ffffff;color:#0f172a;padding:16px;font-family:system-ui;margin:0}
                   table{border-collapse:collapse;width:100%;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
@@ -358,8 +358,8 @@ function PreviewPanel({
     doc.open();
     doc.write(previewHtml);
     doc.close();
-  // `codes` DIHAPUS dari deps karena dibaca melalui codesRef.current di dalam fungsi.
-  // Ini memastikan referensi updatePreview TIDAK berubah saat codes berubah.
+    // `codes` DIHAPUS dari deps karena dibaca melalui codesRef.current di dalam fungsi.
+    // Ini memastikan referensi updatePreview TIDAK berubah saat codes berubah.
   }, [primaryLanguage, isActive, userId, templateName, sandboxEnabled, levelFolder]);
 
   useEffect(() => {
@@ -468,13 +468,14 @@ function ChallengeView({
   totalNodes?: number;
 }) {
   const { user, updateUser } = useAuth();
-  
+
   const tutorialKey = `web_quest_tutorial_completed_${challenge.method}`;
   const [isTutorialActive, setIsTutorialActive] = useState(() => {
     return localStorage.getItem(tutorialKey) !== "true";
   });
-  
-  const { formatted: timer, raw: timerSeconds } = useTimer(!isTutorialActive);
+
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const { formatted: timer, raw: timerSeconds } = useTimer(!isTutorialActive && submitStatus !== "success");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isNavigatingNext, setIsNavigatingNext] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
@@ -518,28 +519,33 @@ function ChallengeView({
 
   // ─── State ─────────────────────────────────────────────────────────────────
   const [userCode, setUserCode] = useState<Record<string, string>>(() => {
-    const initial = { 
-      html: "", 
-      css: "", 
-      javascript: "", 
-      php: "", 
-      php_process: "", 
-      php_connection: "", 
-      sql: "" 
+    const initial = {
+      html: "",
+      css: "",
+      javascript: "",
+      php: "",
+      php_process: "",
+      php_connection: "",
+      sql: ""
     };
     try {
-      if (challenge.starterCode?.trim().startsWith("{")) {
-        return { ...initial, ...JSON.parse(challenge.starterCode) };
+      const targetCode = challenge.method === 'FIX_THE_BUG'
+        ? ((challenge.content as any)?.buggyCode || (challenge as any).buggyCode)
+        : ((challenge.content as any)?.starterCode || challenge.starterCode);
+
+      if (targetCode?.trim().startsWith("{")) {
+        return { ...initial, ...JSON.parse(targetCode) };
       }
-    } catch {}
-    return { ...initial, [language]: challenge.starterCode ?? "" };
+      return { ...initial, [language]: targetCode ?? "" };
+    } catch {
+      return { ...initial, [language]: "" };
+    }
   });
 
   const [previewCodes, setPreviewCodes] = useState<Record<string, string>>(userCode);
   const [hasRunPreview, setHasRunPreview] = useState(false);
   const [dragItems, setDragItems] = useState<DragItem[]>([]);
   const [sourceDragItems, setSourceDragItems] = useState<DragItem[]>(initialSourceItems);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [showHint, setShowHint] = useState(false);
   const [activeTab, setActiveTab] = useState(language);
   // Smart default: console jika JS-only (tidak melibatkan HTML/CSS), preview jika ada multi-file
@@ -552,7 +558,7 @@ function ChallengeView({
   const [showResultDialog, setShowResultDialog] = useState(false);
 
   // XP tidak akan bertambah lagi (backend handle via isCompleted check).
-  
+
   // ─── Inisialisasi Sandbox ──────────────────────────────────────────────────
   useEffect(() => {
     const initSandbox = async () => {
@@ -572,14 +578,14 @@ function ChallengeView({
   // ─── Validasi Kode (Client-side) ──────────────────────────────────────────
   const runValidation = useCallback((code: string) => {
     const errors: string[] = [];
-    
+
     // Pastikan testCases ada dan berupa array
     if (!challenge.testCases) return [];
-    
+
     let tests: any[] = [];
     try {
-      tests = typeof challenge.testCases === 'string' 
-        ? JSON.parse(challenge.testCases) 
+      tests = typeof challenge.testCases === 'string'
+        ? JSON.parse(challenge.testCases)
         : challenge.testCases;
     } catch {
       return [];
@@ -590,7 +596,7 @@ function ChallengeView({
     tests.forEach((test: any) => {
       // Struktur testCase: { description: string, requirement: string, regex?: string }
       const { description, requirement, regex } = test;
-      
+
       let isPassing = false;
       if (regex) {
         try {
@@ -630,27 +636,27 @@ function ChallengeView({
   const handleRun = () => {
     setIsRunning(true);
     setSubmitStatus("idle");
-    
+
     setTimeout(() => {
       // Bersihkan console entries dan naikkan trigger eksekusi bersamaan di dalam timeout
       // agar semua state di-batch oleh React dalam satu re-render tunggal (mencegah iframe reload berulang kali).
       setConsoleEntries([]);
       setRunTrigger(prev => prev + 1);
-      
+
       let codesToPreview = { ...userCode };
       if (challenge.method === "DRAG_AND_DROP") {
         const generated = dragItems.map((i) => i.content).join("\n");
         codesToPreview = { ...userCode, [language]: generated };
       }
-      
+
       setPreviewCodes(codesToPreview);
       setHasRunPreview(true);
-      
+
       // Setelah run: arahkan ke Console View jika JS-only, Live Preview untuk lainnya
       setValidationErrors([]);
       const shouldShowConsole = language === "javascript" && isJsOnlyChallenge(challenge);
       setActivePreviewTab(shouldShowConsole ? "console" : "preview");
-      
+
       if (challenge.method === "DRAG_AND_DROP") {
         const isCorrect = checkDragDropAnswer();
         if (isCorrect) {
@@ -660,30 +666,34 @@ function ChallengeView({
           setTimeout(() => setSubmitStatus("idle"), 3000);
         }
       }
-      
+
       setIsRunning(false);
     }, 400);
   };
 
   const handleReset = () => {
-    const initial = { 
-      html: "", 
-      css: "", 
-      javascript: "", 
-      php: "", 
-      php_process: "", 
-      php_connection: "", 
-      sql: "" 
+    const initial = {
+      html: "",
+      css: "",
+      javascript: "",
+      php: "",
+      php_process: "",
+      php_connection: "",
+      sql: ""
     };
     let resetVal = initial;
     try {
-      if (challenge.starterCode?.trim().startsWith("{")) {
-        resetVal = { ...initial, ...JSON.parse(challenge.starterCode) };
+      const targetCode = challenge.method === 'FIX_THE_BUG'
+        ? ((challenge.content as any)?.buggyCode || (challenge as any).buggyCode)
+        : ((challenge.content as any)?.starterCode || challenge.starterCode);
+
+      if (targetCode?.trim().startsWith("{")) {
+        resetVal = { ...initial, ...JSON.parse(targetCode) };
       } else {
-        resetVal = { ...initial, [language]: challenge.starterCode ?? "" };
+        resetVal = { ...initial, [language]: targetCode ?? "" };
       }
     } catch {
-      resetVal = { ...initial, [language]: challenge.starterCode ?? "" };
+      resetVal = { ...initial, [language]: "" };
     }
 
     setUserCode(resetVal);
@@ -759,7 +769,7 @@ function ChallengeView({
       setXpEarned(earnedXp);
 
       if (!isCorrect) {
-        const errors = runValidation(challenge.method === "DRAG_AND_DROP" ? 
+        const errors = runValidation(challenge.method === "DRAG_AND_DROP" ?
           JSON.parse(answerCode).join("\n") : answerCode
         );
         setValidationErrors(errors);
@@ -878,13 +888,13 @@ function ChallengeView({
     },
     ...(challenge.hint
       ? [
-          {
-            targetId: "tutorial-hint",
-            title: "Butuh Bantuan?",
-            description: "Kalau mentok, cek Hint di sini.",
-            position: "right",
-          } as TutorialStep,
-        ]
+        {
+          targetId: "tutorial-hint",
+          title: "Butuh Bantuan?",
+          description: "Kalau mentok, cek Hint di sini.",
+          position: "right",
+        } as TutorialStep,
+      ]
       : []),
     {
       targetId: "tutorial-editor",
@@ -896,19 +906,19 @@ function ChallengeView({
     },
     ...(isCodeBased
       ? [
-          {
-            targetId: "tutorial-run",
-            title: "Test Kodemu",
-            description: "Klik tombol Run untuk menjalankan kode dan melihat hasilnya.",
-            position: "top",
-          } as TutorialStep,
-          {
-            targetId: "tutorial-preview",
-            title: "Live Preview & Errors",
-            description: "Lihat hasil kodinganmu atau cek 'Error Log' jika ada yang kurang.",
-            position: "left",
-          } as TutorialStep,
-        ]
+        {
+          targetId: "tutorial-run",
+          title: "Test Kodemu",
+          description: "Klik tombol Run untuk menjalankan kode dan melihat hasilnya.",
+          position: "top",
+        } as TutorialStep,
+        {
+          targetId: "tutorial-preview",
+          title: "Live Preview & Errors",
+          description: "Lihat hasil kodinganmu atau cek 'Error Log' jika ada yang kurang.",
+          position: "left",
+        } as TutorialStep,
+      ]
       : []),
     {
       targetId: "tutorial-submit",
@@ -1170,24 +1180,24 @@ function ChallengeView({
                 <Tabs value={activePreviewTab} onValueChange={setActivePreviewTab} className="h-full">
                   <TabsList className="h-full bg-transparent p-0 gap-0">
                     {/* Live Preview — sembunyikan untuk JS-only (tidak relevan jika tidak ada HTML) */}
-                      <TabsTrigger
-                        value="preview"
-                        className="h-full px-3 lg:px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-indigo-500 text-[10px] lg:text-xs font-bold transition-all"
-                      >
-                        Live Preview
-                      </TabsTrigger>
+                    <TabsTrigger
+                      value="preview"
+                      className="h-full px-3 lg:px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-indigo-500 text-[10px] lg:text-xs font-bold transition-all"
+                    >
+                      Live Preview
+                    </TabsTrigger>
                     {/* Console View — hanya tampil untuk level JavaScript */}
-                      <TabsTrigger
-                        value="console"
-                        className="h-full px-3 lg:px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-cyan-500 text-[10px] lg:text-xs font-bold transition-all flex items-center gap-1.5"
-                      >
-                        <span className="text-cyan-500">›_</span> Console View
-                        {consoleEntries.some(e => e.type === 'error') && (
-                          <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] text-white">
-                            !
-                          </span>
-                        )}
-                      </TabsTrigger>
+                    <TabsTrigger
+                      value="console"
+                      className="h-full px-3 lg:px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-cyan-500 text-[10px] lg:text-xs font-bold transition-all flex items-center gap-1.5"
+                    >
+                      <span className="text-cyan-500">›_</span> Console View
+                      {consoleEntries.some(e => e.type === 'error') && (
+                        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] text-white">
+                          !
+                        </span>
+                      )}
+                    </TabsTrigger>
                     <TabsTrigger
                       value="errors"
                       className="h-full px-3 lg:px-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-slate-950 data-[state=active]:border-red-500 text-[10px] lg:text-xs font-bold transition-all flex items-center gap-2"
@@ -1214,7 +1224,7 @@ function ChallengeView({
                   </span>
                 </div>
               </div>
-              
+
               <div className="flex-1 min-h-0 bg-slate-950/50 overflow-auto relative">
                 {/* Live Preview Tab (Tetap di-mount secara permanen agar javascript iframe berjalan di background & postMessage terkirim secara real-time) */}
                 <div className={cn("w-full h-full", activePreviewTab !== "preview" && "hidden")}>
@@ -1296,9 +1306,9 @@ function ChallengeView({
                           <span className="text-[10px] font-bold uppercase tracking-wider">Kesalahan Terdeteksi:</span>
                         </div>
                         {validationErrors.map((err, i) => (
-                          <div 
-                            key={i} 
-                            className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10 text-red-200/90 animate-in fade-in slide-in-from-left-2 duration-300" 
+                          <div
+                            key={i}
+                            className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10 text-red-200/90 animate-in fade-in slide-in-from-left-2 duration-300"
                             style={{ animationDelay: `${i * 100}ms` }}
                           >
                             <XCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
@@ -1365,11 +1375,23 @@ function ChallengeView({
             </AlertDialogTitle>
             <AlertDialogDescription className="flex flex-col justify-center items-center text-slate-300 mt-4 text-base text-center">
               {submitStatus === "success" ? (
-                <div className="space-y-4">
-                  <p className="text-lg">Kamu berhasil menyelesaikan tantangan ini dengan sempurna.</p>
-                  <div className="group relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 border border-emerald-500/30 overflow-hidden cursor-default transition-all hover:border-emerald-500/60">
+                <div className="space-y-6 w-full max-w-sm mx-auto">
+                  <p className="text-lg">Telah berhasil menyelesaikan challenge ini dengan sempurna.</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center">
+                      <span className="text-slate-400 text-sm mb-1">Challenge</span>
+                      <span className="text-slate-200 font-semibold text-center leading-tight">{challenge?.title}</span>
+                    </div>
+                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex flex-col items-center justify-center">
+                      <span className="text-slate-400 text-sm mb-1">Waktu</span>
+                      <span className="text-slate-200 font-semibold flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-indigo-400" /> {timer}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="group relative flex items-center justify-center gap-3 w-full py-4 rounded-xl bg-slate-900 border border-emerald-500/30 overflow-hidden cursor-default transition-all hover:border-emerald-500/60">
                     <div className="absolute inset-0 bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors" />
-                    <span className="relative z-10 font-bold text-emerald-400 text-lg">+{xpEarned} XP</span>
+                    <span className="relative z-10 font-bold text-emerald-400 text-xl">+{xpEarned} XP</span>
                     <Zap className="h-6 w-6 text-yellow-400 relative z-10" fill="currentColor" />
                   </div>
                 </div>

@@ -293,6 +293,9 @@ export class ChallengeAttemptController {
         if (lang === "html") {
           normalized = normalized.replace(/>\s+</g, "><");
           normalized = normalized.replace(/\s*=\s*/g, "=");
+          normalized = normalized.replace(/\s*\/\s*>/g, ">"); // Standarisasi self-closing tag (e.g. <br /> -> <br>)
+          normalized = normalized.replace(/\s+>/g, ">"); // Hapus spasi sebelum > (e.g. <a href="..." > -> <a href="...">)
+          normalized = normalized.replace(/<\s+/g, "<"); // Hapus spasi setelah < (e.g. < p> -> <p>)
           normalized = normalized.replace(/\s+/g, " ");
         } else if (lang === "css") {
           normalized = normalized.replace(/\s*([{}():;])\s*/g, "$1");
@@ -301,6 +304,24 @@ export class ChallengeAttemptController {
         } else if (lang === "javascript" || lang === "php" || lang === "sql") {
           normalized = normalized.replace(/\s*([{}()\[\];,+=:\-*\/><!?&|.])\s*/g, "$1");
           normalized = normalized.replace(/\s+/g, " ");
+        }
+
+        // 4.5. Standarisasi kapitalisasi keyword SQL
+        if (lang === "sql") {
+          const sqlKeywords = [
+            "SELECT", "FROM", "WHERE", "INSERT", "INTO", "VALUES", "UPDATE", "SET", "DELETE", 
+            "JOIN", "INNER", "LEFT", "RIGHT", "FULL", "OUTER", "CROSS", "ON", "GROUP", "BY", 
+            "ORDER", "HAVING", "LIMIT", "OFFSET", "ASC", "DESC", "AND", "OR", "NOT", "AS", 
+            "CREATE", "TABLE", "DROP", "ALTER", "ADD", "COLUMN", "PRIMARY", "KEY", "FOREIGN", 
+            "REFERENCES", "INDEX", "UNIQUE", "DEFAULT", "NULL", "IS", "LIKE", "IN", "BETWEEN", 
+            "EXISTS", "COUNT", "SUM", "AVG", "MIN", "MAX", "CAST", "DATE", "DATETIME", "VARCHAR", 
+            "INT", "INTEGER", "TEXT", "BOOLEAN", "SHOW", "DATABASES", "TABLES", "USE", "DESCRIBE", 
+            "EXPLAIN", "PRAGMA", "IF", "THEN", "ELSE", "END", "CASE", "WHEN", "DISTINCT", "ALL",
+            "UNION", "EXCEPT", "INTERSECT", "BEGIN", "COMMIT", "ROLLBACK", "TRANSACTION", "WITH",
+            "CHECK", "CONSTRAINT", "CASCADE", "RESTRICT", "NO", "ACTION", "AUTOINCREMENT"
+          ];
+          const keywordRegex = new RegExp(`\\b(${sqlKeywords.join("|")})\\b`, "gi");
+          normalized = normalized.replace(keywordRegex, (match) => match.toUpperCase());
         }
 
         // 5. Kembalikan isi string literal semula

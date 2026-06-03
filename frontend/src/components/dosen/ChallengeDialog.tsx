@@ -195,6 +195,7 @@ const DEFAULT_FORM = {
   correctAnswerCodes: {} as Record<string, string>,
   // FIX_THE_BUG
   buggyCode: '',
+  buggyCodes: {} as Record<string, string>,
   // DRAG_AND_DROP
   orderedLines: '',
   // Sandbox Database
@@ -233,6 +234,7 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
         starterCodes: parseCodeValue(rawStarter, lang),
         correctAnswerCodes: parseCodeValue(rawAnswer, lang),
         buggyCode: rawBuggy,
+        buggyCodes: parseCodeValue(rawBuggy, lang),
         orderedLines: (content.expectedOrder ?? []).join('\n'),
         sandboxEnabled: content.sandboxEnabled ?? false,
         sandboxTemplate: content.sandboxTemplate ?? '',
@@ -253,6 +255,7 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
       ...prev,
       starterCodes: getInitialMultiCode(lang),
       correctAnswerCodes: getInitialMultiCode(lang),
+      buggyCodes: getInitialMultiCode(lang),
     }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.levelId]);
@@ -283,7 +286,7 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
       payload.starterCode = serializeCodeValue(formData.starterCodes, detectedLang) || null;
       payload.correctAnswer = serializeCodeValue(formData.correctAnswerCodes, detectedLang);
     } else if (formData.method === 'FIX_THE_BUG') {
-      payload.buggyCode = formData.buggyCode;
+      payload.buggyCode = serializeCodeValue(formData.buggyCodes, detectedLang);
       payload.correctAnswer = serializeCodeValue(formData.correctAnswerCodes, detectedLang);
     } else if (formData.method === 'DRAG_AND_DROP') {
       const lines = formData.orderedLines.split('\n').map(l => l.trim()).filter(Boolean);
@@ -320,19 +323,13 @@ export function ChallengeDialog({ open, onOpenChange, challenge, onSubmit, level
       case 'FIX_THE_BUG':
         return (
           <>
-            <div className="space-y-2">
-              <Label>Kode yang Mengandung Bug <span className="text-red-500">*</span></Label>
-              <div className="border rounded-md overflow-hidden h-[180px]">
-                <Editor
-                  height="100%"
-                  language={detectedLang}
-                  theme="vs-dark"
-                  value={formData.buggyCode}
-                  onChange={(val) => set('buggyCode', val ?? '')}
-                  options={{ minimap: { enabled: false }, fontSize: 13 }}
-                />
-              </div>
-            </div>
+            <MultiTabEditor
+              label="Kode yang Mengandung Bug"
+              required
+              language={detectedLang}
+              codes={formData.buggyCodes}
+              onChange={(codes) => set('buggyCodes', codes)}
+            />
             <MultiTabEditor
               label="Kode Solusi yang Benar"
               required

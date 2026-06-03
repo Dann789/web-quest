@@ -9,8 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 export default function InteractiveCodeBlockComponent({ node, updateAttributes, editor }: NodeViewProps) {
   const language = node.attrs.language || 'php';
   const initialCode = node.attrs.codeContent || '';
+  const initialHtml = node.attrs.htmlContent || '<!DOCTYPE html>\n<html>\n<head>\n  <title>Playground</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>';
+  const initialCss = node.attrs.cssContent || 'body {\n  font-family: sans-serif;\n}';
   
   const [code, setCode] = useState(initialCode);
+  const [htmlCode, setHtmlCode] = useState(initialHtml);
+  const [cssCode, setCssCode] = useState(initialCss);
+  const [activeTab, setActiveTab] = useState<'code' | 'html' | 'css'>('code');
+  
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -21,30 +27,60 @@ export default function InteractiveCodeBlockComponent({ node, updateAttributes, 
   
   // To keep local state in sync if TipTap history undo/redo changes it
   useEffect(() => {
-    if (isEditable && node.attrs.codeContent !== code) {
-      setCode(node.attrs.codeContent);
+    if (isEditable) {
+      if (node.attrs.codeContent !== undefined && node.attrs.codeContent !== code) {
+        setCode(node.attrs.codeContent);
+      }
+      if (node.attrs.htmlContent !== undefined && node.attrs.htmlContent !== htmlCode) {
+        setHtmlCode(node.attrs.htmlContent);
+      }
+      if (node.attrs.cssContent !== undefined && node.attrs.cssContent !== cssCode) {
+        setCssCode(node.attrs.cssContent);
+      }
     }
-  }, [node.attrs.codeContent, isEditable, code]);
+  }, [node.attrs.codeContent, node.attrs.htmlContent, node.attrs.cssContent, isEditable]);
 
   const handleLanguageChange = (val: string) => {
     updateAttributes({ language: val });
     let defaultCode = '';
+    let defaultHtml = '<!DOCTYPE html>\n<html>\n<head>\n  <title>Playground</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>';
+    let defaultCss = 'body {\n  background-color: #000;\n  color: #fff;\n}';
+    
     if (val === 'php') defaultCode = '<?php\n\n?>';
-    else if (val === 'html') defaultCode = '<!DOCTYPE html>\n<html>\n<head>\n  <title>Playground</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>';
+    else if (val === 'html') defaultCode = defaultHtml;
     else if (val === 'javascript') defaultCode = 'console.log("Hello World");';
-    else if (val === 'css') defaultCode = 'body {\n  background-color: #000;\n  color: #fff;\n}';
+    else if (val === 'css') defaultCode = defaultCss;
     else if (val === 'sql') defaultCode = 'CREATE TABLE test (id INTEGER, name TEXT);\nINSERT INTO test VALUES (1, "Hello");\nSELECT * FROM test;';
     
     setCode(defaultCode);
-    updateAttributes({ codeContent: defaultCode });
+    setHtmlCode(defaultHtml);
+    setCssCode(defaultCss);
+    
+    updateAttributes({ 
+      codeContent: defaultCode,
+      htmlContent: defaultHtml,
+      cssContent: defaultCss
+    });
+    
     setOutput('');
+    
+    // Set default active tab based on language
+    if (val === 'javascript') setActiveTab('code'); // script.js
+    else if (val === 'css') setActiveTab('code'); // styles.css
+    else setActiveTab('code'); // main editor
   };
 
   const handleCodeChange = (val: string | undefined) => {
     const newVal = val || '';
-    setCode(newVal);
-    if (isEditable) {
-      updateAttributes({ codeContent: newVal });
+    if (activeTab === 'code') {
+      setCode(newVal);
+      if (isEditable) updateAttributes({ codeContent: newVal });
+    } else if (activeTab === 'html') {
+      setHtmlCode(newVal);
+      if (isEditable) updateAttributes({ htmlContent: newVal });
+    } else if (activeTab === 'css') {
+      setCssCode(newVal);
+      if (isEditable) updateAttributes({ cssContent: newVal });
     }
   };
 
@@ -81,10 +117,29 @@ export default function InteractiveCodeBlockComponent({ node, updateAttributes, 
            let srcDoc = '';
            if (language === 'html') {
              srcDoc = code;
-           } else if (language === 'javascript') {
-             srcDoc = `<html><body><script>${code}<\/script></body></html>`;
            } else if (language === 'css') {
-             srcDoc = `<html><head><style>${code}</style></head><body><h1>Preview</h1></body></html>`;
+             const baseHtml = htmlCode || '<!DOCTYPE html><html><head></head><body></body></html>';
+             if (baseHtml.includes('</head>')) {
+               srcDoc = baseHtml.replace('</head>', `<style>${code}</style></head>`);
+             } else {
+               srcDoc = baseHtml + `<style>${code}</style>`;
+             }
+           } else if (language === 'javascript') {
+             const baseHtml = htmlCode || '<!DOCTYPE html><html><head></head><body></body></html>';
+             let withCss = baseHtml;
+             if (cssCode) {
+               if (withCss.includes('</head>')) {
+                 withCss = withCss.replace('</head>', `<style>${cssCode}</style></head>`);
+               } else {
+                 withCss += `<style>${cssCode}</style>`;
+               }
+             }
+             
+             if (withCss.includes('</body>')) {
+               srcDoc = withCss.replace('</body>', `<script>${code}</script></body>`);
+             } else {
+               srcDoc = withCss + `<script>${code}</script>`;
+             }
            }
            iframeRef.current.srcdoc = srcDoc;
            setOutput('Rendering in preview panel...');
@@ -100,7 +155,7 @@ export default function InteractiveCodeBlockComponent({ node, updateAttributes, 
   const isBrowserLang = ['html', 'css', 'javascript'].includes(language);
 
   return (
-    <NodeViewWrapper className={`interactive-code-block my-6 border border-slate-700 rounded-xl overflow-hidden bg-slate-900 flex flex-col ${isFullscreen ? 'fixed inset-4 z-[100] shadow-2xl' : 'relative h-[500px]'}`}>
+    <NodeViewWrapper className={`interactive-code-block my-6 border border-slate-700 rounded-xl overflow-hidden bg-slate-900 flex flex-col ${isFullscreen ? 'fixed inset-4 z-100 shadow-2xl' : 'relative h-[500px]'}`}>
       <div className="bg-slate-800 px-4 py-2 flex justify-between items-center border-b border-slate-700 shrink-0">
         <div className="flex items-center gap-3">
           {isEditable ? (
@@ -133,28 +188,66 @@ export default function InteractiveCodeBlockComponent({ node, updateAttributes, 
         </div>
       </div>
       
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      <div className={`flex-1 flex ${isBrowserLang ? 'flex-col md:flex-row' : 'flex-col'} overflow-hidden`}>
         {/* Editor Pane */}
-        <div className={`flex-1 min-h-[200px] ${isBrowserLang ? 'md:border-r border-slate-700' : ''}`}>
-          <Editor
-            height="100%"
-            language={language === 'html' ? 'html' : language === 'css' ? 'css' : language === 'javascript' ? 'javascript' : language === 'sql' ? 'sql' : 'php'}
-            theme="vs-dark"
-            value={code}
-            onChange={handleCodeChange}
-            options={{ 
-              minimap: { enabled: false }, 
-              fontSize: 14, 
-              lineNumbers: 'on', 
-              scrollBeyondLastLine: false,
-              wordWrap: 'on',
-              padding: { top: 16 }
-            }}
-          />
+        <div className={`flex-1 flex flex-col min-h-[200px] ${isBrowserLang ? 'md:border-r border-slate-700' : ''}`}>
+          {isBrowserLang && language !== 'html' && (
+            <div className="flex border-b border-slate-700 bg-slate-800">
+              <button
+                type="button"
+                className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${activeTab === 'html' ? 'border-indigo-500 text-indigo-400 bg-slate-800/50' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
+                onClick={() => setActiveTab('html')}
+              >
+                index.html
+              </button>
+              {(language === 'css' || language === 'javascript') && (
+                <button
+                  type="button"
+                  className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${activeTab === (language === 'css' ? 'code' : 'css') ? 'border-indigo-500 text-indigo-400 bg-slate-800/50' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
+                  onClick={() => setActiveTab(language === 'css' ? 'code' : 'css')}
+                >
+                  styles.css
+                </button>
+              )}
+              {language === 'javascript' && (
+                <button
+                  type="button"
+                  className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${activeTab === 'code' ? 'border-indigo-500 text-indigo-400 bg-slate-800/50' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
+                  onClick={() => setActiveTab('code')}
+                >
+                  script.js
+                </button>
+              )}
+            </div>
+          )}
+          <div className="flex-1 relative">
+            <Editor
+              height="100%"
+              language={
+                activeTab === 'html' ? 'html' :
+                activeTab === 'css' ? 'css' :
+                (activeTab === 'code' && language === 'javascript') ? 'javascript' :
+                (activeTab === 'code' && language === 'css') ? 'css' :
+                (activeTab === 'code' && language === 'html') ? 'html' :
+                language === 'sql' ? 'sql' : 'php'
+              }
+              theme="vs-dark"
+              value={activeTab === 'html' ? htmlCode : activeTab === 'css' ? cssCode : code}
+              onChange={handleCodeChange}
+              options={{ 
+                minimap: { enabled: false }, 
+                fontSize: 14, 
+                lineNumbers: 'on', 
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+                padding: { top: 16 }
+              }}
+            />
+          </div>
         </div>
         
         {/* Output Pane */}
-        <div className={`flex flex-col bg-black ${isBrowserLang ? 'flex-1 md:h-full h-1/2' : 'h-[150px] shrink-0 border-t border-slate-700'}`}>
+        <div className={`flex flex-col bg-black ${isBrowserLang ? 'flex-1 md:h-full h-1/2' : 'h-[250px] shrink-0 border-t border-slate-700'}`}>
           <div className="px-3 py-1 bg-slate-900 border-b border-slate-800 text-[10px] text-slate-400 font-mono uppercase tracking-wider">
              {isBrowserLang ? 'Preview' : 'Console Output'}
           </div>
@@ -164,7 +257,7 @@ export default function InteractiveCodeBlockComponent({ node, updateAttributes, 
                  ref={iframeRef}
                  className="w-full h-full bg-white border-0" 
                  title="preview"
-                 sandbox="allow-scripts"
+                 sandbox="allow-scripts allow-forms"
                />
              ) : (
                <pre className="text-emerald-400 whitespace-pre-wrap p-4 font-mono text-sm">

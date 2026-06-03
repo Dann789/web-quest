@@ -12,6 +12,15 @@ import { InteractiveCodeBlock } from '../extensions/InteractiveCodeBlock/Interac
 import { createLowlight, common } from 'lowlight'
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Material } from '@/types';
 import { toast } from 'sonner';
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +44,7 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
   const [viewedMaterial, setViewedMaterial] = useState<number[]>([]);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isUnderstood, setIsUnderstood] = useState(false);
+  const [showResultDialog, setShowResultDialog] = useState(false);
 
   // Animation states
   const [shouldRender, setShouldRender] = useState(isOpen);
@@ -215,7 +225,7 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
          onMaterialComplete();
       }
 
-      handleClose();
+      setShowResultDialog(true);
     } catch (err) {
       console.error("Gagal mengupdate progres materi", err);
     }
@@ -392,6 +402,38 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
         )}
 
       </Card>
+      
+      {/* Result Dialog untuk penyelesaian materi */}
+      <AlertDialog open={showResultDialog} onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}>
+        <AlertDialogContent className="border-2 border-emerald-500/50 bg-slate-900 shadow-[0_0_40px_rgba(16,185,129,0.2)] overflow-hidden">
+          <div className="absolute -top-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none bg-emerald-500" />
+          <div className="absolute -bottom-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none bg-emerald-500" />
+          
+          <AlertDialogHeader className="text-center relative z-10">
+            <AlertDialogTitle className="flex flex-col items-center gap-4 text-2xl">
+              <div className="relative">
+                <div className="absolute inset-0 bg-emerald-500 blur-xl opacity-30 animate-pulse rounded-full" />
+                <div className="h-24 w-24 rounded-full bg-linear-to-br from-emerald-400 to-emerald-600 flex items-center justify-center border-4 border-emerald-950 shadow-xl relative z-10">
+                  <CheckCircle className="h-16 w-16 text-white" />
+                </div>
+              </div>
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-teal-400 font-black text-3xl tracking-tight">
+                Luar Biasa!
+              </span>
+            </AlertDialogTitle>
+            <AlertDialogDescription className="flex flex-col justify-center items-center text-slate-300 mt-4 text-base text-center">
+              <span className="text-lg">Selamat! Anda sudah menyelesaikan materi di level ini.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6 flex justify-center w-full relative z-10">
+            <AlertDialogAction onClick={handleClose} className="bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-10 py-6 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all">
+              Tutup & Kembali
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

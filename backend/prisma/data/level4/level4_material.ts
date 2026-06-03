@@ -28,7 +28,7 @@ export async function seedLevel4Material(prisma: PrismaClient) {
 
   const materials = [
     {
-      id: 41,
+      id: 40,
       levelId: level.id,
       title: "Pengenalan PHP",
       order: 1,
@@ -45,10 +45,11 @@ export async function seedLevel4Material(prisma: PrismaClient) {
 echo "Halo, selamat datang di Web-Quest!";
 ?&gt;</code></pre>
         <p><em>Catatan: Setiap baris perintah di PHP wajib diakhiri dengan titik koma (<code>;</code>). Jika terlewat, PHP akan memicu error Syntax Error.</em></p>
+        <interactive-code-block language="php" codecontent="&lt;?php&#10;echo &quot;Halo, selamat datang di Web-Quest!&quot;;&#10;?&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 42,
+      id: 41,
       levelId: level.id,
       title: "Variabel & Tipe Data PHP",
       order: 2,
@@ -68,10 +69,11 @@ $lulus = true;
         <pre><code>&lt;?php
 echo "Nama saya " . $nama . ", umur " . $umur . " tahun.";
 ?&gt;</code></pre>
+        <interactive-code-block language="php" codecontent="&lt;?php&#10;$nama = &quot;Aditya&quot;;&#10;$umur = 21;&#10;echo &quot;Nama saya &quot; . $nama . &quot;, umur &quot; . $umur . &quot; tahun.&quot;;&#10;?&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 43,
+      id: 42,
       levelId: level.id,
       title: "Operator",
       order: 3,
@@ -152,10 +154,11 @@ if ($username == "admin" &amp;&amp; $password == "123") {
 
 ?&gt;
 </code></pre>
+        <interactive-code-block language="php" codecontent="&lt;?php&#10;$a = 10;&#10;$b = 5;&#10;echo &quot;Hasil a + b = &quot; . ($a + $b) . &quot;\n&quot;;&#10;$username = &quot;admin&quot;;&#10;if ($username == &quot;admin&quot;) {&#10;    echo &quot;Login berhasil&quot;;&#10;}&#10;?&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 44,
+      id: 43,
       levelId: level.id,
       title: "Conditional",
       order: 4,
@@ -229,10 +232,11 @@ switch ($hari) {
 
 ?&gt;
 </code></pre>
+        <interactive-code-block language="php" codecontent="&lt;?php&#10;$hari = &quot;Senin&quot;;&#10;switch ($hari) {&#10;    case &quot;Senin&quot;:&#10;        echo &quot;Hari kerja&quot;;&#10;        break;&#10;    case &quot;Minggu&quot;:&#10;        echo &quot;Hari libur&quot;;&#10;        break;&#10;    default:&#10;        echo &quot;Hari biasa&quot;;&#10;}&#10;?&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 45,
+      id: 44,
       levelId: level.id,
       title: "Looping",
       order: 5,
@@ -289,10 +293,11 @@ foreach ($buah as $item) {
 
 ?&gt;
 </code></pre>
+        <interactive-code-block language="php" codecontent="&lt;?php&#10;$buah = [&quot;Apel&quot;, &quot;Mangga&quot;, &quot;Jeruk&quot;];&#10;foreach ($buah as $item) {&#10;    echo $item . &quot;\n&quot;;&#10;}&#10;?&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 46,
+      id: 45,
       levelId: level.id,
       title: "Function",
       order: 6,
@@ -329,10 +334,11 @@ echo tambah(10, 5);
 
 ?&gt;
 </code></pre>
+        <interactive-code-block language="php" codecontent="&lt;?php&#10;function tambah($a, $b) {&#10;    return $a + $b;&#10;}&#10;echo &quot;Hasil 10 + 5 = &quot; . tambah(10, 5);&#10;?&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 47,
+      id: 46,
       levelId: level.id,
       title: "Array di PHP",
       order: 7,
@@ -361,10 +367,11 @@ $mahasiswa = [
 
 echo $mahasiswa["nama"]; // Output: Wildan
 ?&gt;</code></pre>
+        <interactive-code-block language="php" codecontent="&lt;?php&#10;$mahasiswa = [&#10;  &quot;nama&quot; =&gt; &quot;Wildan&quot;,&#10;  &quot;nim&quot; =&gt; &quot;2241760086&quot;,&#10;  &quot;jurusan&quot; =&gt; &quot;TI&quot;&#10;];&#10;echo &quot;Nama: &quot; . $mahasiswa[&quot;nama&quot;] . &quot;\n&quot;;&#10;echo &quot;Jurusan: &quot; . $mahasiswa[&quot;jurusan&quot;];&#10;?&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 48,
+      id: 47,
       levelId: level.id,
       title: "Form Handling",
       order: 8,
@@ -426,10 +433,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </tr>
     </tbody>
 </table>
+        <interactive-code-block language="php" codecontent="&lt;?php&#10;// Simulasi data form POST&#10;$_POST[&quot;nama&quot;] = &quot;Andi&quot;;&#10;if (isset($_POST[&quot;nama&quot;])) {&#10;    echo &quot;Hello &quot; . $_POST[&quot;nama&quot;];&#10;}&#10;?&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 49,
+      id: 48,
       levelId: level.id,
       title: "Session di PHP",
       order: 9,
@@ -489,10 +497,11 @@ session_destroy();
 
 ?&gt;
 </code></pre>
+        <interactive-code-block language="php" codecontent="&lt;?php&#10;session_start();&#10;// Catatan: Session mungkin dibatasi di lingkungan sandbox ini&#10;$_SESSION[&quot;username&quot;] = &quot;admin&quot;;&#10;echo &quot;Username tersimpan: &quot; . $_SESSION[&quot;username&quot;];&#10;?&gt;"></interactive-code-block>
       `,
     },
     {
-      id: 50,
+      id: 49,
       levelId: level.id,
       title: "Cookies di PHP",
       order: 10,
@@ -549,7 +558,7 @@ setcookie(
       `,
     },
     {
-      id: 51,
+      id: 50,
       levelId: level.id,
       title: "File Upload",
       order: 11,
@@ -598,7 +607,7 @@ echo "Upload berhasil";
       `,
     },
     {
-      id: 52,
+      id: 51,
       levelId: level.id,
       title: "Konsep CRUD",
       order: 12,
@@ -684,7 +693,7 @@ WHERE id=1
       `,
     },
     {
-      id: 53,
+      id: 52,
       levelId: level.id,
       title: "Database Connection",
       order: 13,
@@ -747,7 +756,7 @@ echo "Koneksi berhasil";
       `,
     },
     {
-      id: 54,
+      id: 53,
       levelId: level.id,
       title: "Authentication",
       order: 14,
@@ -854,7 +863,13 @@ header("Location: login.php");
         content: m.content,
         order: m.order,
       },
-      create: m,
+      create: {
+        id: m.id,
+        levelId: m.levelId,
+        title: m.title,
+        content: m.content,
+        order: m.order,
+      },
     });
   }
 
