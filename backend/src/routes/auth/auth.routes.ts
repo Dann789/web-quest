@@ -1,16 +1,59 @@
 import { Elysia, t } from "elysia";
+import { rateLimit } from "elysia-rate-limit";
 import { jwtPlugin } from "../../plugins/jwt.plugin";
 import { AuthController } from "../../controllers/auth/auth.controller";
 import type { JWTPayload, RegisterRequest } from "../../types";
+import { UserRole } from "@prisma/client";
+
+/**
+ * Ekstrak field JWTPayload dari hasil jwt.verify() secara aman.
+ * jwt.verify() mengembalikan JWTPayloadSpec (iat, exp, dll) yang digabung dengan payload kustom.
+ */
+function extractJwtPayload(verified: Record<string, unknown>): JWTPayload | null {
+  const { id, username, role } = verified;
+  if (
+    typeof id !== "number" ||
+    typeof username !== "string" ||
+    typeof role !== "string" ||
+    !Object.values(UserRole).includes(role as UserRole)
+  ) {
+    return null;
+  }
+  return { id, username, role: role as UserRole };
+}
 
 export const authRoutes = new Elysia({ prefix: "/api/auth" })
+  .use(
+    rateLimit({
+      scoping: "scoped",
+      max: 10,
+      duration: 60_000,
+      errorResponse: new Response(
+        JSON.stringify({
+          success: false,
+          message: "Terlalu banyak permintaan. Coba lagi dalam 1 menit.",
+        }),
+        { status: 429, headers: { "Content-Type": "application/json" } },
+      ),
+      generator: (req, server) => {
+        // Fallback manual agar tidak muncul warning saat server belum ter-inject sempurna
+        const ip = server?.requestIP?.(req)?.address;
+        if (ip) return ip;
+        return req.headers.get("x-forwarded-for") || "127.0.0.1";
+      },
+    }),
+  )
   .use(jwtPlugin)
+
 
   // POST /api/auth/login
   .post(
     "/login",
     async ({ body, jwt, set }) => {
-      const result = await AuthController.login(body, jwt.sign);
+      const result = await AuthController.login(
+        body,
+        (payload: JWTPayload) => jwt.sign({ id: payload.id, username: payload.username, role: payload.role }),
+      );
 
       if (!result.success) {
         set.status = 401;
@@ -88,8 +131,14 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
       throw new Error("Unauthorized: Invalid token");
     }
 
+    const jwtUser = extractJwtPayload(payload as Record<string, unknown>);
+    if (!jwtUser) {
+      set.status = 401;
+      throw new Error("Unauthorized: Invalid token payload");
+    }
+
     return {
-      user: payload as JWTPayload,
+      user: jwtUser,
     };
   })
   .get(

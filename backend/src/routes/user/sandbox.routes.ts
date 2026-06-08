@@ -1,11 +1,40 @@
 import { Elysia, t } from "elysia";
+import { rateLimit } from "elysia-rate-limit";
 import { getSandboxDB, resetSandboxDB } from "../../db/sandbox.db";
 import { guardQuery } from "../../utils/query-guard";
 import { sandboxMiddleware } from "../../middleware/sandbox.middleware";
 import type { Level } from "../../db/sandbox.db";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+/**
+ * Tipe konten challenge untuk soal sandbox.
+ * Disimpan di kolom `content` (Json?) pada tabel challenges.
+ */
+interface ChallengeContent {
+  sandboxTemplate?: string;
+  sandboxEnabled?: boolean;
+  sandboxLevel?: string;
+  [key: string]: Prisma.JsonValue | undefined;
+}
+
+/**
+ * Ekstrak templateName dari challenge.content (Prisma JsonValue) secara aman.
+ * Fallback ke `soal_{soalId}` jika sandboxTemplate tidak ditemukan.
+ */
+function getTemplateName(content: Prisma.JsonValue | null, soalId: number): string {
+  if (
+    content !== null &&
+    typeof content === "object" &&
+    !Array.isArray(content) &&
+    "sandboxTemplate" in content &&
+    typeof (content as ChallengeContent).sandboxTemplate === "string"
+  ) {
+    return (content as ChallengeContent).sandboxTemplate!;
+  }
+  return `soal_${soalId}`;
+}
 
 /**
  * Helper untuk validasi apakah soalId cocok dengan level-nya
@@ -32,6 +61,25 @@ async function validateLevel(soalId: number, level: string) {
 }
 
 export const sandboxRoutes = new Elysia({ prefix: "/sandbox" })
+  .use(
+    rateLimit({
+      scoping: "scoped",
+      max: 25,
+      duration: 60_000,
+      errorResponse: new Response(
+        JSON.stringify({
+          success: false,
+          message: "Terlalu banyak permintaan. Coba lagi dalam 1 menit.",
+        }),
+        { status: 429, headers: { "Content-Type": "application/json" } },
+      ),
+      generator: (req, server) => {
+        const ip = server?.requestIP?.(req)?.address;
+        if (ip) return ip;
+        return req.headers.get("x-forwarded-for") || "127.0.0.1";
+      },
+    }),
+  )
   .use(sandboxMiddleware)
 
   // POST /sandbox/run
@@ -47,6 +95,13 @@ export const sandboxRoutes = new Elysia({ prefix: "/sandbox" })
         return { success: false, error: check.error };
       }
 
+      // 1b. Ambil templateName dari database (disimpan di challenge.content)
+      const challengeData = await prisma.challenge.findUnique({
+        where: { id: soalId },
+        select: { content: true },
+      });
+      const templateName = getTemplateName(challengeData?.content ?? null, soalId);
+
       // 2. Validasi query dengan guard
       const guard = guardQuery(query);
       if (!guard.safe) {
@@ -57,10 +112,10 @@ export const sandboxRoutes = new Elysia({ prefix: "/sandbox" })
       // 3. Buka / inisialisasi DB user
       let db;
       try {
-        db = getSandboxDB(sandboxUserId, soalId, level as Level);
-      } catch (err: any) {
+        db = getSandboxDB(sandboxUserId, templateName, level as Level);
+      } catch (err) {
         set.status = 422;
-        return { success: false, error: err.message };
+        return { success: false, error: err instanceof Error ? err.message : "Gagal membuka sandbox database" };
       }
 
       // 4. Eksekusi query
@@ -84,9 +139,9 @@ export const sandboxRoutes = new Elysia({ prefix: "/sandbox" })
             lastInsertId: result.lastInsertRowid,
           };
         }
-      } catch (err: any) {
+      } catch (err) {
         set.status = 422;
-        return { success: false, error: err.message };
+        return { success: false, error: err instanceof Error ? err.message : "Gagal menjalankan query" };
       }
     },
     {
@@ -111,7 +166,14 @@ export const sandboxRoutes = new Elysia({ prefix: "/sandbox" })
         return { success: false, error: check.error };
       }
 
-      resetSandboxDB(sandboxUserId, soalId, level as Level);
+      // Ambil templateName dari database
+      const challengeData = await prisma.challenge.findUnique({
+        where: { id: soalId },
+        select: { content: true },
+      });
+      const templateName = getTemplateName(challengeData?.content ?? null, soalId);
+
+      resetSandboxDB(sandboxUserId, templateName, level as Level);
       return {
         success: true,
         message: `Sandbox soal ${soalId} (${level}) berhasil di-reset.`,
@@ -124,3 +186,4 @@ export const sandboxRoutes = new Elysia({ prefix: "/sandbox" })
       }),
     }
   );
+
