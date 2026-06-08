@@ -401,7 +401,11 @@ export class UserBadgeController {
       where: {
         submittedAt: { gte: startOfWeek },
         xpEarned: { gt: 0 },
-        user: { role: "MAHASISWA" }
+        user: { 
+          role: "MAHASISWA",
+          UEQSession: { some: {} },
+          response: { some: {} }
+        }
       },
       _sum: { xpEarned: true },
       orderBy: { _sum: { xpEarned: 'desc' } },

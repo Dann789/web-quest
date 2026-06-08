@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Eye, EyeOff, User, Lock, ArrowRight, Mail, IdCard } from "lucide-react";
 import { register } from "@/services/auth/AuthService";
+import ReCAPTCHA from "react-google-recaptcha";
 import logoTab from "@/assets/logo/logo-tab.webp";
 
 export default function RegisterPage() {
@@ -18,6 +19,9 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
+  const SITE_KEY = "6Ld1lg0tAAAAADoD8TI5kWaHRk7KflftuUBZlcoV";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,12 +173,21 @@ export default function RegisterPage() {
                 </div>
               </div>
 
+              {/* reCAPTCHA */}
+              <div className="flex justify-end">
+                <ReCAPTCHA
+                  sitekey={SITE_KEY}
+                  onChange={(token) => setCaptchaToken(token)}
+                  theme="dark"
+                />
+              </div>
+
               {/* Submit Button - Uses default primary button style */}
-              <div className="pt-4">
+              <div className="pt-1">
                 <Button
                   type="submit"
                   className="w-full h-12 font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
-                  disabled={isLoading}
+                  disabled={isLoading || !captchaToken}
                 >
                   {isLoading ? (
                     <>

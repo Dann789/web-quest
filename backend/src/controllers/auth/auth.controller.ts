@@ -103,10 +103,12 @@ export class AuthController {
         where: { id: userId },
         select: {
           id: true,
+          name: true,
           username: true,
           email: true,
           role: true,
           totalXp: true,
+          createdAt: true,
         },
       });
 

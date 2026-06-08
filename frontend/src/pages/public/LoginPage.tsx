@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Eye, EyeOff, User, Lock, ArrowRight } from "lucide-react";
 import { login as loginService } from "@/services/auth/AuthService";
 import { toast } from "sonner";
+import ReCAPTCHA from "react-google-recaptcha";
 import logoTab from "@/assets/logo/logo-tab.webp";
 
 /**
@@ -23,6 +24,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
+  const SITE_KEY = "6Ld1lg0tAAAAADoD8TI5kWaHRk7KflftuUBZlcoV";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -286,10 +290,19 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* reCAPTCHA */}
+              <div className="flex justify-start">
+                <ReCAPTCHA
+                  sitekey={SITE_KEY}
+                  onChange={(token) => setCaptchaToken(token)}
+                  theme="dark"
+                />
+              </div>
+
               <Button
                 type="submit"
                 className="mt-3 w-full h-12 font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
-                disabled={isLoading}
+                disabled={isLoading || !captchaToken}
               >
                 {isLoading ? (
                   <>

@@ -43,7 +43,7 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
   const [error, setError] = useState<string | null>(null);
   const [viewedMaterial, setViewedMaterial] = useState<number[]>([]);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isUnderstood, setIsUnderstood] = useState(false);
+  // const [isUnderstood, setIsUnderstood] = useState(false);
   const [showResultDialog, setShowResultDialog] = useState(false);
 
   // Animation states
@@ -151,7 +151,7 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
   // Reset states and handle initial scroll calculation when material changes
   useEffect(() => {
     setScrollProgress(0);
-    setIsUnderstood(false);
+    // setIsUnderstood(false);
     
     const container = document.getElementById('scrollable-material-container');
     if (container) {
@@ -327,7 +327,7 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
                </div>
 
                {/* Syarat Memahami Materi */}
-               <div className="mb-4 p-4 border border-indigo-500/20 bg-indigo-500/5 rounded-lg flex items-center gap-3 transition-colors hover:bg-indigo-500/10">
+               {/* <div className="mb-4 p-4 border border-indigo-500/20 bg-indigo-500/5 rounded-lg flex items-center gap-3 transition-colors hover:bg-indigo-500/10">
                  <input 
                    type="checkbox" 
                    id={`understood-${currentIndex}`}
@@ -338,7 +338,7 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
                  <label htmlFor={`understood-${currentIndex}`} className="text-sm sm:text-base font-medium text-slate-200 cursor-pointer select-none flex-1">
                    Saya telah membaca dan memahami materi ini
                  </label>
-               </div>
+               </div> */}
             </div>
           )}
         </CardContent>
@@ -372,7 +372,7 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
               <Button
                 onClick={() => setCurrentIndex((prev) => Math.min(totalMaterials - 1, prev + 1))}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-slate-700 disabled:text-slate-400"
-                disabled={!isUnderstood}
+                // disabled={!isUnderstood}
               >
                 Selanjutnya <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
@@ -380,7 +380,7 @@ export default function MaterialModal({ isOpen, onClose, levelId, onMaterialComp
               <Button
                 className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-slate-700 disabled:text-slate-400"
                 onClick={handleFinishLearning}
-                disabled={!isUnderstood}
+                // disabled={!isUnderstood}
               >
                 Selesai Belajar <CheckCircle className="ml-2 h-4 w-4" />
               </Button>

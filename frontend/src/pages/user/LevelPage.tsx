@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Level } from '@/types/index';
@@ -17,6 +17,7 @@ export default function LevelPage() {
   const [animatedProgress, setAnimatedProgress] = useState<Record<number, number>>({});
   const [questionnaireProgress, setQuestionnaireProgress] = useState(0);
   const [animatedQProgress, setAnimatedQProgress] = useState(0);
+  const [isQuestionnaireActive, setIsQuestionnaireActive] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -82,6 +83,7 @@ export default function LevelPage() {
           if (qRes.success && qRes.data) {
             const completedCount = (qRes.data.ueqCompleted ? 1 : 0) + (qRes.data.mrcCompleted ? 1 : 0);
             setQuestionnaireProgress(Math.round((completedCount / 2) * 100));
+            setIsQuestionnaireActive(qRes.data.isActive ?? false);
           }
         } else {
           setError(result.message || 'Failed to fetch levels');
@@ -131,7 +133,7 @@ export default function LevelPage() {
         </div>
         <div className="bg-card border shadow-sm rounded-2xl p-4 flex items-center gap-4">
           <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center">
-            <i className="fa-solid fa-star text-2xl text-yellow-500 drop-shadow-sm"></i>
+            <Sparkle className="h-6 w-6 text-yellow-500 drop-shadow-sm" />
           </div>
           <div>
             <p className="text-sm text-muted-foreground font-medium">Total XP Anda</p>
@@ -224,16 +226,15 @@ export default function LevelPage() {
 
         {/* Kuesioner Sistem Card */}
         {(() => {
-          const allLevelsCompleted = level.length > 0 && level.every(l => levelProgress[l.id] === 100);
-          // const allLevelsCompleted = true;
+          const isQuestionnaireLocked = !isQuestionnaireActive;
 
           return (
-            <Card className={`group overflow-hidden rounded-4xl border-0 shadow-sm ring-1 ring-border/50 transition-all duration-300 hover:shadow-xl hover:ring-2 hover:ring-emerald-500 hover:-translate-y-1 hover:scale-[1.02] flex flex-col h-full ${!allLevelsCompleted ? 'grayscale opacity-80' : ''}`}>
+            <Card className={`group overflow-hidden rounded-4xl border-0 shadow-sm ring-1 ring-border/50 transition-all duration-300 hover:shadow-xl hover:ring-2 hover:ring-emerald-500 hover:-translate-y-1 hover:scale-[1.02] flex flex-col h-full ${isQuestionnaireLocked ? 'grayscale opacity-80' : ''}`}>
               {/* Upper Section */}
-              <div className={`relative p-6 md:p-8 flex-1 flex flex-col ${!allLevelsCompleted ? 'bg-muted/50' : 'bg-emerald-500/10'}`}>
+              <div className={`relative p-6 md:p-8 flex-1 flex flex-col ${isQuestionnaireLocked ? 'bg-muted/50' : 'bg-emerald-500/10'}`}>
 
                 {/* Large Logo */}
-                <div className={`absolute -right-4 top-0 w-40 h-40 flex items-center justify-center opacity-90 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6 ${!allLevelsCompleted ? 'text-muted-foreground' : 'text-emerald-600'}`}>
+                <div className={`absolute -right-4 top-0 w-40 h-40 flex items-center justify-center opacity-90 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6 ${isQuestionnaireLocked ? 'text-muted-foreground' : 'text-emerald-600'}`}>
                   <i className="text-[90px] drop-shadow-md fa-solid fa-clipboard-list"></i>
                 </div>
 
@@ -269,9 +270,9 @@ export default function LevelPage() {
               {/* Footer Section */}
               <div className="px-6 py-5 md:px-8 bg-white dark:bg-slate-900/60 flex items-center justify-between border-t border-border/10">
                 <div className="text-sm font-medium text-muted-foreground">
-                  {!allLevelsCompleted ? "Selesaikan semua level" : "Siap diisi"}
+                  {!isQuestionnaireActive ? "Sudah ditutup" : "Siap diisi"}
                 </div>
-                {!allLevelsCompleted ? (
+                {isQuestionnaireLocked ? (
                   <Button variant="secondary" className="rounded-full px-8 h-12 text-sm font-semibold opacity-50 cursor-not-allowed" disabled>
                     Terkunci
                   </Button>

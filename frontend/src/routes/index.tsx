@@ -39,6 +39,7 @@ import AdminLevelsPage from "@/pages/dosen/LevelsManagement";
 import AdminMaterialsPage from "@/pages/dosen/MaterialsManagement";
 import AdminChallengesPage from "@/pages/dosen/ChallengeManagement";
 import AdminLogsPage from "@/pages/admin/AdminLogsPage";
+import AdminEvaluasiPage from "@/pages/admin/AdminEvaluasiPage";
 
 /**
  * Route Configuration
@@ -162,6 +163,10 @@ const router = createBrowserRouter([
       {
         path: "/admin/leaderboard",
         element: <LeaderboardPage />,
+      },
+      {
+        path: "/admin/evaluasi",
+        element: <AdminEvaluasiPage />,
       },
       // TODO: Add more user routes
       // /levels/:levelId         → Level Detail

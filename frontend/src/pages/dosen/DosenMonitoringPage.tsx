@@ -23,6 +23,7 @@ import { getCurrentProgress } from "@/services/public/MonitoringService";
 import { getLevels } from "@/services/dosen/LevelService";
 import type { Level } from "@/types";
 import { TablePagination } from "@/components/common/TablePagination";
+import { toast } from 'sonner';
 
 export default function DosenMonitoringPage() {
   const [levels, setLevels] = useState<Level[]>([]);
@@ -58,6 +59,9 @@ export default function DosenMonitoringPage() {
             totalItems: progressRes.pagination.totalItems
           });
         }
+      } else {
+        toast.error(progressRes.message || "Terjadi kesalahan saat memuat data progress");
+        console.error("Gagal mengambil data progress:", progressRes.message);
       }
 
       if (levelsRes.success && levelsRes.data && levels.length === 0) {

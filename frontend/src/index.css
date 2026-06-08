@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
 @import "tailwindcss";
 
 /*
@@ -30,6 +31,7 @@
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
   --ring: 263.4 70% 50.4%;
+  --sidebar: 210 20% 98%;
   --radius: 0.5rem;
 
   --xp: 160 84% 39%;
@@ -66,6 +68,7 @@
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
   --ring: 263.4 70% 50.4%;
+  --sidebar: 263 70% 8%;
 
   /* Custom Web Quest Colors - Dark Mode */
   --xp: 160 84% 39%;
@@ -103,6 +106,8 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+  --color-sidebar: hsl(var(--sidebar));
+  --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
 
   /* Custom Web Quest Colors */
   --color-xp: hsl(var(--xp));

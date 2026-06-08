@@ -599,9 +599,10 @@ export class UserProgressController {
 
   static async getQuestionnaireStatus(userId: number) {
     try {
-      const [ueqCount, mrcCount] = await Promise.all([
+      const [ueqCount, mrcCount, formSetting] = await Promise.all([
         prisma.uEQSession.count({ where: { userId } }),
         prisma.response.count({ where: { userId } }),
+        prisma.formSetting.findFirst({ orderBy: { id: 'desc' } })
       ]);
 
       return {
@@ -610,6 +611,7 @@ export class UserProgressController {
         data: {
           ueqCompleted: ueqCount > 0,
           mrcCompleted: mrcCount > 0,
+          isActive: formSetting?.isActive ?? false,
         },
       };
     } catch (error) {

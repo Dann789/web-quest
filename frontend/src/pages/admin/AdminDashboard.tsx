@@ -1,10 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 import {
   Users,
   Layers,
@@ -13,10 +8,8 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { getUsers, getActiveStudentsToday, getNewStudentThisWeek } from "@/services/admin/UserService";
-import { getLevels, getPopularLevel } from "@/services/dosen/LevelService";
-import { getChallenges } from "@/services/dosen/ChallengeService";
-import type { User, Level, Challenge } from "@/types";
+import { getActiveStudentsToday, getNewStudentThisWeek } from "@/services/admin/UserService";
+import { getPopularLevel, getDashboardStats } from "@/services/dosen/LevelService";
 import { useCallback, useEffect, useState } from "react";
 import {
   LineChart,
@@ -32,9 +25,7 @@ import {
  * Admin Dashboard - Halaman utama untuk Admin
  */
 export default function AdminDashboard() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [levels, setLevels] = useState<Level[]>([]);
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [statsData, setStatsData] = useState({ totalMahasiswa: 0, totalLevel: 0, totalChallenge: 0 });
   const [activeUsersCount, setActiveUsersCount] = useState(0);
   const [weeklyData, setWeeklyData] = useState<{day: string, users: number}[]>([]);
   const [newStudentCount, setNewStudentCount] = useState(0);
@@ -42,29 +33,26 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Helper to determine icon type (brands vs solid)
+  const getIconType = (iconName: string) => {
+    const brands = ['fa-html5', 'fa-css3', 'fa-js', 'fa-php', 'fa-react', 'fa-vuejs', 'fa-node-js', 'fa-python', 'fa-java'];
+    return brands.includes(iconName) ? 'fa-brands' : 'fa-solid';
+  };
+
   const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
       setError("");
 
-      const [usersRes, levelsRes, challengesRes, activeRes, newStudentRes, popularLevelRes] = await Promise.all([
-        getUsers(),
-        getLevels(),
-        getChallenges(),
+      const [statsRes, activeRes, newStudentRes, popularLevelRes] = await Promise.all([
+        getDashboardStats(),
         getActiveStudentsToday(),
         getNewStudentThisWeek(),
         getPopularLevel(),
       ]);
 
-      if (usersRes.success && usersRes.data) {
-        setUsers(usersRes.data);
-      }
-      
-      if (levelsRes.success && levelsRes.data) {
-        setLevels(levelsRes.data);
-      }
-      if (challengesRes.success && challengesRes.data) {
-        setChallenges(challengesRes.data);
+      if (statsRes.success && statsRes.data) {
+        setStatsData(statsRes.data);
       }
       
       if (activeRes.success && activeRes.data !== undefined) {
@@ -94,19 +82,19 @@ export default function AdminDashboard() {
   const stats = [
     {
       label: "Total User",
-      value: isLoading ? "-" : users.length,
+      value: isLoading ? "-" : statsData.totalMahasiswa,
       icon: Users,
       color: "text-blue-400 bg-blue-500/20",
     },
     {
       label: "Total Level",
-      value: isLoading ? "-" : levels.length,
+      value: isLoading ? "-" : statsData.totalLevel,
       icon: Layers,
       color: "text-purple-400 bg-purple-500/20",
     },
     {
       label: "Total Challenge",
-      value: isLoading ? "-" : challenges.length,
+      value: isLoading ? "-" : statsData.totalChallenge,
       icon: Puzzle,
       color: "text-amber-400 bg-amber-500/20",
     },
@@ -242,8 +230,8 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-border flex flex-col items-center text-center space-y-3">
-              <span className="text-sm font-medium self-start w-full text-left">
+            <div className="pt-4 border-t border-border">
+              <span className="text-sm font-medium text-muted-foreground block mb-4">
                 Level Terpopuler
               </span>
 
@@ -268,31 +256,31 @@ export default function AdminDashboard() {
                   const textColor = themeStr.split(' ')[1]; // Extract text color class
                   
                   return (
-                    <>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <div className={`${themeStr} rounded-xl flex items-center justify-center p-3 mt-2`}>
-                              <i className={`fab ${popularLevel.iconName} ${textColor} text-5xl drop-shadow-md`}></i>
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom">
-                            <p>{popularLevel.name}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-
-                      <p className="text-sm text-muted-foreground w-full text-center mt-2">
-                        <span className="font-bold text-foreground">{popularLevel.userCount || 0} user</span>{" "}
-                        sedang mempelajari topik ini minggu ini.
-                      </p>
-                    </>
+                    <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-sm">
+                      <div className={`${themeStr} h-14 w-14 rounded-xl flex shrink-0 items-center justify-center`}>
+                        <i className={`${getIconType(popularLevel.iconName)} ${popularLevel.iconName} ${textColor} text-3xl drop-shadow-sm`}></i>
+                      </div>
+                      <div className="flex flex-col text-left overflow-hidden">
+                        <h5 className="font-bold text-foreground truncate w-full" title={popularLevel.name}>
+                          {popularLevel.name}
+                        </h5>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          <span className="font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">{popularLevel.userCount || 0} user</span>
+                          <span className="ml-1">aktif minggu ini</span>
+                        </p>
+                      </div>
+                    </div>
                   );
                 })()
               ) : isLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mt-4" />
+                <div className="flex items-center justify-center p-6 bg-slate-900/50 rounded-2xl border border-slate-800 border-dashed">
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
+                </div>
               ) : (
-                <p className="text-xs text-muted-foreground text-center w-full mt-4">Belum ada aktivitas minggu ini.</p>
+                <div className="flex flex-col items-center justify-center p-6 bg-slate-900/30 rounded-2xl border border-slate-800 border-dashed text-center">
+                  <Activity className="h-6 w-6 text-slate-600 mb-2" />
+                  <p className="text-sm text-slate-400">Belum ada aktivitas minggu ini</p>
+                </div>
               )}
             </div>
             <div className="pt-2 border-t border-border">
