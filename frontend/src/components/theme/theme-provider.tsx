@@ -3,7 +3,6 @@ import { createContext, useContext, useEffect, useState } from "react"
 type ThemeProviderProps = {
   children: React.ReactNode
   defaultTheme?: "light" | "dark" | "system"
-  storageKey?: string
 }
 
 type Theme = "light" | "dark" | "system"
@@ -19,24 +18,18 @@ const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undef
 export function ThemeProvider({
   children,
   defaultTheme = "dark",
-  storageKey = "vite-ui-theme",
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return defaultTheme
-    return (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  })
+  const [theme, setTheme] = useState<Theme>(defaultTheme)
 
   useEffect(() => {
     const root = window.document.documentElement
     root.classList.remove("light", "dark")
     root.classList.add(theme)
-    localStorage.setItem(storageKey, theme)
-  }, [theme, storageKey])
+  }, [theme])
 
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
       setTheme(theme)
     },
     themes: ["light", "dark", "system"] as Theme[],

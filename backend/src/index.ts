@@ -17,12 +17,16 @@ import { soalRoutes } from "./routes/user/soal.routes";
 import { cron } from "@elysiajs/cron";
 import { UserBadgeController } from "./controllers/user/badge.controller";
 import { ueqRoutes } from "./routes/user/ueq.routes";
+import { settingRoutes } from "./routes/admin/setting.routes";
+import { evaluasiRoutes } from "./routes/admin/evaluasi.routes";
 
 const app = new Elysia()
   .use(corsPlugin)
   .use(authRoutes)
   .use(userRoutes)
   .use(logRoutes)
+  .use(settingRoutes)
+  .use(evaluasiRoutes)
   .use(materialRoutes)
   .use(levelRoutes)
   .use(challengeRoutes)

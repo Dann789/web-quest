@@ -11,6 +11,7 @@ import {
   Layers,
   FileText,
   Puzzle,
+  PieChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
           { path: "/admin/users", label: "Manajemen User", icon: Users },
           { path: "/admin/logs", label: "Log Aktivitas", icon: Activity },
           { path: "/admin/leaderboard", label: "Leaderboard", icon: Trophy },
+          { path: "/admin/evaluasi", label: "Evaluasi UX", icon: PieChart },
         ];
       case "DOSEN":
         return [
@@ -73,7 +75,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col h-full bg-card border-r border-border",
+        "flex flex-col h-full bg-sidebar border-r border-border",
         className,
       )}
     >
@@ -98,7 +100,7 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
             height={80}
           />
           <div className="flex flex-col gap-1">
-            <span className="font-bold text-xl tracking-tight leading-none group-hover:text-primary transition-colors">
+            <span className="font-bold text-xl tracking-tight leading-none group-hover:text-foreground/80 transition-colors">
               Web Quest
             </span>
             <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
@@ -121,8 +123,8 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
               className={cn(
                 "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200 mb-2 cursor-pointer",
                 isActive(path)
-                  ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
-                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
+                  ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 hover:text-blue-400 font-bold shadow-sm border border-blue-500/20"
+                  : "text-muted-foreground hover:bg-blue-500/10 hover:text-foreground",
               )}
             >
               <Icon
@@ -139,8 +141,8 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
                   className={cn(
                     "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200 cursor-pointer",
                     isActive("/profile")
-                      ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
-                      : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
+                      ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 hover:text-blue-400 font-bold shadow-sm border border-blue-500/20"
+                      : "text-muted-foreground hover:bg-blue-500/10 hover:text-foreground",
                   )}
                 >
                   <User
@@ -160,8 +162,8 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
                   className={cn(
                     "w-full justify-start gap-3 h-12 rounded-xl transition-all duration-200 cursor-pointer",
                     isActive("/dosen/profile")
-                      ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary font-bold shadow-sm border border-primary/20"
-                      : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
+                      ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 hover:text-blue-400 font-bold shadow-sm border border-blue-500/20"
+                      : "text-muted-foreground hover:bg-blue-500/10 hover:text-foreground",
                   )}
                 >
                   <User
@@ -179,8 +181,8 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
       {/* 3. Footer: User Profile & Logout */}
       <div className="p-2.5 border-t border-border/50 bg-secondary/20">
         <div className="flex items-center gap-3 p-2">
-          <Avatar className="h-10 w-10 border border-primary/20">
-            <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+          <Avatar className="h-10 w-10 border border-border">
+            <AvatarFallback className="bg-secondary text-secondary-foreground text-xs font-bold">
               {user?.name?.substring(0, 2).toUpperCase() || "US"}
             </AvatarFallback>
           </Avatar>
@@ -199,10 +201,10 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
             <TooltipTrigger>
               <Button
                 variant="ghost"
-                className=" justify-start gap-3 h-10 rounded-xl transition-all duration-200"
+                className=" justify-start gap-3 h-10 rounded-xl transition-all duration-200 hover:bg-red-500/10 hover:text-white"
                 onClick={logout}
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4 text-red-500" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">

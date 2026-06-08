@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { User, AuthState } from '@/types';
+import { getMe } from '@/services/auth/AuthService';
 
 // ============================================
 // CONTEXT TYPE
@@ -24,6 +25,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const TOKEN_KEY = 'web_quest_token';
 const USER_KEY = 'web_quest_user';
 
+// Hanya simpan field minimal ke localStorage
+function pickStoredFields(user: User) {
+  return {
+    id: user.id,
+    username: user.username,
+    name: user.name,
+    role: user.role,
+  };
+}
+
 // ============================================
 // AUTH PROVIDER COMPONENT
 // ============================================
@@ -40,27 +51,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading: true, // Start with loading to check localStorage
   });
 
-  // Check localStorage on mount
+  // Check localStorage + fetch full user data from backend on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
-    const storedUser = localStorage.getItem(USER_KEY);
+    const restore = async () => {
+      const storedToken = localStorage.getItem(TOKEN_KEY);
 
-    if (storedToken && storedUser) {
-      try {
-        const user = JSON.parse(storedUser) as User;
-        // Validasi: pastikan data user memiliki field penting (role, id)
-        // Ini mencegah crash jika data localStorage sudah kadaluarsa / format lama
-        if (!user || !user.role || !user.id) {
-          throw new Error('Invalid user data in localStorage');
-        }
+      if (!storedToken) {
+        setAuthState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+
+      // Coba ambil data user lengkap dari backend
+      const result = await getMe(storedToken);
+
+      if (result.success && result.data) {
+        const user = result.data.user;
+        localStorage.setItem(USER_KEY, JSON.stringify(pickStoredFields(user)));
         setAuthState({
           user,
           token: storedToken,
           isAuthenticated: true,
           isLoading: false,
         });
-      } catch {
-        // Invalid stored data, clear it
+      } else {
+        // Token invalid/expired, bersihkan
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
         setAuthState({
@@ -70,15 +84,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           isLoading: false,
         });
       }
-    } else {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-    }
+    };
+
+    restore();
   }, []);
 
   // Login function
   const login = (token: string, user: User) => {
     localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    localStorage.setItem(USER_KEY, JSON.stringify(pickStoredFields(user)));
     setAuthState({
       user,
       token,
@@ -101,7 +115,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Update user data (e.g., after XP change)
   const updateUser = (user: User) => {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    localStorage.setItem(USER_KEY, JSON.stringify(pickStoredFields(user)));
     setAuthState(prev => ({ ...prev, user }));
   };
 
