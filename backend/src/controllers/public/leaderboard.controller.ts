@@ -42,12 +42,12 @@ export class LeaderboardController {
         const leaderboard = await prisma.user.findMany({
           where: { 
             role: UserRole.MAHASISWA,
-            UEQSession: {
-              some: {}
-            },
-            response: {
-              some: {}
-            }
+            // UEQSession: {
+            //   some: {}
+            // },
+            // response: {
+            //   some: {}
+            // }
           },
           select: {
             id: true,

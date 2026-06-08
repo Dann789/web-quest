@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Button } from '@/components/ui/button';
+// import { Button } from '@/components/ui/button';
 import { useState, useEffect, useCallback } from 'react';
 import { getUserSummary } from '@/services/user/ProgressService';
 import { getLeaderboardData } from '@/services/public/LeaderboardService';
@@ -152,25 +152,25 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="inline-flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors cursor-pointer group">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
-                    <BookOpenText className="w-5 h-5 text-blue-300" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs text-indigo-300 uppercase tracking-wider">
-                      Lanjutkan Belajar
-                    </p>
-                    <p className="font-bold text-white group-hover:text-blue-200 transition-colors">
-                      {currentLevelTitle}
-                    </p>
-                  </div>
-                  <Link to="/level">
+                <Link to="/level">
+                  <div className="inline-flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors cursor-pointer group">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
+                      <BookOpenText className="w-5 h-5 text-blue-300" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-indigo-300 uppercase tracking-wider">
+                        Lanjutkan Belajar
+                      </p>
+                      <p className="font-bold text-white group-hover:text-blue-200 transition-colors">
+                        {currentLevelTitle}
+                      </p>
+                    </div>
                     <ChevronRight className="w-5 h-5 text-white/50 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
+                  </div>
+                </Link>
                 {/* Daily Streak Badge */}
                 {(summary?.streakCount ?? 0) > 0 && (
-                  <div className="flex items-center w-fit gap-2 px-3 py-1.5 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md">
+                  <div className="flex items-center w-fit gap-2 px-3 py-1.5 rounded-full bg-orange-500/20 border border-orange-500/30 backdrop-blur-md mt-4">
                     <Flame className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
                     <span className="text-xs font-bold text-orange-200">
                       {summary.streakCount} Day{summary.streakCount > 1 ? 's' : ''} Streak
@@ -208,7 +208,8 @@ export default function DashboardPage() {
                 <div className="flex justify-between text-xs font-medium">
                   <span className="text-muted-foreground">XP Progress</span>
                   <span className="text-primary">
-                    {summary?.isQuestionnaireCompleted ? `${totalXp} XP` : "🔒 Terkunci"}
+                    {/* {summary?.isQuestionnaireCompleted ? `${totalXp} XP` : "🔒 Terkunci"} */}
+                    {totalXp} XP
                   </span>
                 </div>
                 <div className="h-3 bg-secondary rounded-full overflow-hidden">
@@ -220,9 +221,10 @@ export default function DashboardPage() {
                   />
                 </div>
                 <p className="text-[10px] text-right text-muted-foreground">
-                  {summary?.isQuestionnaireCompleted 
+                  {/* {summary?.isQuestionnaireCompleted 
                     ? (nextLevelInfo ? `+${nextLevelInfo.xpRequired - totalXp} XP to level up` : `You are at the top!`)
-                    : "Lengkapi kuesioner untuk membuka detail XP"}
+                    : "Lengkapi kuesioner untuk membuka detail XP"} */}
+                  {nextLevelInfo ? `+${nextLevelInfo.xpRequired - totalXp} XP to level up` : `You are at the top!`}
                 </p>
               </div>
             </CardContent>
@@ -285,11 +287,10 @@ export default function DashboardPage() {
                       className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-secondary/30 transition-all hover:scale-[1.01]"
                     >
                       <div
-                        className={`relative w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
-                          activity.type === 'challenge'
+                        className={`relative w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${activity.type === 'challenge'
                             ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
                             : 'bg-purple-500/10 text-purple-500 border-purple-500/20'
-                        }`}
+                          }`}
                       >
                         {activity.type === 'challenge' ? (
                           <Code className="w-5 h-5" />
@@ -392,56 +393,54 @@ export default function DashboardPage() {
                   <TrendingUp className="w-5 h-5 text-yellow-500" />
                   Peringkat 5 Besar
                 </CardTitle>
-                {summary?.isQuestionnaireCompleted && (
-                  <Link
-                    to="/leaderboard"
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Lihat Semua
-                  </Link>
-                )}
+                {/* {summary?.isQuestionnaireCompleted && ( */}
+                <Link
+                  to="/leaderboard"
+                  className="text-xs text-primary hover:underline"
+                >
+                  Lihat Semua
+                </Link>
+                {/* )} */}
               </div>
             </CardHeader>
             <CardContent className="flex-1 space-y-4 relative">
-              {summary?.isQuestionnaireCompleted ? (
-                leaderboard.slice(0, 5).map((p, i) => {
-                  const isMe = p.id === user?.id;
-                  const initials = p.name
-                    ?.split(" ")
-                    .map((n: any) => n[0])
-                    .join("")
-                    .toUpperCase()
-                    .slice(0, 2) || "??";
+              {/* {summary?.isQuestionnaireCompleted ? ( */}
+              {leaderboard.slice(0, 5).map((p, i) => {
+                const isMe = p.id === user?.id;
+                const initials = p.name
+                  ?.split(" ")
+                  .map((n: any) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2) || "??";
 
-                  return (
-                    <div
-                      key={p.id}
-                      className={`flex items-center gap-3 p-3 rounded-xl transition-all hover:scale-[1.01] ${
-                        isMe
-                          ? "bg-primary/10 border border-primary/20"
-                          : "hover:bg-secondary/50 border border-transparent"
+                return (
+                  <div
+                    key={p.id}
+                    className={`flex items-center gap-3 p-3 rounded-xl transition-all hover:scale-[1.01] ${isMe
+                        ? "bg-primary/10 border border-primary/20"
+                        : "hover:bg-secondary/50 border border-transparent"
                       }`}
-                    >
-                      <div
-                        className={`font-bold w-6 text-center text-sm ${
-                          i < 3 ? "text-amber-500" : "text-muted-foreground"
+                  >
+                    <div
+                      className={`font-bold w-6 text-center text-sm ${i < 3 ? "text-amber-500" : "text-muted-foreground"
                         }`}
-                      >
-                        {i < 3 ? ["🥇", "🥈", "🥉"][i] : `#${i + 1}`}
-                      </div>
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                        {initials}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-bold truncate ${isMe ? "text-primary" : ""}`}>
-                          {isMe ? "You" : p.name}
-                        </p>
-                      </div>
-                      <span className="font-mono text-xs font-bold">{p.totalXp} XP</span>
+                    >
+                      {i < 3 ? ["🥇", "🥈", "🥉"][i] : `#${i + 1}`}
                     </div>
-                  );
-                })
-              ) : (
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-bold truncate ${isMe ? "text-primary" : ""}`}>
+                        {isMe ? "You" : p.name}
+                      </p>
+                    </div>
+                    <span className="font-mono text-xs font-bold">{p.totalXp} XP</span>
+                  </div>
+                );
+              })}
+              {/* ) : (
                 <div className="flex flex-col items-center justify-center py-6 px-4 text-center space-y-3">
                   <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-500/20 animate-pulse">
                     <i className="fa-solid fa-lock text-2xl"></i>
@@ -454,7 +453,7 @@ export default function DashboardPage() {
                     <Link to="/level">Pergi ke Kuesioner</Link>
                   </Button>
                 </div>
-              )}
+              )} */}
             </CardContent>
           </Card>
         </div>

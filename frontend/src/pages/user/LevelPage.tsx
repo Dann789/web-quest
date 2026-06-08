@@ -138,7 +138,8 @@ export default function LevelPage() {
           <div>
             <p className="text-sm text-muted-foreground font-medium">Total XP Anda</p>
             <p className="text-2xl font-bold text-primary">
-              {questionnaireProgress === 100 ? `${currentXP} XP` : "🔒 Terkunci"}
+              {/* {questionnaireProgress === 100 ? `${currentXP} XP` : "🔒 Terkunci"} */}
+              {currentXP} XP
             </p>
           </div>
         </div>
@@ -203,7 +204,8 @@ export default function LevelPage() {
               <div className="px-6 py-5 md:px-8 bg-white dark:bg-slate-900/60 flex items-center justify-between">
                 <div className="text-sm font-medium text-muted-foreground">
                   {isLocked ? (
-                    hasUnfinishedPreviousLevel ? "Selesaikan level sebelumnya" : (questionnaireProgress === 100 ? `Butuh ${lvl.xpRequired - currentXP} XP lagi` : "Butuh lebih banyak XP")
+                    hasUnfinishedPreviousLevel ? "Selesaikan level sebelumnya" : `Butuh ${lvl.xpRequired - currentXP} XP lagi`
+                    // hasUnfinishedPreviousLevel ? "Selesaikan level sebelumnya" : (questionnaireProgress === 100 ? `Butuh ${lvl.xpRequired - currentXP} XP lagi` : "Butuh lebih banyak XP")
                   ) : (
                     "Siap dipelajari"
                   )}

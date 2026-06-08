@@ -310,14 +310,14 @@ export default function LevelMapPage() {
             let label = '';
             let color = '';
             
-            if (node.difficulty === 'easy') { label = 'EASY LEVEL'; color = 'text-emerald-500'; }
-            else if (node.difficulty === 'medium') { label = 'MEDIUM LEVEL'; color = 'text-amber-500'; }
-            else if (node.difficulty === 'hard') { label = 'HARD LEVEL'; color = 'text-red-500'; }
+            if (node.difficulty === 'easy') { label = 'EASY NODE'; color = 'text-emerald-500'; }
+            else if (node.difficulty === 'medium') { label = 'MEDIUM NODE'; color = 'text-amber-500'; }
+            else if (node.difficulty === 'hard') { label = 'HARD NODE'; color = 'text-red-500'; }
 
             if (label) {
                 let offsetX = '-40%'; 
-                if (label === 'EASY LEVEL') offsetX = '-65%';
-                if (label === 'HARD LEVEL') offsetX = '-15%';
+                if (label === 'EASY NODE') offsetX = '-65%';
+                if (label === 'HARD NODE') offsetX = '-15%';
 
                 resultZones.push({
                     label,

@@ -14,15 +14,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getLeaderboardData } from "@/services/public/LeaderboardService";
 import { TablePagination } from "@/components/common/TablePagination";
 import { getQuestionnaireStatus } from "@/services/user/ProgressService";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+// import { Button } from "@/components/ui/button";
+// import { Link } from "react-router-dom";
 
 export default function LeaderboardPage() {
   const { user } = useAuth();
   const [filterTime, setFilterTime] = useState("all_time");
   const [topThree, setTopThree] = useState<any[]>([]);
   const [otherRanks, setOtherRanks] = useState<any[]>([]);
-  const [questionnaireCompleted, setQuestionnaireCompleted] = useState(true);
+  // const [questionnaireCompleted, setQuestionnaireCompleted] = useState(true);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,11 +40,11 @@ export default function LeaderboardPage() {
         user && user.role === "MAHASISWA" ? getQuestionnaireStatus(user.id) : null
       ];
       
-      const [result, qRes] = await Promise.all(promises);
+      const [result] = await Promise.all(promises);
 
-      if (qRes && qRes.success && qRes.data) {
-        setQuestionnaireCompleted(qRes.data.ueqCompleted && qRes.data.mrcCompleted);
-      }
+      // if (qRes && qRes.success && qRes.data) {
+      //   setQuestionnaireCompleted(qRes.data.ueqCompleted && qRes.data.mrcCompleted);
+      // }
 
       if (result.success && result.data) {
         const mapItem = (item: any) => ({
@@ -97,26 +97,26 @@ export default function LeaderboardPage() {
   const getPageTitle = () => {
     switch (user?.role) {
       case "ADMIN":
-        return "Leaderboard - Admin View";
+        return "Papan Peringkat Mahasiswa";
       case "DOSEN":
-        return "Student Rankings";
+        return "Papan Peringkat Mahasiswa";
       case "MAHASISWA":
-        return "Leaderboard";
+        return "Papan Peringkat";
       default:
-        return "Leaderboard";
+        return "Papan Peringkat";
     }
   };
 
   const getPageDescription = () => {
     switch (user?.role) {
       case "ADMIN":
-        return "Monitoring student progress and achievements";
+        return "Monitoring pencapaian belajar mahasiswa";
       case "DOSEN":
-        return "Monitor student progress dan achievements";
+        return "Monitoring pencapaian belajar mahasiswa";
       case "MAHASISWA":
-        return "Top performers hall of fame";
+        return "Papan peringkat pencapaian belajar";
       default:
-        return "Top performers hall of fame";
+        return "Papan peringkat pencapaian belajar";
     }
   };
 
@@ -152,7 +152,7 @@ export default function LeaderboardPage() {
       </div>
 
       {/* BANNER KUESIONER BELUM SELESAI */}
-      {!questionnaireCompleted && user?.role === "MAHASISWA" && (
+      {/* {!questionnaireCompleted && user?.role === "MAHASISWA" && (
         <div className="w-full p-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-amber-500/20 rounded-xl text-amber-600">
@@ -172,7 +172,7 @@ export default function LeaderboardPage() {
             <Link to="/level">Pergi ke Kuesioner</Link>
           </Button>
         </div>
-      )}
+      )} */}
 
       {/* TOP 3 PODIUM */}
       <div className="grid items-end max-w-4xl grid-cols-1 gap-6 py-8 mx-auto md:grid-cols-3">

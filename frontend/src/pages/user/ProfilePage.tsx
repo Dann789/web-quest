@@ -7,13 +7,13 @@ import { EditProfileDialog } from '@/components/user/EditProfileDialog';
 import { getUserBadges } from '@/services/user/BadgeService';
 import { BadgeCard } from '@/components/user/BadgeCard';
 import type { BadgeItem } from '@/types';
-import { getQuestionnaireStatus } from '@/services/user/ProgressService';
+// import { getQuestionnaireStatus } from '@/services/user/ProgressService';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [badges, setBadges] = useState<(BadgeItem & { isEarned: boolean, earnedAt: string | null })[]>([]);
-  const [questionnaireCompleted, setQuestionnaireCompleted] = useState(false);
+  // const [questionnaireCompleted, setQuestionnaireCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -23,9 +23,9 @@ export default function ProfilePage() {
     const fetchProfileData = async () => {
       try {
         setLoading(true);
-        const [badgesRes, qRes] = await Promise.all([
+        const [badgesRes] = await Promise.all([
           getUserBadges(user.id),
-          getQuestionnaireStatus(user.id)
+          // getQuestionnaireStatus(user.id)
         ]);
 
         if (badgesRes.success && badgesRes.data) {
@@ -34,9 +34,9 @@ export default function ProfilePage() {
           setError(badgesRes.message || 'Failed to fetch badges');
         }
 
-        if (qRes.success && qRes.data) {
-          setQuestionnaireCompleted(qRes.data.ueqCompleted && qRes.data.mrcCompleted);
-        }
+        // if (qRes.success && qRes.data) {
+        //   setQuestionnaireCompleted(qRes.data.ueqCompleted && qRes.data.mrcCompleted);
+        // }
       } catch (error) {
         console.error('Error fetching profile data:', error);
         setError('Failed to fetch profile data');
@@ -59,7 +59,8 @@ export default function ProfilePage() {
         <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30">
           <Zap className="h-5 w-5 text-emerald-400" />
           <span className="text-lg font-bold text-emerald-400">
-            {questionnaireCompleted ? `${user?.totalXp.toLocaleString()} XP` : "🔒 Terkunci"}
+            {/* {questionnaireCompleted ? `${user?.totalXp.toLocaleString()} XP` : "🔒 Terkunci"} */}
+            {user?.totalXp.toLocaleString()} XP
           </span>
         </div>
       </div>

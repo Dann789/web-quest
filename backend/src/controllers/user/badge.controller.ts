@@ -403,8 +403,8 @@ export class UserBadgeController {
         xpEarned: { gt: 0 },
         user: { 
           role: "MAHASISWA",
-          UEQSession: { some: {} },
-          response: { some: {} }
+          // UEQSession: { some: {} },
+          // response: { some: {} }
         }
       },
       _sum: { xpEarned: true },
