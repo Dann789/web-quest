@@ -285,3 +285,11 @@ enum UEQCategory {
   STIMULATION
   NOVELTY
 }
+
+model FormSetting {
+  id        Int      @id @default(autoincrement())
+  isActive  Boolean  @default(false)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("form_setting")
+}
