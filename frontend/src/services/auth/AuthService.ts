@@ -21,6 +21,21 @@ export const login = async (
   }
 };
 
+export const getMe = async (token: string): Promise<ApiResponse<{ user: User }>> => {
+  try {
+    const response = await fetch(`${API_BASE}/api/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    return data as ApiResponse<{ user: User }>;
+  } catch (error) {
+    console.error(error);
+    return { success: false, message: "An error occurred" };
+  }
+};
+
 export const register = async (
   credentials: RegisterRequest,
 ): Promise<ApiResponse<{ user: User }>> => {
