@@ -102,4 +102,29 @@ export class EvaluasiController {
             };
         }
     }
+
+    static async getMrcExport(query: any) {
+        try {
+            const { startDate, endDate } = query;
+            const start = startDate ? new Date(startDate as string) : undefined;
+            const end = endDate ? new Date(endDate as string) : undefined;
+            
+            if (end) {
+                end.setHours(23, 59, 59, 999);
+            }
+
+            const data = await EvaluasiService.getMrcExportData(start, end);
+            return {
+                success: true,
+                data
+            };
+        } catch (error: any) {
+            console.error("Error getMrcExport:", error);
+            return {
+                success: false,
+                message: "Gagal mengambil data export MRC",
+                error: error.message
+            };
+        }
+    }
 }

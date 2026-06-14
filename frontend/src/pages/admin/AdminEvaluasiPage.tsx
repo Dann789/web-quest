@@ -110,6 +110,19 @@ export default function AdminEvaluasiPage() {
     }
   };
 
+  const handleExportMrcCsv = async () => {
+    if (!token) return;
+    try {
+      const success = await EvaluasiService.exportMrcCsv(token, startDate, endDate);
+      if (!success) {
+        toast.error('Tidak ada data MRC untuk diexport pada rentang tanggal ini.');
+      }
+    } catch (error) {
+      console.error("Failed to export MRC CSV", error);
+      toast.error('Gagal mengexport CSV MRC');
+    }
+  };
+
   const handleApplyFilter = () => {
     if (startDate > endDate) {
       toast.error("Tanggal akhir tidak boleh lebih awal dari tanggal mulai.");
@@ -427,9 +440,15 @@ export default function AdminEvaluasiPage() {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {/* Chart MRC */}
               <Card className="bg-slate-900 border-slate-800 shadow-md">
-                <CardHeader className="border-b border-slate-800/60 pb-5">
-                  <CardTitle className="text-lg font-bold text-white">Frekuensi Kata MRC</CardTitle>
-                  <CardDescription className="text-slate-400 mt-1">Kata-kata yang paling sering dipilih oleh responden</CardDescription>
+                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800/60 pb-5 gap-4">
+                  <div>
+                    <CardTitle className="text-lg font-bold text-white">Frekuensi Kata MRC</CardTitle>
+                    <CardDescription className="text-slate-400 mt-1">Top 10 kata-kata yang paling sering dipilih oleh responden</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" type="button" onClick={handleExportMrcCsv} className="gap-2 h-10 bg-slate-800 hover:bg-slate-700 hover:text-white border-slate-700 rounded-xl">
+                    <Download className="h-4 w-4 text-slate-300" />
+                    Export CSV
+                  </Button>
                 </CardHeader>
                 <CardContent className="pt-6">
                   <div className="h-[420px] w-full">
@@ -437,7 +456,7 @@ export default function AdminEvaluasiPage() {
                       <div className="h-full flex items-center justify-center text-slate-500">Belum ada data</div>
                     ) : (
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={mrcStats.chartData} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                        <BarChart data={mrcStats.chartData.slice(0, 10)} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={true} vertical={false} />
                           <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                           <YAxis dataKey="word" type="category" stroke="#cbd5e1" fontSize={12} tickLine={false} axisLine={false} width={80} />

@@ -2,7 +2,7 @@ import { Elysia, t } from "elysia";
 import { rateLimit } from "elysia-rate-limit";
 import { MonitoringController } from "../../controllers/public/monitoring.controller";
 
-export const monitoringRoutes = new Elysia({ prefix: "/monitoring" })
+export const monitoringRoutes = new Elysia({ prefix: "/api/monitoring" })
     .use(
       rateLimit({
         scoping: "scoped",
@@ -29,4 +29,4 @@ export const monitoringRoutes = new Elysia({ prefix: "/monitoring" })
             page: t.Optional(t.Numeric()),
             limit: t.Optional(t.Numeric())
         })
-    });
+    });

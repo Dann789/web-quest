@@ -3,12 +3,12 @@ import { Prisma } from "@prisma/client";
 
 // Standar benchmark UEQ
 const UEQ_BENCHMARKS = {
-    ATTRACTIVENESS: { excellent: 1.75, good: 1.41, aboveAverage: 0.96, belowAverage: 0.44 },
-    PERSPICUITY: { excellent: 2.07, good: 1.84, aboveAverage: 1.14, belowAverage: 0.65 },
-    EFFICIENCY: { excellent: 1.70, good: 1.43, aboveAverage: 0.98, belowAverage: 0.50 },
-    DEPENDABILITY: { excellent: 1.70, good: 1.53, aboveAverage: 1.19, belowAverage: 0.81 },
-    STIMULATION: { excellent: 1.56, good: 1.10, aboveAverage: 0.69, belowAverage: 0.07 },
-    NOVELTY: { excellent: 1.12, good: 0.87, aboveAverage: 0.49, belowAverage: -0.22 }
+    ATTRACTIVENESS: { excellent: 1.84, good: 1.58, aboveAverage: 1.18, belowAverage: 0.69 },
+    PERSPICUITY: { excellent: 2.00, good: 1.73, aboveAverage: 1.20, belowAverage: 0.72 },
+    EFFICIENCY: { excellent: 1.88, good: 1.50, aboveAverage: 1.05, belowAverage: 0.60 },
+    DEPENDABILITY: { excellent: 1.70, good: 1.48, aboveAverage: 1.14, belowAverage: 0.78 },
+    STIMULATION: { excellent: 1.70, good: 1.35, aboveAverage: 1.00, belowAverage: 0.50 },
+    NOVELTY: { excellent: 1.60, good: 1.12, aboveAverage: 0.70, belowAverage: 0.16 }
 };
 
 function getUeqInterpretation(category: keyof typeof UEQ_BENCHMARKS, value: number): string {
@@ -238,5 +238,70 @@ export class EvaluasiService {
                 totalPages: Math.ceil(total / limit)
             }
         };
+    }
+
+    static async getMrcExportData(startDate?: Date, endDate?: Date) {
+        let dateFilter: Prisma.ReasonWhereInput = {};
+        if (startDate && endDate) {
+            dateFilter = {
+                createdAt: {
+                    gte: startDate,
+                    lte: endDate
+                }
+            };
+        }
+
+        const reasons = await prisma.reason.findMany({
+            where: dateFilter,
+            include: {
+                user: { select: { username: true, name: true, email: true } }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        let responseFilter: Prisma.ResponseWhereInput = {};
+        if (startDate && endDate) {
+            responseFilter = {
+                createdAt: {
+                    gte: startDate,
+                    lte: endDate
+                }
+            };
+        }
+
+        const responses = await prisma.response.findMany({
+            where: responseFilter,
+            include: {
+                mrcWord: { select: { word: true } }
+            }
+        });
+
+        const userWordsMap = new Map<number, string[]>();
+        responses.forEach(r => {
+            if (!userWordsMap.has(r.userId)) {
+                userWordsMap.set(r.userId, []);
+            }
+            userWordsMap.get(r.userId)!.push(r.mrcWord.word);
+        });
+
+        const exportData = reasons.map(reason => {
+            const words = userWordsMap.get(reason.userId) || [];
+            
+            return {
+                userId: reason.userId,
+                username: reason.user.username,
+                name: reason.user.name,
+                email: reason.user.email,
+                word1: words[0] || "",
+                word2: words[1] || "",
+                word3: words[2] || "",
+                word4: words[3] || "",
+                word5: words[4] || "",
+                reasonText: reason.reason_text,
+                createdAt: reason.createdAt
+            };
+        });
+
+        return exportData;
     }
 }
