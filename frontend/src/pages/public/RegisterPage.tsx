@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Eye, EyeOff, User, Lock, ArrowRight, Mail, IdCard } from "lucide-react";
 import { register } from "@/services/auth/AuthService";
+import { toast } from "sonner";
 import ReCAPTCHA from "react-google-recaptcha";
 import logoTab from "@/assets/logo/logo-tab.webp";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -28,11 +31,18 @@ export default function RegisterPage() {
     setError("");
     setIsLoading(true);
 
-    const response = await register(formData);
-    if (response.success) {
-      navigate("/login");
+    const dataWithCaptcha = {
+      ...formData,
+      captchaToken: captchaToken || "",
+    };
+
+    const response = await register(dataWithCaptcha);
+    if (response.success && response.data) {
+      login(response.data.token, response.data.user);
+      toast.success("Registrasi berhasil!");
+      navigate("/dashboard");
     } else {
-      setError(response.message);
+      setError(response.message || "Registrasi gagal");
     }
     setIsLoading(false);
   };

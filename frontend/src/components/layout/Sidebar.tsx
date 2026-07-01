@@ -60,13 +60,14 @@ export default function Sidebar({ className, onClose }: SidebarProps) {
         return [
           { path: "/dashboard", label: "Dashboard", icon: Home },
           { path: "/level", label: "Level", icon: Gamepad2 },
+          { path: "/kuesioner", label: "Kuesioner", icon: FileText },
           { path: "/leaderboard", label: "Leaderboard", icon: Trophy },
         ];
     }
   };
 
   const isActive = (path: string) => {
-    if (path === "/level" && location.pathname.startsWith("/kuesioner")) {
+    if (path === "/kuesioner" && location.pathname.startsWith("/kuesioner")) {
       return true;
     }
     return location.pathname === path;

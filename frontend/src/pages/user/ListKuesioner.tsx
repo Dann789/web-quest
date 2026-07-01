@@ -1,15 +1,14 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock, HelpCircle, Loader2 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, CheckCircle2, Clock, HelpCircle, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getQuestionnaireStatus } from '@/services/user/ProgressService';
 
 export default function ListKuesioner() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [completedStatus, setCompletedStatus] = useState({ ueqCompleted: false, mrcCompleted: false });
   const [loading, setLoading] = useState(true);
 
@@ -70,14 +69,6 @@ export default function ListKuesioner() {
       
       {/* Header Section */}
       <div className="relative z-10">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/level')} 
-          className="mb-4 -ml-4 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Kembali ke Level
-        </Button>
         <h1 className="text-4xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
           Daftar Kuesioner
         </h1>

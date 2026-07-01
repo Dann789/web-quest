@@ -219,8 +219,8 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   disabled={isLoading}
-                  minLength={6}
-                  maxLength={10}
+                  minLength={10}
+                  maxLength={16}
                   className="pr-10"
                 />
                 <button
@@ -232,7 +232,7 @@ export default function UserDialog({ open, onOpenChange, user, onSubmit }: UserD
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground">6-10 characters</p>
+              <p className="text-xs text-muted-foreground">12-16 characters</p>
             </div>
 
             {/* Role */}

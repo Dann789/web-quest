@@ -26,8 +26,8 @@ export const userRoutes = new Elysia({ prefix: "/api/users" })
                 maxLength: 100,
             }),
             password: t.String({
-                minLength: 6,
-                maxLength: 10
+                minLength: 10,
+                maxLength: 16
             }),
             role: t.Optional(t.String({
                 enum: Object.values(UserRole)
@@ -60,8 +60,8 @@ export const userRoutes = new Elysia({ prefix: "/api/users" })
                 maxLength: 100,
             })),
             password: t.Optional(t.String({
-                minLength: 6,
-                maxLength: 10,
+                minLength: 10,
+                maxLength: 16,
             })),
             role: t.Optional(t.String({
                 enum: Object.values(UserRole)

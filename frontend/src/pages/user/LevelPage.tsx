@@ -226,8 +226,8 @@ export default function LevelPage() {
           );
         })}
 
-        {/* Kuesioner Sistem Card */}
-        {(() => {
+        {/* Kuesioner Sistem Card (Dicomment) */}
+        {false && (() => {
           const isQuestionnaireLocked = !isQuestionnaireActive;
 
           return (

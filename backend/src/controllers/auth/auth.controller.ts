@@ -153,7 +153,10 @@ export class AuthController {
     }
   }
 
-  static async register(credentials: RegisterRequest) {
+  static async register(
+    credentials: RegisterRequest,
+    jwtSign?: (payload: JWTPayload) => Promise<string>,
+  ) {
     const { name, username, email, password } = credentials;
     if (!username || !name || !email || !password) {
         return {
@@ -204,10 +207,23 @@ export class AuthController {
         },
       });
 
+      let token: string | undefined = undefined;
+      if (jwtSign) {
+        const payload: JWTPayload = {
+          id: user.id,
+          username: user.username,
+          role: user.role,
+        };
+        token = await jwtSign(payload);
+      }
+
       return {
         success: true,
         message: "Registration successful",
-        data: { user },
+        data: {
+          token,
+          user,
+        },
       };
     } catch (error) {
       console.error("Registration error:", error);

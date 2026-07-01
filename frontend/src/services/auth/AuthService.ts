@@ -38,7 +38,7 @@ export const getMe = async (token: string): Promise<ApiResponse<{ user: User }>>
 
 export const register = async (
   credentials: RegisterRequest,
-): Promise<ApiResponse<{ user: User }>> => {
+): Promise<LoginResponse> => {
   try {
     const response = await fetch(`${API_BASE}/api/auth/register`, {
       method: "POST",
@@ -48,7 +48,7 @@ export const register = async (
       body: JSON.stringify(credentials),
     });
     const data = await response.json();
-    return data as ApiResponse<{ user: User }>;
+    return data as LoginResponse;
   } catch (error) {
     console.error(error);
     return { success: false, message: "An error occurred" };

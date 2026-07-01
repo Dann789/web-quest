@@ -5,7 +5,7 @@ import { AuthController } from "../../controllers/auth/auth.controller";
 import type { JWTPayload, RegisterRequest } from "../../types";
 import { UserRole } from "@prisma/client";
 
-/**
+/*
  * Ekstrak field JWTPayload dari hasil jwt.verify() secara aman.
  * jwt.verify() mengembalikan JWTPayloadSpec (iat, exp, dll) yang digabung dengan payload kustom.
  */
@@ -76,8 +76,11 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
 
   .post(
     "/register",
-    async ({ body, set }) => {
-      const result = await AuthController.register(body as RegisterRequest);
+    async ({ body, jwt, set }) => {
+      const result = await AuthController.register(
+        body as RegisterRequest,
+        (payload: JWTPayload) => jwt.sign({ id: payload.id, username: payload.username, role: payload.role }),
+      );
 
       if (!result.success) {
         set.status = 400;
@@ -101,8 +104,8 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
           maxLength: 100,
         }),
         password: t.String({
-          minLength: 6,
-          maxLength: 10,
+          minLength: 10,
+          maxLength: 16,
         }),
       }),
       detail: {
